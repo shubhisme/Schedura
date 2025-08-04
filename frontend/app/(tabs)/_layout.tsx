@@ -1,23 +1,19 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
+import { Platform, View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-
+import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 interface Tab {
-  name:string,
-  title:string,
-  icon:any
+  name: string;
+  title: string;
+  icon: any;
 }
 
-const tabs:Tab[] = [
+const tabs: Tab[] = [
   {
-    name:"index",
-    title:"Home",
-    icon:"map-pin",
+    name: "index",
+    title: "Home",
+    icon: "home",
   },
   {
     name:"schedule",
@@ -27,46 +23,88 @@ const tabs:Tab[] = [
   {
     name:"explore",
     title:"Explore",
-    icon:"bell",
+    icon:"compass",
   },
   {
-    name:"profile",
-    title:"Profile",
-    icon:"user",
+    name: "profile",
+    title: "Profile",
+    icon: "user",
   },
-]
+];
+
+
+const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
+  return (
+    <View className={`bg-gray-100 pt-4 ${Platform.OS === 'ios' ? 'pb-2' : 'pb-1'}`}>
+      <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const label = options.tabBarLabel !== undefined
+            ? options.tabBarLabel
+            : options.title !== undefined
+            ? options.title
+            : route.name;
+
+          const isFocused = state.index === index;
+          const tab = tabs.find(t => t.name === route.name);
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+          return (
+            <TouchableOpacity
+              key={index}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              onPress={onPress}
+              className="flex-1 items-center"
+            >
+              <View className={`w-8 h-8 items-center justify-center mb-1 ${
+                isFocused ? 'bg-black/60 rounded-full' : ''
+              }`}>
+                <Feather
+                  name={tab?.icon}
+                  size={20}
+                  color={isFocused ? 'white' : '#8E8E93'}
+                />
+              </View>
+              <Text className={`text-xs font-medium text-center ${
+                isFocused ? 'text-black/60 font-semibold' : 'text-gray-500'
+              }`}>
+                {typeof label === 'string' ? label : ''}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
 
 export default function TabLayout() {
-
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: "black",
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      
-      {
-        tabs.map((tab, i)=>(
-          <Tabs.Screen
-            key={i}
-            name={tab.name}
-            options={{
-              title: tab.title,
-              tabBarShowLabel:false,
-              tabBarIcon: ({ color }) => <Feather size={24} name={tab.icon} color={color} />,
-              tabBarStyle:{paddingTop:10}
-            }}
-          />
-        ))
-      }
+      }}
+    >
+      {tabs.map((tab, i) => (
+        <Tabs.Screen
+          key={i}
+          name={tab.name}
+          options={{title: tab.title,}}
+        />
+      ))}
     </Tabs>
   );
 }
