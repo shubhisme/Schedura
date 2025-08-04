@@ -1,6 +1,7 @@
 import Box from '@/components/Box';
+import { Feather } from '@expo/vector-icons';
 import { useState } from 'react';
-import { TextInput, Text, View } from 'react-native';
+import { TextInput, Text, View, TouchableOpacity } from 'react-native';
 
 
 export default function HomeScreen() {
@@ -8,21 +9,21 @@ export default function HomeScreen() {
   const [text, setText] = useState('CHECK')
   return (
     <View className='flex flex-col h-screen w-screen'>
-      <View className='bg-purple-500 p-10 pt-20 w-full'>
-        <Text className='text-white text-5xl'>Schedura</Text>
-      </View>
-      <View className='bg-blue-500 h-1/2 flex items-center justify-center w-full'>
-        <Text className='text-white text-5xl'>Check</Text>
-      </View>
-      <View className='bg-purple-200 h-20 b-2 border-blacka'>
-        <TextInput
-          className='h-20 p-5 text-black'
-          defaultValue={text}
-          onChangeText={newText => setText(newText)}
-        />
-        <Text className='text-2xl'>
-          {text}
-        </Text>
+      <View className='bg-primary w-full p-10'>
+        <View>
+          <View>
+            <Text className='text-4xl font-bold'>Halls</Text>
+          </View>
+        </View>
+        <View className='flex flex-row gap-5 mt-5'>
+          <TextInput 
+            placeholder='Search for halls'
+            className='bg-white p-5 flex-1 rounded-xl text-lg'
+          />
+          <TouchableOpacity className='bg-white rounded-xl items-center justify-center aspect-square'>
+            <Feather name="search" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
