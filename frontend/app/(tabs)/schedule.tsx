@@ -1,110 +1,141 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState, FC } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import ParallaxScrollView from '@/components/ParallaxScrollView'; 
+import { ThemedText } from '@/components/ThemedText'; 
+import { ThemedView } from '@/components/ThemedView'; 
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function TabFourScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
-  );
+interface ScheduleEvent {
+  id: string;
+  title: string;
+  hallName: string;
+  time: string;
+  date: string;
+  status: 'Upcoming' | 'Completed' | 'Cancelled';
+  image: string;
 }
 
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+
+const scheduleData: ScheduleEvent[] = [
+  {
+    id: '1',
+    title: 'Wedding Reception',
+    hallName: 'The Grandeur Hall',
+    time: '4:00 PM - 10:00 PM',
+    date: 'Aug 10, 2025',
+    status: 'Upcoming',
+    image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=200&fit=crop',
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  {
+    id: '2',
+    title: 'Tech Conference 2025',
+    hallName: 'Crystal Palace',
+    time: '9:00 AM - 5:00 PM',
+    date: 'Aug 15, 2025',
+    status: 'Upcoming',
+    image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=200&h=200&fit=crop',
   },
-});
+  {
+    id: '3',
+    title: 'Annual Corporate Gala',
+    hallName: 'Royal Gardens',
+    time: '7:00 PM - 11:00 PM',
+    date: 'Jul 28, 2025',
+    status: 'Completed',
+    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop',
+  },
+    {
+    id: '4',
+    title: 'Birthday Celebration',
+    hallName: 'Sunset Pavilion',
+    time: '6:00 PM - 9:00 PM',
+    date: 'Aug 22, 2025',
+    status: 'Upcoming',
+    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop'
+  },
+];
+
+const ScheduleHeader: FC = () => (
+    <ThemedView className="px-4 pt-12 pb-4 bg-gray-900 ">
+        <ThemedText type="title" className="text-white">My Schedule</ThemedText>
+        <ThemedText className="text-gray-400 mt-1">Here are your upcoming events and bookings.</ThemedText>
+    </ThemedView>
+);
+
+const DateFilterPills: FC = () => {
+    const [activeFilter, setActiveFilter] = useState('Upcoming');
+    const filters = ['All', 'Upcoming', 'Completed', 'Cancelled'];
+
+    return (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10 }}>
+            {filters.map(filter => (
+                <TouchableOpacity
+                    key={filter}
+                    onPress={() => setActiveFilter(filter)}
+                    className={`px-5 py-2.5 rounded-full ${activeFilter === filter ? 'bg-purple-600' : 'bg-white'}`}
+                >
+                    <Text className={`font-medium ${activeFilter === filter ? 'text-white' : 'text-gray-700'}`}>{filter}</Text>
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    );
+};
+
+
+const ScheduleCard: FC<{ event: ScheduleEvent }> = ({ event }) => {
+    const getStatusStyles = () => {
+        switch(event.status) {
+            case 'Upcoming': return 'bg-blue-100 text-blue-800';
+            case 'Completed': return 'bg-green-100 text-green-800';
+            case 'Cancelled': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    return (
+        <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
+            <View className="flex-row gap-4">
+                <Image source={{ uri: event.image }} className="w-20 h-24 rounded-lg" />
+                <View className="flex-1">
+                    <Text className={`text-xs font-bold px-2 py-1 self-start rounded mb-2 ${getStatusStyles()}`}>{event.status}</Text>
+                    <Text className="text-lg font-bold text-gray-900">{event.title}</Text>
+                    <View className="flex-row items-center mt-1 gap-1.5">
+                        <Ionicons name="location-outline" size={14} color="#6b7280" />
+                        <Text className="text-gray-600 text-sm">{event.hallName}</Text>
+                    </View>
+                    <View className="flex-row items-center mt-1 gap-1.5">
+                        <Ionicons name="time-outline" size={14} color="#6b7280" />
+                        <Text className="text-gray-600 text-sm">{event.time}</Text>
+                    </View>
+                </View>
+            </View>
+        </View>
+    );
+};
+
+const ScheduleScreen: FC = () => {
+    return (
+        <ParallaxScrollView
+            headerBackgroundColor={{ light: '#111827', dark: '#111827' }}
+            headerImage={<ScheduleHeader />}
+        >
+            <ThemedView className="bg-gray-100">
+                <DateFilterPills />
+                <View className="p-4">
+                    {scheduleData.map(event => (
+                        <ScheduleCard key={event.id} event={event} />
+                    ))}
+                </View>
+            </ThemedView>
+        </ParallaxScrollView>
+    );
+}
+
+export default ScheduleScreen;

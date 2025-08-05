@@ -270,11 +270,11 @@ const App: FC = () => {
 
   useEffect(() => {
     const mockProfile: UserProfile = {
-        id: "1",
-        email: "user@example.com",
-        name: "Alex Johnson",
-        role: "user",
-        avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=56&h=56&fit=crop&crop=face",
+      id: "1",
+      email: "posture@gmail.com",
+      name: "Posture Man",
+      role: "user",
+      avatar_url: "",
     };
     setProfile(mockProfile);
 
