@@ -10,7 +10,6 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-// kept like this till all db is finished
 type Database = {
   public: {
     Tables: {
@@ -108,7 +107,7 @@ const recentBookings: Booking[] = [
       status: 'Confirmed',
       statusColor: '#16a34a',
       statusBg: '#dcfce7',
-      amount: '$450',
+      amount: 'Rs. 50,000',
       image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=100&h=100&fit=crop'
     },
     {
@@ -118,7 +117,7 @@ const recentBookings: Booking[] = [
       status: 'Pending',
       statusColor: '#ea580c',
       statusBg: '#fff7ed',
-      amount: '$750',
+      amount: 'Rs. 30,000',
       image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop'
     },
 ];
