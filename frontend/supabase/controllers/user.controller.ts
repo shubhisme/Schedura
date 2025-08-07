@@ -1,4 +1,4 @@
-import supabase from "../supabase"
+import { supabase } from "../supabase"
 
 export const updateUserInfo = async (user:any) => {
     console.log("UPDATING USERS")
