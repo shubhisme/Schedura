@@ -35,7 +35,7 @@ const tabs: Tab[] = [
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
-    <View className={`bg-gray-100 pt-4 ${Platform.OS === 'ios' ? 'pb-2' : 'pb-1'}`}>
+    <View className={`bg-gray-100 px-2 pt-4 ${Platform.OS === 'ios' ? 'pb-2' : 'pb-2'}`}>
       <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -66,22 +66,24 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              className="flex-1 items-center"
+              className={`flex-1 items-center `}
             >
-              <View className={`w-8 h-8 items-center justify-center mb-1 ${
-                isFocused ? 'bg-black/60 rounded-full' : ''
-              }`}>
-                <Feather
-                  name={tab?.icon}
-                  size={20}
-                  color={isFocused ? 'white' : '#8E8E93'}
-                />
+              <View className=''>
+                <View className={`w-8 h-8 mx-auto items-center justify-center mb-0.5 ${
+                  isFocused ? ' rounded-full' : ''
+                }`}>
+                  <Feather
+                    name={tab?.icon}
+                    size={25}
+                    color={isFocused ? 'black' : '#8E8E93'}
+                  />
+                </View>
+                <Text className={`text-sm font-medium text-center ${
+                  isFocused ? 'text-black font-semibold' : 'text-gray-500/90'
+                }`}>
+                  {typeof label === 'string' ? label : ''}
+                </Text>
               </View>
-              <Text className={`text-xs font-medium text-center ${
-                isFocused ? 'text-black/60 font-semibold' : 'text-gray-500'
-              }`}>
-                {typeof label === 'string' ? label : ''}
-              </Text>
             </TouchableOpacity>
           );
         })}

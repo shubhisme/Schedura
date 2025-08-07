@@ -10,6 +10,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+
 type Database = {
   public: {
     Tables: {
@@ -66,7 +67,7 @@ const featuredHalls: Hall[] = [
     price: 80000,
     rating: 4.8,
     image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop',
-    capacity: '200-300 guests',
+    capacity: '300',
     isNew: true,
   },
   {
@@ -76,7 +77,7 @@ const featuredHalls: Hall[] = [
     price: 350000,
     rating: 4.6,
     image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=300&fit=crop',
-    capacity: '100-150 guests',
+    capacity: '150',
     isNew: false,
   },
   {
@@ -86,7 +87,7 @@ const featuredHalls: Hall[] = [
     price: 75000,
     rating: 4.9,
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop',
-    capacity: '300-500 guests',
+    capacity: '500',
     isNew: false,
   },
 ];
@@ -124,25 +125,25 @@ const recentBookings: Booking[] = [
 
 
 const Header: FC<{ profile: UserProfile | null }> = ({ profile }) => (
-  <View className="flex-row justify-between items-center px-4 pt-6 pb-4 mt-6">
+  <View className="flex-row justify-between items-center px-6 pt-6 pb-4 mt-6">
     <View>
-      <Text className="text-white text-2xl font-bold">Find Your Perfect Venue</Text>
+      <Text className="text-black text-3xl font-bold">Spaces</Text>
     </View>
   </View>
 );
 
 const SearchBar: FC = () => (
-  <View className="flex-row gap-3 px-4 mt-4">
-    <View className="flex-1 flex-row items-center bg-gray-800 rounded-2xl px-4">
-      <Ionicons name="search" size={20} color="#9ca3af" />
+  <View className="flex-row gap-3 px-6 mt-4">
+    <View className="flex-1 flex-row items-center bg-white rounded-2xl px-6">
+      <Ionicons name="search" size={20} color="#9ca3af" className='-mt-1'/>
       <TextInput
         placeholder="Search venues, locations..."
         placeholderTextColor="#9ca3af"
-        className="flex-1 text-white text-base py-3 ml-2"
+        className="flex-1 text-black text-lg py-4 ml-2"
       />
-    </View>
-    <TouchableOpacity className="bg-purple-600 p-3 rounded-2xl justify-center items-center">
-      <Ionicons name="options-outline" size={24} color="#fff" />
+   </View>
+    <TouchableOpacity className="bg-white aspect-square p-3 rounded-2xl justify-center items-center">
+      <Ionicons name="options-outline" size={24} color="#000" />
     </TouchableOpacity>
   </View>
 );
@@ -156,10 +157,10 @@ const CategoryPills: FC = () => {
         <TouchableOpacity
           key={category.id}
           onPress={() => setActiveCategory(index)}
-          className={`flex-row items-center gap-2 px-5 py-3 rounded-full ${index === activeCategory ? 'bg-purple-600' : 'bg-gray-800'}`}
+          className={`flex-row justify-center items-center gap-2 px-5 py-3 rounded-full ${index === activeCategory ? 'bg-black' : 'bg-white'}`}
         >
-          <Ionicons name={category.icon} size={20} color={index === activeCategory ? '#fff' : '#d1d5db'} />
-          <Text className={`text-sm font-medium ${index === activeCategory ? 'text-white' : 'text-gray-400'}`}>
+          <Ionicons name={category.icon} size={20} color={index === activeCategory ? '#fff' : '#000'}  />
+          <Text className={`text-md mt-1 ${index === activeCategory ? 'text-white' : 'text-black'}`}>
             {category.name}
           </Text>
         </TouchableOpacity>
@@ -179,30 +180,23 @@ const VenueCard: FC<{ hall: Hall }> = ({ hall }) => {
       <Image source={{ uri: hall.image }} className="absolute w-full h-full" />
       <View className="absolute inset-0 bg-black/30" />
 
-      <TouchableOpacity onPress={toggleLike} className="absolute top-4 right-4 p-2 bg-black/40 rounded-full">
-        <Ionicons
-          name={isLiked ? "heart" : "heart-outline"}
-          size={22}
-          color={isLiked ? "#ef4444" : "#fff"}
-        />
-      </TouchableOpacity>
-
-      <View className="absolute top-4 left-4 flex-row items-center gap-1 bg-black/50 px-3 py-1 rounded-full">
+      <View className="absolute top-4 left-4 flex-row items-center gap-1 bg-white px-3 py-1 rounded-full">
         <Ionicons name="star" size={14} color="#facc15" />
-        <Text className="text-white text-sm font-medium">{hall.rating}</Text>
+        <Text className="text-black mt-1">{hall.rating}</Text>
       </View>
 
-      <View className="absolute bottom-0 left-0 right-0 p-4">
-        <Text className="text-white text-xl font-bold mb-1">{hall.name}</Text>
-        <View className="flex-row items-center gap-1 mb-2">
-          <Ionicons name="location-outline" size={14} color="#d1d5db" />
-          <Text className="text-gray-300 text-sm">{hall.location}</Text>
-        </View>
-        <View className="flex-row items-center justify-between">
-          <Text className="text-white text-2xl font-bold">
-            Rs.{hall.price}<Text className="text-sm font-normal text-gray-300">/day</Text>
-          </Text>
-          <Text className="text-gray-300 text-sm">{hall.capacity}</Text>
+      <View className="absolute bottom-0 left-0 right-0 p-4 pb-2">
+        <Text className="text-white text-2xl font-bold mb-1">{hall.name}</Text>
+        
+        <View className='flex-row w-full gap-5'>
+          <View className="flex-row items-center gap-1 mb-1">
+            <Ionicons name="location" size={20} color="white" className='-mt-1.5'/>
+            <Text className="text-gray-300 text-lg ">{hall.location}</Text>
+          </View>
+          <View className='flex-row items-center gap-1 mb-1'>
+            <Ionicons name="people" size={20} color="white" className='-mt-1.5'/>
+            <Text className="text-gray-300 text-lg ">{hall.capacity}</Text>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -231,7 +225,7 @@ const HomePage: FC<{ profile: UserProfile | null }> = ({ profile }) => {
     <SafeAreaView className="flex-1 bg-gray-100">
       <StatusBar barStyle="light-content" backgroundColor="#111827" />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className="bg-gray-900 rounded-b-3xl pb-7">
+        <View className="bg-primary rounded-b-3xl pb-7">
           <Header profile={profile} />
           <SearchBar />
           <CategoryPills />
@@ -239,12 +233,12 @@ const HomePage: FC<{ profile: UserProfile | null }> = ({ profile }) => {
 
         <View className="p-4 pt-6">
           <View className="flex-row justify-between items-center mb-6">
-            <Text className="text-2xl font-bold text-gray-900">Featured Venues</Text>
+            <Text className="text-2xl px-2 font-bold text-gray-900">Featured Venues</Text>
             <TouchableOpacity>
-              <Text className="text-purple-600 font-medium">View All</Text>
+              <Text className="text-black font-medium">View All</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-4 pb-4">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-6 pb-4">
             {featuredHalls.map((hall) => <VenueCard key={hall.id} hall={hall} />)}
           </ScrollView>
 
