@@ -1,4 +1,4 @@
-import React, { useState, FC } from 'react';
+import React, { useState, FC, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,21 @@ import {
   Image,
   ScrollView,
   Dimensions,
+  SafeAreaView,
+  StatusBar,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ParallaxScrollView from '@/components/ParallaxScrollView'; 
-import { ThemedText } from '@/components/ThemedText'; 
-import { ThemedView } from '@/components/ThemedView'; 
+// Assuming these components exist and are styled appropriately
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 
 const { width } = Dimensions.get('window');
+
+// --- Type Definitions ---
+type EventStatus = 'Upcoming' | 'Completed' | 'Cancelled';
+type EventCategory = 'Wedding' | 'Conference' | 'Corporate' | 'Birthday' | 'Social';
 
 interface ScheduleEvent {
   id: string;
@@ -20,12 +28,13 @@ interface ScheduleEvent {
   hallName: string;
   time: string;
   date: string;
-  status: 'Upcoming' | 'Completed' | 'Cancelled';
+  status: EventStatus;
   image: string;
-  category: 'Wedding' | 'Conference' | 'Corporate' | 'Birthday';
+  category: EventCategory;
   attendees?: number;
 }
 
+// --- Data ---
 const scheduleData: ScheduleEvent[] = [
   {
     id: '1',
@@ -60,7 +69,7 @@ const scheduleData: ScheduleEvent[] = [
     category: 'Corporate',
     attendees: 200,
   },
-  {
+    {
     id: '4',
     title: 'Birthday Celebration',
     hallName: 'Sunset Pavilion',
@@ -71,7 +80,70 @@ const scheduleData: ScheduleEvent[] = [
     category: 'Birthday',
     attendees: 50,
   },
+   {
+    id: '5',
+    title: 'Product Launch Event',
+    hallName: 'Crystal Palace',
+    time: '2:00 PM - 5:00 PM',
+    date: 'Aug 15, 2025',
+    status: 'Cancelled',
+    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=200&h=200&fit=crop',
+    category: 'Corporate',
+    attendees: 120,
+  },
 ];
+
+
+// --- Reusable Components ---
+
+const FormInput: FC<{ icon: keyof typeof Ionicons.glyphMap; label: string; placeholder: string; value: string; onChangeText: (text: string) => void; keyboardType?: 'default' | 'numeric' }> = 
+({ icon, label, placeholder, value, onChangeText, keyboardType = 'default' }) => (
+    <View className="mb-4">
+        <Text className="text-gray-600 font-medium mb-2">{label}</Text>
+        <View className="flex-row items-center bg-gray-100 rounded-lg px-4">
+            <Ionicons name={icon} size={20} color="#9ca3af" />
+            <TextInput
+                placeholder={placeholder}
+                placeholderTextColor="#9ca3af"
+                value={value}
+                onChangeText={onChangeText}
+                keyboardType={keyboardType}
+                className="flex-1 text-base py-3 ml-3 text-gray-900"
+            />
+        </View>
+    </View>
+);
+
+const CategorySelector: FC<{ selected: EventCategory, onSelect: (category: EventCategory) => void }> = ({ selected, onSelect }) => {
+    const categories: { name: EventCategory, icon: keyof typeof Ionicons.glyphMap }[] = [
+        { name: 'Wedding', icon: 'heart-outline' },
+        { name: 'Corporate', icon: 'briefcase-outline' },
+        { name: 'Birthday', icon: 'gift-outline' },
+        { name: 'Conference', icon: 'people-outline' },
+        { name: 'Social', icon: 'chatbubbles-outline' },
+    ];
+
+    return (
+        <View className="mb-4">
+            <Text className="text-gray-600 font-medium mb-2">Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+                {categories.map(cat => (
+                    <TouchableOpacity
+                        key={cat.name}
+                        onPress={() => onSelect(cat.name)}
+                        className={`py-3 px-4 rounded-lg border-2 ${selected === cat.name ? 'bg-purple-100 border-purple-600' : 'bg-gray-100 border-gray-200'}`}
+                    >
+                        <View className="flex-row items-center gap-2">
+                            <Ionicons name={cat.icon} size={20} color={selected === cat.name ? '#7c3aed' : '#6b7280'} />
+                            <Text className={`font-semibold ${selected === cat.name ? 'text-purple-600' : 'text-gray-700'}`}>{cat.name}</Text>
+                        </View>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+};
+
 
 const ScheduleHeader: FC = () => (
   <ThemedView className="px-6 pt-16 pb-8 relative overflow-hidden">
@@ -109,17 +181,16 @@ const ScheduleHeader: FC = () => (
 );
 
 
-const DateFilterPills: FC = () => {
-    const [activeFilter, setActiveFilter] = useState('Upcoming');
-    const filters = ['All', 'Upcoming', 'Completed', 'Cancelled'];
+const DateFilterPills: FC<{ activeFilter: string, onFilterChange: (filter: EventStatus | 'All') => void }> = ({ activeFilter, onFilterChange }) => {
+    const filters: (EventStatus | 'All')[] = ['All', 'Upcoming', 'Completed', 'Cancelled'];
 
     return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10 }}>
             {filters.map(filter => (
                 <TouchableOpacity
                     key={filter}
-                    onPress={() => setActiveFilter(filter)}
-                    className={`px-5 py-2.5 rounded-full ${activeFilter === filter ? 'bg-purple-600' : 'bg-white'}`}
+                    onPress={() => onFilterChange(filter)}
+                    className={`px-5 py-2.5 rounded-full ${activeFilter === filter ? 'bg-purple-600' : 'bg-white shadow-sm'}`}
                 >
                     <Text className={`font-medium ${activeFilter === filter ? 'text-white' : 'text-gray-700'}`}>{filter}</Text>
                 </TouchableOpacity>
@@ -130,37 +201,31 @@ const DateFilterPills: FC = () => {
 
 
 const ScheduleCard: FC<{ event: ScheduleEvent }> = ({ event }) => {
-    const getStatusStyles = () => {
+    const statusStyle = useMemo(() => {
         switch(event.status) {
-            case 'Upcoming': return 'bg-blue-100 text-blue-800';
-            case 'Completed': return 'bg-green-100 text-green-800';
-            case 'Cancelled': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'Upcoming': return { container: 'bg-blue-50 border-blue-200', text: 'text-blue-800' };
+            case 'Completed': return { container: 'bg-green-50 border-green-200', text: 'text-green-800' };
+            case 'Cancelled': return { container: 'bg-red-50 border-red-200', text: 'text-red-800' };
+            default: return { container: 'bg-gray-50 border-gray-200', text: 'text-gray-800' };
         }
-    }
+    }, [event.status]);
 
     return (
-        <View className="bg-white rounded-2xl p-4 mb-4 shadow-sm">
-            <View className="flex-row gap-4">
+        <View className={`bg-white rounded-2xl p-4 border-l-4 ${statusStyle.container} mb-4`}>
+            <View className="flex-row gap-4 items-center">
                 <Image source={{ uri: event.image }} className="w-20 h-24 rounded-lg" />
                 <View className="flex-1">
-                    <Text className={`text-xs font-bold px-2 py-1 self-start rounded mb-2 ${getStatusStyles()}`}>{event.status}</Text>
-                    <Text className="text-lg font-bold text-gray-900">{event.title}</Text>
-                    <View className="flex-row items-center mt-1 gap-1.5">
-                        <Ionicons name="location-outline" size={14} color="#6b7280" />
-                        <Text className="text-gray-600 text-sm">{event.hallName}</Text>
-                    </View>
-                    <View className="flex-row items-center mt-1 gap-1.5">
-                        <Ionicons name="time-outline" size={14} color="#6b7280" />
-                        <Text className="text-gray-600 text-sm">{event.time}</Text>
-                    </View>
+                    <Text className="text-lg font-bold text-gray-900 mb-1">{event.title}</Text>
+                    <View className="flex-row items-center mb-1 gap-1.5"><Ionicons name="location-outline" size={14} color="#6b7280" /><Text className="text-gray-600 text-sm">{event.hallName}</Text></View>
+                    <View className="flex-row items-center gap-1.5"><Ionicons name="time-outline" size={14} color="#6b7280" /><Text className="text-gray-600 text-sm">{event.time}</Text></View>
                 </View>
+                <Text className={`absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full ${statusStyle.container} ${statusStyle.text}`}>{event.status}</Text>
             </View>
         </View>
     );
 };
 
-const EmptyState: FC = () => (
+const EmptyState: FC<{ onBook: () => void }> = ({ onBook }) => (
   <View className="items-center justify-center py-16">
     <View className="bg-gray-100 p-6 rounded-full mb-4">
       <Ionicons name="calendar-outline" size={32} color="#9ca3af" />
@@ -169,63 +234,154 @@ const EmptyState: FC = () => (
     <Text className="text-gray-400 text-sm text-center px-8">
       You don't have any events scheduled yet. Create your first booking to get started.
     </Text>
-    <TouchableOpacity className="bg-purple-600 px-6 py-3 rounded-full mt-6">
+    <TouchableOpacity onPress={onBook} className="bg-purple-600 px-6 py-3 rounded-full mt-6">
       <Text className="text-white font-semibold">Book New Event</Text>
     </TouchableOpacity>
   </View>
 );
 
-const ScheduleScreen: FC = () => {
-  const [activeFilter, setActiveFilter] = useState('Upcoming');
+const ScheduleScreen: FC<{ onNavigateToCreate: () => void }> = ({ onNavigateToCreate }) => {
+  const [activeFilter, setActiveFilter] = useState<EventStatus | 'All'>('Upcoming');
   
-  const filteredData = activeFilter === 'All' 
+  const filteredData = useMemo(() => activeFilter === 'All' 
     ? scheduleData 
-    : scheduleData.filter(event => event.status === activeFilter);
+    : scheduleData.filter(event => event.status === activeFilter), [activeFilter]);
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#7c3aed', dark: '#7c3aed' }}
-      headerImage={<ScheduleHeader />}
-    >
-      <ThemedView className="bg-gray-50 ">
-        <DateFilterPills />
-        
-        <View className="px-6 py-4 pb-16">
-          {filteredData.length > 0 ? (
-            <>
-              <View className="flex-row items-center justify-between mb-6">
-                <Text className="text-gray-900 text-lg font-bold">
-                  {filteredData.length} {activeFilter.toLowerCase()} event{filteredData.length !== 1 ? 's' : ''}
-                </Text>
-                <TouchableOpacity className="flex-row items-center gap-1">
-                  <Text className="text-purple-600 text-sm font-medium">Sort by</Text>
-                  <Ionicons name="chevron-down-outline" size={16} color="#7c3aed" />
-                </TouchableOpacity>
-              </View>
-              
-              {filteredData.map(event => (
-                <ScheduleCard key={event.id} event={event} />
-              ))}
-            </>
-          ) : (
-            <EmptyState />
-          )}
-        </View>
-        <TouchableOpacity 
-          className="absolute -bottom-4 right-32 bg-purple-600 w-16 h-16 rounded-full items-center justify-center"
-          style={{
-            shadowColor: '#7c3aed',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }}
+    <View className="flex-1 bg-gray-50">
+        <ParallaxScrollView
+            headerBackgroundColor={{ light: '#7c3aed', dark: '#7c3aed' }}
+            headerImage={<ScheduleHeader />}
         >
-          <Ionicons name="add" size={28} color="white" />
+            <ThemedView className="bg-gray-50">
+                <DateFilterPills activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+                
+                <View className="px-6 py-4 pb-24">
+                    {filteredData.length > 0 ? (
+                        <>
+                            <View className="flex-row items-center justify-between mb-6">
+                                <Text className="text-gray-900 text-lg font-bold">
+                                    {filteredData.length} {activeFilter.toLowerCase()} event{filteredData.length !== 1 ? 's' : ''}
+                                </Text>
+                                <TouchableOpacity className="flex-row items-center gap-1">
+                                    <Text className="text-purple-600 text-sm font-medium">Sort by</Text>
+                                    <Ionicons name="chevron-down-outline" size={16} color="#7c3aed" />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            {filteredData.map(event => (
+                                <ScheduleCard key={event.id} event={event} />
+                            ))}
+                        </>
+                    ) : (
+                        <EmptyState onBook={onNavigateToCreate} />
+                    )}
+                </View>
+            </ThemedView>
+        </ParallaxScrollView>
+        <TouchableOpacity 
+            onPress={onNavigateToCreate}
+            className="absolute bottom-6 right-6 bg-purple-600 w-16 h-16 rounded-full items-center justify-center"
+            style={{
+                shadowColor: '#7c3aed',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+            }}
+        >
+            <Ionicons name="add" size={28} color="white" />
         </TouchableOpacity>
-      </ThemedView>
-    </ParallaxScrollView>
+    </View>
   );
 };
 
-export default ScheduleScreen;
+const CreateEventScreen: FC<{ onCancel: () => void }> = ({ onCancel }) => {
+    const [formState, setFormState] = useState({
+        title: '',
+        hallName: '',
+        date: '',
+        time: '',
+        category: 'Wedding' as EventCategory,
+        attendees: '',
+    });
+
+    const handleInputChange = (field: keyof typeof formState, value: string | EventCategory) => {
+        setFormState(prev => ({ ...prev, [field]: value }));
+    };
+
+    return (
+        <SafeAreaView className="flex-1 bg-white">
+            <StatusBar barStyle="dark-content" />
+            <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
+                <TouchableOpacity onPress={onCancel} className="p-2">
+                    <Ionicons name="close-outline" size={28} color="#1f2937" />
+                </TouchableOpacity>
+                <Text className="text-xl font-bold text-gray-900">Create New Event</Text>
+                <View className="w-10" />
+            </View>
+            <ScrollView contentContainerStyle={{ padding: 20 }}>
+                <FormInput
+                    label="Event Title"
+                    icon="text-outline"
+                    placeholder="e.g., John & Jane's Wedding"
+                    value={formState.title}
+                    onChangeText={(text) => handleInputChange('title', text)}
+                />
+                <FormInput
+                    label="Venue / Hall Name"
+                    icon="business-outline"
+                    placeholder="e.g., The Grandeur Hall"
+                    value={formState.hallName}
+                    onChangeText={(text) => handleInputChange('hallName', text)}
+                />
+                 <View className="flex-row gap-4">
+                    <View className="flex-1">
+                        <FormInput
+                            label="Date"
+                            icon="calendar-outline"
+                            placeholder="e.g., Aug 10, 2025"
+                            value={formState.date}
+                            onChangeText={(text) => handleInputChange('date', text)}
+                        />
+                    </View>
+                    <View className="flex-1">
+                        <FormInput
+                            label="Time"
+                            icon="time-outline"
+                            placeholder="e.g., 4:00 PM"
+                            value={formState.time}
+                            onChangeText={(text) => handleInputChange('time', text)}
+                        />
+                    </View>
+                </View>
+                <CategorySelector selected={formState.category} onSelect={(cat) => handleInputChange('category', cat)} />
+                <FormInput
+                    label="Number of Attendees"
+                    icon="people-outline"
+                    placeholder="e.g., 150"
+                    value={formState.attendees}
+                    onChangeText={(text) => handleInputChange('attendees', text)}
+                    keyboardType="numeric"
+                />
+                <TouchableOpacity className="bg-purple-600 py-4 rounded-lg mt-6">
+                    <Text className="text-white text-center font-bold text-lg">Create Event</Text>
+                </TouchableOpacity>
+            </ScrollView>
+        </SafeAreaView>
+    );
+};
+
+
+const App: FC = () => {
+    const [isCreating, setIsCreating] = useState(false);
+
+    if (isCreating) {
+        return <CreateEventScreen onCancel={() => setIsCreating(false)} />;
+    }
+
+    return <ScheduleScreen onNavigateToCreate={() => setIsCreating(true)} />;
+}
+
+
+export default App;
