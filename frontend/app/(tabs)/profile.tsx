@@ -10,6 +10,7 @@ import {
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { supabase } from '../../supabase/supabase';
 
 type Database = {
   public: {
@@ -107,18 +108,31 @@ const App: FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-  
-    const mockProfile: UserProfile = {
-        id: "1",
-        email: "posture@gmail.com",
-        name: "Posture Man",
-        role: "user",
-        avatar_url: "",
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        
+        const { data, error } = await supabase 
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching profile:', error);
+        } else {
+          setProfile(data);
+        }
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    setProfile(mockProfile);
   }, []);
-
-
+  console.log("profile", profile);
   return <ProfilePage profile={profile} />;
 }
 
