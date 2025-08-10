@@ -9,17 +9,14 @@ import {
   SafeAreaView,
   StatusBar,
   TextInput,
-  RefreshControl,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import CreateEventScreen from '../CreateEventScreen';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 type EventStatus = 'Upcoming' | 'Completed' | 'Cancelled';
 type EventCategory = 'Wedding' | 'Conference' | 'Corporate' | 'Birthday' | 'Social';
@@ -34,8 +31,6 @@ interface ScheduleEvent {
   image: string;
   category: EventCategory;
   attendees?: number;
-  priority?: 'High' | 'Medium' | 'Low'; // Added priority
-  description?: string; // Added description
 }
 
 const scheduleData: ScheduleEvent[] = [
@@ -49,8 +44,6 @@ const scheduleData: ScheduleEvent[] = [
     image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=200&fit=crop',
     category: 'Wedding',
     attendees: 150,
-    priority: 'High',
-    description: 'Elegant wedding reception with dinner and dancing',
   },
   {
     id: '2',
@@ -62,8 +55,6 @@ const scheduleData: ScheduleEvent[] = [
     image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=200&h=200&fit=crop',
     category: 'Conference',
     attendees: 300,
-    priority: 'Medium',
-    description: 'Annual technology conference with keynote speakers',
   },
   {
     id: '3',
@@ -75,10 +66,8 @@ const scheduleData: ScheduleEvent[] = [
     image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop',
     category: 'Corporate',
     attendees: 200,
-    priority: 'High',
-    description: 'Formal corporate gala with awards ceremony',
   },
-  {
+    {
     id: '4',
     title: 'Birthday Celebration',
     hallName: 'Sunset Pavilion',
@@ -88,10 +77,8 @@ const scheduleData: ScheduleEvent[] = [
     image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop',
     category: 'Birthday',
     attendees: 50,
-    priority: 'Low',
-    description: 'Intimate birthday party with close friends and family',
   },
-  {
+   {
     id: '5',
     title: 'Product Launch Event',
     hallName: 'Crystal Palace',
@@ -101,490 +88,172 @@ const scheduleData: ScheduleEvent[] = [
     image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=200&h=200&fit=crop',
     category: 'Corporate',
     attendees: 120,
-    priority: 'Medium',
-    description: 'Product launch with media and stakeholders',
   },
 ];
 
-// Enhanced Header Component
-const ScheduleHeader: FC<{ 
-  searchQuery: string, 
-  onSearchChange: (query: string) => void,
-  upcomingCount: number,
-  thisWeekCount: number 
-}> = ({ searchQuery, onSearchChange, upcomingCount, thisWeekCount }) => (
-  <LinearGradient
-    colors={['#E9F0E9', '#D8E8D8']} // Keeping the vibrant gradient for the header
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    className="px-6 pt-16 pb-8 relative overflow-hidden"
-  >
-    {/* Decorative Elements */}
-    <View className="absolute -top-10 -right-10 w-40 h-40 bg-black/10 rounded-full" />
-    <View className="absolute top-20 -left-8 w-24 h-24 bg-black/5 rounded-full" />
-    <View className="absolute bottom-10 right-20 w-16 h-16 bg-black/10 rounded-full" />
+
+
+const ScheduleHeader: FC = () => (
+  <ThemedView className="px-6 pt-16 pb-8 relative overflow-hidden">
+    <View className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
+    <View className="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-5 rounded-full" />
+    <View className="absolute top-20 -left-8 w-20 h-20 bg-white opacity-10 rounded-full" />
     
     <View className="relative z-10">
-      {/* Header Title Section */}
-      <View className="flex-row items-center justify-between mb-6">
-        <View className="flex-1">
-          <Text className="text-black text-3xl font-bold mb-2">
+      <View className="flex-row items-center justify-between mb-4">
+        <View>
+          <ThemedText type="title" className="text-white text-3xl font-bold mb-2">
             My Schedule
-          </Text>
-          <Text className="text-black/80 text-base">
-            Manage your events and bookings
-          </Text>
+          </ThemedText>
+          <ThemedText className="text-purple-200 text-base">
+            Manage your upcoming events and bookings
+          </ThemedText>
         </View>
-        
-        <View className="flex-row gap-3">
-          <TouchableOpacity className="bg-black/20 p-3 rounded-full backdrop-blur-sm">
-            <Ionicons name="notifications-outline" size={22} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity className="bg-black/20 p-3 rounded-full backdrop-blur-sm">
-            <Ionicons name="calendar-outline" size={22} color="black" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Search Bar */}
-      <View className="bg-black/20 backdrop-blur-sm rounded-2xl px-4 py-3 mb-6 flex-row items-center">
-        <Ionicons name="search-outline" size={20} color="black" />
-        <TextInput
-          value={searchQuery}
-          onChangeText={onSearchChange}
-          placeholder="Search events..."
-          placeholderTextColor="rgba(255,255,255,0.7)"
-          className="flex-1 ml-3 text-black text-base"
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => onSearchChange('')}>
-            <Ionicons name="close-circle" size={20} color="black" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+          <Ionicons name="calendar-outline" size={24} color="white" />
+        </TouchableOpacity>
       </View>
       
-      {/* Stats Cards */}
-      <View className="flex-row gap-4">
-        <View className="bg-black/15 backdrop-blur-sm rounded-2xl px-5 py-4 flex-1">
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-black/70 text-xs font-semibold uppercase tracking-wide">
-                Upcoming
-              </Text>
-              <Text className="text-black text-2xl font-bold mt-1">
-                {upcomingCount}
-              </Text>
-            </View>
-            <View className="bg-black/20 p-2 rounded-full">
-              <Ionicons name="calendar" size={16} color="black" />
-            </View>
-          </View>
+      <View className="flex-row gap-4 mt-6">
+        <View className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 flex-1">
+          <Text className="text-white/60 text-xs font-medium">UPCOMING</Text>
+          <Text className="text-white text-xl font-bold">3</Text>
         </View>
-        
-        <View className="bg-black/15 backdrop-blur-sm rounded-2xl px-5 py-4 flex-1">
-          <View className="flex-row items-center justify-between">
-            <View>
-              <Text className="text-black/70 text-xs font-semibold uppercase tracking-wide">
-                This Week
-              </Text>
-              <Text className="text-black text-2xl font-bold mt-1">
-                {thisWeekCount}
-              </Text>
-            </View>
-            <View className="bg-black/20 p-2 rounded-full">
-              <Ionicons name="time" size={16} color="black" />
-            </View>
-          </View>
+        <View className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 flex-1">
+          <Text className="text-white/60 text-xs font-medium">THIS WEEK</Text>
+          <Text className="text-white text-xl font-bold">2</Text>
         </View>
       </View>
     </View>
-  </LinearGradient>
+  </ThemedView>
 );
 
-// Enhanced Filter Pills
-const DateFilterPills: FC<{ 
-  activeFilter: string, 
-  onFilterChange: (filter: EventStatus | 'All') => void 
-}> = ({ activeFilter, onFilterChange }) => {
-  const filters: (EventStatus | 'All')[] = ['All', 'Upcoming', 'Completed', 'Cancelled'];
-  
-  return (
-    <ScrollView 
-      horizontal 
-      showsHorizontalScrollIndicator={false} 
-      contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 16 }}
-    >
-      <View className="flex-row gap-3">
-        {filters.map(filter => (
-          <TouchableOpacity
-            key={filter}
-            onPress={() => onFilterChange(filter)}
-            className={`px-6 py-3 rounded-full border ${
-              activeFilter === filter 
-                ? 'bg-black border-black' 
-                : 'bg-white border-gray-200' // Inactive pills remain white with a subtle border
-            }`}
-            style={{
-              shadowColor: activeFilter === filter ? '#7c3aed' : '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: activeFilter === filter ? 0.2 : 0.05, // Reduced shadow for inactive
-              shadowRadius: 4,
-              elevation: 3,
-            }}
-          >
-            <Text className={`font-semibold ${
-              activeFilter === filter ? 'text-white' : 'text-gray-700'
-            }`}>
-              {filter}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
-  );
+
+const DateFilterPills: FC<{ activeFilter: string, onFilterChange: (filter: EventStatus | 'All') => void }> = ({ activeFilter, onFilterChange }) => {
+    const filters: (EventStatus | 'All')[] = ['All', 'Upcoming', 'Completed', 'Cancelled'];
+
+    return (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10 }}>
+            {filters.map(filter => (
+                <TouchableOpacity
+                    key={filter}
+                    onPress={() => onFilterChange(filter)}
+                    className={`px-5 py-2.5 rounded-full ${activeFilter === filter ? 'bg-purple-600' : 'bg-white shadow-sm'}`}
+                >
+                    <Text className={`font-medium ${activeFilter === filter ? 'text-white' : 'text-gray-700'}`}>{filter}</Text>
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
+    );
 };
 
-// Enhanced Schedule Card
-const ScheduleCard: FC<{ 
-  event: ScheduleEvent, 
-  onPress: () => void,
-  onEdit: () => void,
-  onDelete: () => void 
-}> = ({ event, onPress, onEdit, onDelete }) => {
-  const [showActions, setShowActions] = useState(false);
-  
-  const statusConfig = useMemo(() => {
-    switch(event.status) {
-      case 'Upcoming': 
-        return { 
-          bg: 'bg-blue-50', 
-          border: 'border-l-blue-500', 
-          text: 'text-blue-700',
-          icon: 'time-outline' as const,
-          iconColor: '#3b82f6'
-        };
-      case 'Completed': 
-        return { 
-          bg: 'bg-green-50', 
-          border: 'border-l-green-500', 
-          text: 'text-green-700',
-          icon: 'checkmark-circle-outline' as const,
-          iconColor: '#10b981'
-        };
-      case 'Cancelled': 
-        return { 
-          bg: 'bg-red-50', 
-          border: 'border-l-red-500', 
-          text: 'text-red-700',
-          icon: 'close-circle-outline' as const,
-          iconColor: '#ef4444'
-        };
-      default: 
-        return { 
-          bg: 'bg-gray-50', 
-          border: 'border-l-gray-500', 
-          text: 'text-gray-700',
-          icon: 'calendar-outline' as const,
-          iconColor: '#6b7280'
-        };
-    }
-  }, [event.status]);
 
-  const priorityColor = useMemo(() => {
-    switch(event.priority) {
-      case 'High': return '#ef4444';
-      case 'Medium': return '#f59e0b';
-      case 'Low': return '#10b981';
-      default: return '#6b7280';
-    }
-  }, [event.priority]);
+const ScheduleCard: FC<{ event: ScheduleEvent }> = ({ event }) => {
+    const statusStyle = useMemo(() => {
+        switch(event.status) {
+            case 'Upcoming': return { container: 'bg-blue-50 border-blue-200', text: 'text-blue-800' };
+            case 'Completed': return { container: 'bg-green-50 border-green-200', text: 'text-green-800' };
+            case 'Cancelled': return { container: 'bg-red-50 border-red-200', text: 'text-red-800' };
+            default: return { container: 'bg-gray-50 border-gray-200', text: 'text-gray-800' };
+        }
+    }, [event.status]);
 
-  return (
-    <TouchableOpacity 
-      onPress={onPress}
-      onLongPress={() => setShowActions(!showActions)}
-      className={`bg-white rounded-2xl p-5 mb-4 ${statusConfig.border} border-l-4`}
-      style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-      }}
-    >
-      <View className="flex-row gap-4">
-        {/* Event Image */}
-        <View className="relative">
-          <Image 
-            source={{ uri: event.image }} 
-            className="w-20 h-20 rounded-xl"
-          />
-          {event.priority && (
-            <View 
-              className="absolute -top-1 -right-1 w-4 h-4 rounded-full"
-              style={{ backgroundColor: priorityColor }}
-            />
-          )}
+    return (
+        <View className={`bg-white rounded-2xl p-4 border-l-4 ${statusStyle.container} mb-4`}>
+            <View className="flex-row gap-4 items-center">
+                <Image source={{ uri: event.image }} className="w-20 h-24 rounded-lg" />
+                <View className="flex-1">
+                    <Text className="text-lg font-bold text-gray-900 mb-1">{event.title}</Text>
+                    <View className="flex-row items-center mb-1 gap-1.5"><Ionicons name="location-outline" size={14} color="#6b7280" /><Text className="text-gray-600 text-sm">{event.hallName}</Text></View>
+                    <View className="flex-row items-center gap-1.5"><Ionicons name="time-outline" size={14} color="#6b7280" /><Text className="text-gray-600 text-sm">{event.time}</Text></View>
+                </View>
+                <Text className={`absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full ${statusStyle.container} ${statusStyle.text}`}>{event.status}</Text>
+            </View>
         </View>
-        
-        {/* Event Details */}
-        <View className="flex-1">
-          <View className="flex-row items-start justify-between mb-2">
-            <Text className="text-lg font-bold text-gray-900 flex-1 pr-2">
-              {event.title}
-            </Text>
-            <View className={`px-2 py-1 rounded-full ${statusConfig.bg} flex-row items-center`}>
-              <Ionicons name={statusConfig.icon} size={12} color={statusConfig.iconColor} />
-              <Text className={`text-xs font-semibold ml-1 ${statusConfig.text}`}>
-                {event.status}
-              </Text>
-            </View>
-          </View>
-          
-          <View className="space-y-1">
-            <View className="flex-row items-center">
-              <Ionicons name="location-outline" size={14} color="#6b7280" />
-              <Text className="text-gray-600 text-sm ml-2">{event.hallName}</Text>
-            </View>
-            
-            <View className="flex-row items-center">
-              <Ionicons name="time-outline" size={14} color="#6b7280" />
-              <Text className="text-gray-600 text-sm ml-2">{event.time}</Text>
-            </View>
-            
-            <View className="flex-row items-center">
-              <Ionicons name="calendar-outline" size={14} color="#6b7280" />
-              <Text className="text-gray-600 text-sm ml-2">{event.date}</Text>
-            </View>
-          </View>
-          
-          {event.attendees && (
-            <View className="flex-row items-center mt-2">
-              <Ionicons name="people-outline" size={14} color="#6b7280" />
-              <Text className="text-gray-600 text-sm ml-2">
-                {event.attendees} attendees
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
-      
-      {/* Action Buttons */}
-      {showActions && (
-        <View className="flex-row justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
-          <TouchableOpacity 
-            onPress={onEdit}
-            className="bg-blue-50 px-4 py-2 rounded-lg flex-row items-center"
-          >
-            <Ionicons name="pencil-outline" size={16} color="#3b82f6" />
-            <Text className="text-blue-600 font-medium ml-1">Edit</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            onPress={onDelete}
-            className="bg-red-50 px-4 py-2 rounded-lg flex-row items-center"
-          >
-            <Ionicons name="trash-outline" size={16} color="#ef4444" />
-            <Text className="text-red-600 font-medium ml-1">Delete</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+    );
 };
 
-// Enhanced Empty State
-const EmptyState: FC<{ 
-  onBook: () => void,
-  searchQuery: string,
-  activeFilter: string 
-}> = ({ onBook, searchQuery, activeFilter }) => (
-  <View className="items-center justify-center py-20">
-    <View className="bg-[#DCE4DC] p-8 rounded-full mb-6"> {/* Adjusted background for icon */}
-      <Ionicons 
-        name={searchQuery ? "search-outline" : "calendar-outline"} 
-        size={40} 
-        color="#9ca3af" 
-      />
+const EmptyState: FC<{ onBook: () => void }> = ({ onBook }) => (
+  <View className="items-center justify-center py-16">
+    <View className="bg-gray-100 p-6 rounded-full mb-4">
+      <Ionicons name="calendar-outline" size={32} color="#9ca3af" />
     </View>
-    
-    <Text className="text-gray-900 text-xl font-bold mb-2">
-      {searchQuery ? 'No results found' : `No ${activeFilter.toLowerCase()} events`}
+    <Text className="text-gray-500 text-lg font-semibold mb-2">No events found</Text>
+    <Text className="text-gray-400 text-sm text-center px-8">
+      You don't have any events scheduled yet. Create your first booking to get started.
     </Text>
-    
-    <Text className="text-gray-500 text-base text-center px-8 mb-8 leading-6">
-      {searchQuery 
-        ? `No events match "${searchQuery}". Try adjusting your search.`
-        : `You don't have any ${activeFilter.toLowerCase()} events. Create your first booking to get started.`
-      }
-    </Text>
-    
-    <TouchableOpacity 
-      onPress={onBook} 
-      className="bg-purple-600 px-8 py-4 rounded-2xl flex-row items-center"
-      style={{
-        shadowColor: '#7c3aed',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 8,
-      }}
-    >
-      <Ionicons name="add" size={20} color="white" />
-      <Text className="text-white font-semibold text-base ml-2">
-        Create New Event
-      </Text>
+    <TouchableOpacity onPress={onBook} className="bg-purple-600 px-6 py-3 rounded-full mt-6">
+      <Text className="text-white font-semibold">Book New Event</Text>
     </TouchableOpacity>
   </View>
 );
 
-// Main Schedule List Component
 const ScheduleListScreen: FC<{ onNavigateToCreate: () => void }> = ({ onNavigateToCreate }) => {
-  const [activeFilter, setActiveFilter] = useState<EventStatus | 'All'>('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-
-  // ... (useMemo hooks and handlers remain the same)
-
-  const filteredData = useMemo(() => {
-    let filtered = activeFilter === 'All' 
-      ? scheduleData 
-      : scheduleData.filter(event => event.status === activeFilter);
-    
-    if (searchQuery) {
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.hallName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        event.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-    
-    return filtered;
-  }, [activeFilter, searchQuery]);
-
-  const upcomingCount = useMemo(() => 
-    scheduleData.filter(event => event.status === 'Upcoming').length, 
-    []
-  );
+  const [activeFilter, setActiveFilter] = useState<EventStatus | 'All'>('Upcoming');
   
-  const thisWeekCount = useMemo(() => 2, []); // You can implement actual logic here
+  const filteredData = useMemo(() => activeFilter === 'All' 
+    ? scheduleData 
+    : scheduleData.filter(event => event.status === activeFilter), [activeFilter]);
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => setRefreshing(false), 1000);
-  };
-
-  const handleEventPress = (event: ScheduleEvent) => {
-    // Navigate to event details
-    console.log('Event pressed:', event.title);
-  };
-
-  const handleEditEvent = (event: ScheduleEvent) => {
-    console.log('Edit event:', event.title);
-  };
-
-  const handleDeleteEvent = (event: ScheduleEvent) => {
-    Alert.alert(
-      'Delete Event',
-      `Are you sure you want to delete "${event.title}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => console.log('Deleted') }
-      ]
-    );
-  };
-  
   return (
-    <View className="flex-1 bg-gray-100"> {/* Changed main background */}
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
-      <ParallaxScrollView
-        headerBackgroundColor={{ light: '#ffffff', dark: '#ffffff' }}
-        headerImage={
-          <ScheduleHeader 
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            upcomingCount={upcomingCount}
-            thisWeekCount={thisWeekCount}
-          />
-        }
-        refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={handleRefresh}
-            tintColor="#000000" // Refresh indicator to black for light background
-          />
-        }
-      >
-        <ThemedView className="bg-gray-100"> {/* Changed ThemedView background */}
-          <DateFilterPills 
-            activeFilter={activeFilter} 
-            onFilterChange={setActiveFilter} 
-          />
-          
-          <View className="px-6 py-4 pb-32">
-            {filteredData.length > 0 ? (
-              <>
-                <View className="flex-row items-center justify-between mb-6">
-                <Text className="text-gray-900 text-xl font-bold">
-                  {`${filteredData.length} event${filteredData.length !== 1 ? 's' : ''}`}
-                </Text>
-                  
-                  <TouchableOpacity className="flex-row items-center bg-white px-4 py-2 rounded-full border border-gray-200">
-                    <Text className="text-gray-700 text-sm font-medium mr-1">Sort by date</Text>
-                    <Ionicons name="chevron-down-outline" size={16} color="#6b7280" />
-                  </TouchableOpacity>
-                </View>
+    <View className="flex-1 bg-gray-50">
+        <ParallaxScrollView
+            headerBackgroundColor={{ light: '#7c3aed', dark: '#7c3aed' }}
+            headerImage={<ScheduleHeader />}
+        >
+            <ThemedView className="bg-gray-50">
+                <DateFilterPills activeFilter={activeFilter} onFilterChange={setActiveFilter} />
                 
-                {filteredData.map(event => (
-                  <ScheduleCard 
-                    key={event.id} 
-                    event={event}
-                    onPress={() => handleEventPress(event)}
-                    onEdit={() => handleEditEvent(event)}
-                    onDelete={() => handleDeleteEvent(event)}
-                  />
-                ))}
-              </>
-            ) : (
-              <EmptyState 
-                onBook={onNavigateToCreate}
-                searchQuery={searchQuery}
-                activeFilter={activeFilter}
-              />
-            )}
-          </View>
-        </ThemedView>
-      </ParallaxScrollView>
-      
-      {/* Floating Action Button */}
-      <TouchableOpacity 
-        onPress={onNavigateToCreate}
-        className="absolute bottom-8 right-6 bg-purple-600 w-16 h-16 rounded-full items-center justify-center"
-        style={{
-          shadowColor: '#7c3aed',
-          shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: 0.4,
-          shadowRadius: 12,
-          elevation: 12,
-        }}
-      >
-        <Ionicons name="add" size={28} color="white" />
-      </TouchableOpacity>
+                <View className="px-6 py-4 pb-24">
+                    {filteredData.length > 0 ? (
+                        <>
+                            <View className="flex-row items-center justify-between mb-6">
+                                <Text className="text-gray-900 text-lg font-bold">
+                                    {filteredData.length} {activeFilter.toLowerCase()} event{filteredData.length !== 1 ? 's' : ''}
+                                </Text>
+                                <TouchableOpacity className="flex-row items-center gap-1">
+                                    <Text className="text-purple-600 text-sm font-medium">Sort by</Text>
+                                    <Ionicons name="chevron-down-outline" size={16} color="#7c3aed" />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            {filteredData.map(event => (
+                                <ScheduleCard key={event.id} event={event} />
+                            ))}
+                        </>
+                    ) : (
+                        <EmptyState onBook={onNavigateToCreate} />
+                    )}
+                </View>
+            </ThemedView>
+        </ParallaxScrollView>
+        <TouchableOpacity 
+            onPress={onNavigateToCreate}
+            className="absolute bottom-6 right-6 bg-purple-600 w-16 h-16 rounded-full items-center justify-center"
+            style={{
+                shadowColor: '#7c3aed',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+            }}
+        >
+            <Ionicons name="add" size={28} color="white" />
+        </TouchableOpacity>
     </View>
   );
 };
 
-// Main App Component
+
 const App: FC = () => {
-  const [isCreating, setIsCreating] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
 
-  if (isCreating) {
-    return <CreateEventScreen onCancel={() => setIsCreating(false)} />;
-  }
+    if (isCreating) {
+        return <CreateEventScreen onCancel={() => setIsCreating(false)} />;
+    }
 
-  return <ScheduleListScreen onNavigateToCreate={() => setIsCreating(true)} />;
-};
+    return <ScheduleListScreen onNavigateToCreate={() => setIsCreating(true)} />;
+}
+
 
 export default App;

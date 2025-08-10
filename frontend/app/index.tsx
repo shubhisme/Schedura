@@ -16,7 +16,7 @@ export default function HomeScreen() {
 
   const handleRedirect = async () => {
     const status = await updateUserInfo(user)
-    console.log(status)
+    console.log(status)   
     if(status == 201 || status == 409) {
       return replace('/(tabs)')
     }
@@ -32,7 +32,7 @@ export default function HomeScreen() {
       
       {/* Optional: Gradient Background */}
       <LinearGradient
-        colors={['#667eea', '#764ba2']} // Adjust colors to match your primary color
+        colors={['#E9F0E9', '#D8E8D8']} // Adjust colors to match your primary color
         className="flex-1"
       >
         <View className="flex-1 justify-between px-6 pt-16 pb-8">
@@ -41,7 +41,7 @@ export default function HomeScreen() {
           <View className="flex-1 justify-center items-center">
             {/* Logo with subtle shadow effect */}
             <View className="items-center mb-8">
-              <View className="bg-white/10 rounded-full p-8 mb-6">
+              <View className="bg-black/10 rounded-full p-8 mb-6">
                 <Image 
                   style={{
                     height: Math.min(width * 0.5, 200), 
@@ -53,12 +53,12 @@ export default function HomeScreen() {
               </View>
               
               {/* App Title with better styling */}
-              <Text className="text-5xl font-bold text-white text-center mb-3">
+              <Text className="text-5xl font-bold text-black text-center mb-3">
                 Schedura.
               </Text>
               
               {/* Tagline */}
-              <Text className="text-lg text-white/80 text-center max-w-sm leading-6">
+              <Text className="text-lg text-black/80 text-center max-w-sm leading-6">
                 Organize your time, amplify your productivity
               </Text>
             </View>
@@ -66,24 +66,24 @@ export default function HomeScreen() {
             {/* Feature highlights */}
             <View className="flex-row justify-center space-x-8 mt-8">
               <View className="items-center">
-                <View className="w-12 h-12 bg-white/20 rounded-full items-center justify-center mb-2">
-                  <Text className="text-white text-xl">📅</Text>
+                <View className="w-12 h-12 bg-black/20 rounded-full items-center justify-center mb-2">
+                  <Text className="text-black text-xl">📅</Text>
                 </View>
-                <Text className="text-white/70 text-xs">Schedule</Text>
+                <Text className="text-black/70 text-xs">Schedule</Text>
               </View>
               
               <View className="items-center">
-                <View className="w-12 h-12 bg-white/20 rounded-full items-center justify-center mb-2">
-                  <Text className="text-white text-xl">⏰</Text>
+                <View className="w-12 h-12 bg-black/20 rounded-full items-center justify-center mb-2">
+                  <Text className="text-black text-xl">⏰</Text>
                 </View>
-                <Text className="text-white/70 text-xs">Reminders</Text>
+                <Text className="text-black/70 text-xs">Reminders</Text>
               </View>
               
               <View className="items-center">
-                <View className="w-12 h-12 bg-white/20 rounded-full items-center justify-center mb-2">
-                  <Text className="text-white text-xl">📊</Text>
+                <View className="w-12 h-12 bg-black/20 rounded-full items-center justify-center mb-2">
+                  <Text className="text-black text-xl">📊</Text>
                 </View>
-                <Text className="text-white/70 text-xs">Analytics</Text>
+                <Text className="text-black/70 text-xs">Analytics</Text>
               </View>
             </View>
           </View>
@@ -91,18 +91,18 @@ export default function HomeScreen() {
           {/* Bottom Section */}
           <View className="space-y-6">
             {/* Terms and Conditions */}
-            <Text className="text-sm text-white/60 text-center leading-5 px-4">
+            <Text className="text-sm text-black/60 text-center leading-5 px-4">
               By continuing you agree with our{' '}
               <Link 
                 href="https://google.com" 
-                className="text-white underline font-medium"
+                className="text-black underline font-medium"
               >
                 terms and conditions
               </Link>
               {' '}and{' '}
               <Link 
                 href="https://google.com" 
-                className="text-white underline font-medium"
+                className="text-black underline font-medium"
               >
                 privacy policy
               </Link>
