@@ -6,6 +6,7 @@ import { updateUserInfo } from '@/supabase/controllers/user.controller';
 import Button from '@/components/Button';
 //@ts-ignore
 import Logo from "@/assets/images/logo.png";
+import SafeBoundingView from '@/components/SafeBoundingView';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,26 +29,24 @@ export default function HomeScreen() {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
-      {/* Optional: Gradient Background */}
-      <LinearGradient
-        colors={['#E9F0E9', '#D8E8D8']} // Adjust colors to match your primary color
-        className="flex-1"
+      <SafeBoundingView
+       
+        className="flex-1 bg-primary"
       >
-        <View className="flex-1 justify-between px-6 pt-16 pb-8">
+        <View className="flex-1 justify-between px-6 pt-16 ">
           
           {/* Header Section */}
           <View className="flex-1 justify-center items-center">
             {/* Logo with subtle shadow effect */}
             <View className="items-center mb-8">
-              <View className="bg-black/10 rounded-full p-8 mb-6">
+              <View className="rounded-full p-8 mb-6">
                 <Image 
                   style={{
                     height: Math.min(width * 0.5, 200), 
                     width: Math.min(width * 0.5, 200),
                     resizeMode: 'contain'
                   }}
+                  className='rounded-full'
                   source={Logo}
                 />
               </View>
@@ -64,7 +63,7 @@ export default function HomeScreen() {
             </View>
 
             {/* Feature highlights */}
-            <View className="flex-row justify-center space-x-8 mt-8">
+            <View className="flex-row justify-center gap-10 space-x-8 mt-8">
               <View className="items-center">
                 <View className="w-12 h-12 bg-black/20 rounded-full items-center justify-center mb-2">
                   <Text className="text-black text-xl">📅</Text>
@@ -88,10 +87,8 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Bottom Section */}
-          <View className="space-y-6">
-            {/* Terms and Conditions */}
-            <Text className="text-sm text-black/60 text-center leading-5 px-4">
+          <View className="">
+            <Text className="text-md text-black/60 text-left  mb-2 px-1">
               By continuing you agree with our{' '}
               <Link 
                 href="https://google.com" 
@@ -106,17 +103,15 @@ export default function HomeScreen() {
               >
                 privacy policy
               </Link>
-              .
             </Text>
             
-            {/* CTA Button */}
             <Button 
               link="/(auth)" 
               text="Get Started"
             />
           </View>
         </View>
-      </LinearGradient>
+      </SafeBoundingView>
     </>
   );
 }

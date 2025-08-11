@@ -35,7 +35,7 @@ const tabs: Tab[] = [
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
-    <View className={`bg-gray-100 px-2 pt-4 ${Platform.OS === 'ios' ? 'pb-2' : 'pb-2'}`}>
+    <View className={`bg-gray-100 px-5 pt-4 ${Platform.OS === 'ios' ? 'pb-12' : 'pb-12'}`}>
       <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];

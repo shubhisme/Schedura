@@ -13,8 +13,8 @@ export default function RootLayout() {
  
   return (
     <ClerkProvider tokenCache={tokenCache}>
-      <SafeAreaProvider>
-        <Stack screenOptions={{headerShown: false, statusBarHidden:true}}>
+      <SafeAreaProvider >
+        <Stack screenOptions={{headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }}/>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="+not-found" />

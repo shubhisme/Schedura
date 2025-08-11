@@ -6,7 +6,7 @@ import { PropsWithChildren } from 'react';
 export default function SafeBoundingView(props:PropsWithChildren | any) {
     const insets = useSafeAreaInsets();
   return (
-    <SafeAreaView style={{ marginBottom: insets.bottom }} {...props}>
+    <SafeAreaView className='bg-primary' style={{ paddingBottom: insets.bottom-30 }} {...props}>
      {props.children}
     </SafeAreaView>
   );
