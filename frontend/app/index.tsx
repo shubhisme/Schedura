@@ -7,6 +7,7 @@ import Button from '@/components/Button';
 //@ts-ignore
 import Logo from "@/assets/images/logo.png";
 import SafeBoundingView from '@/components/SafeBoundingView';
+import { useEffect } from 'react';
 
 const { width, height } = Dimensions.get('window');
 
@@ -19,25 +20,21 @@ export default function HomeScreen() {
     const status = await updateUserInfo(user)
     console.log(status)   
     if(status == 201 || status == 409) {
-      return replace('/(tabs)')
+      return replace('/(tabs)/home')
     }
   }
 
-  if (isSignedIn) {
-    handleRedirect()
-  }
+  useEffect(() => {
+    if (isSignedIn) {
+      handleRedirect();
+    }
+  }, [isSignedIn]);
 
   return (
     <>
-      <SafeBoundingView
-       
-        className="flex-1 bg-primary"
-      >
+      <SafeBoundingView className="flex-1 bg-primary">
         <View className="flex-1 justify-between px-6 pt-16 ">
-          
-          {/* Header Section */}
           <View className="flex-1 justify-center items-center">
-            {/* Logo with subtle shadow effect */}
             <View className="items-center mb-8">
               <View className="rounded-full p-8 mb-6">
                 <Image 
@@ -51,18 +48,15 @@ export default function HomeScreen() {
                 />
               </View>
               
-              {/* App Title with better styling */}
               <Text className="text-5xl font-bold text-black text-center mb-3">
                 Schedura.
               </Text>
               
-              {/* Tagline */}
               <Text className="text-lg text-black/80 text-center max-w-sm leading-6">
                 Organize your time, amplify your productivity
               </Text>
             </View>
 
-            {/* Feature highlights */}
             <View className="flex-row justify-center gap-10 space-x-8 mt-8">
               <View className="items-center">
                 <View className="w-12 h-12 bg-black/20 rounded-full items-center justify-center mb-2">

@@ -11,7 +11,7 @@ interface Tab {
 
 const tabs: Tab[] = [
   {
-    name: "index",
+    name: "home",
     title: "Home",
     icon: "home",
   },
@@ -21,9 +21,9 @@ const tabs: Tab[] = [
     icon:"calendar",
   },
   {
-    name:"explore",
-    title:"Explore",
-    icon:"compass",
+    name:"spaces",
+    title:"My Spaces",
+    icon:"key",
   },
   {
     name: "profile",

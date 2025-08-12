@@ -127,7 +127,7 @@ const recentBookings: Booking[] = [
 const Header: FC<{ profile: UserProfile | null }> = ({ profile }) => (
   <View className="flex-row justify-between items-center px-6 pt-6 pb-4 mt-6">
     <View>
-      <Text className="text-black text-3xl font-bold">Spaces</Text>
+      <Text className="text-black text-3xl font-bold">Explore</Text>
     </View>
   </View>
 );

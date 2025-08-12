@@ -17,3 +17,22 @@ export const updateUserInfo = async (user:any) => {
         }
     }
 }
+
+export const getUserInfo = async (userId: string) => {
+    console.log("GETTING USER")
+    if(!userId){
+        console.error("USER ID PROVIDED IS UNDEFINED");
+        return;
+    }
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', userId)
+            .single();
+        return data;
+    }
+    catch(error){
+
+    }
+}

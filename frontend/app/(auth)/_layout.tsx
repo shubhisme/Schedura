@@ -1,26 +1,23 @@
-import { Redirect, Stack, useRouter } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import { useAuth, useUser } from '@clerk/clerk-expo'
 import { updateUserInfo } from '@/supabase/controllers/user.controller';
+import { useEffect } from 'react';
 
 export default function AuthRoutesLayout() {
   const { isSignedIn } = useAuth()
   const { user } = useUser()
   const { replace } = useRouter();
 
-  
-
   const handleRedirect = async () => {  
       await updateUserInfo(user)
-      
-      /*if(data?.user?.onboardingCompleted) {
-        //return replace('/onboarding')
-      }*/
-      return replace('/(tabs)')
+      return replace('/(tabs)/home')
   }
 
-  if (isSignedIn) {
-    handleRedirect()
-  }
+  useEffect(()=>{
+    if (isSignedIn) {
+      handleRedirect()
+    }
+  },[isSignedIn])
 
   return <Stack screenOptions={{headerShown:false}}/>
 }
