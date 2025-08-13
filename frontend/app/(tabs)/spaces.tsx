@@ -1,16 +1,11 @@
-import { Image } from 'expo-image';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+//@ts-ignore
+import { useRouter } from 'expo-router';
 
 export default function SpacesScreen() {
+  const { navigate } = useRouter();
   return (
     <SafeBoundingView className="flex-1">
       <ScrollView>
@@ -25,7 +20,7 @@ export default function SpacesScreen() {
             <View className="border-2 border-black border-dashed flex items-center justify-center rounded-3xl">
                 <Text className='py-20 text-lg'>No spaces created</Text>
             </View>
-            <TouchableOpacity className='bg-black p-2 px-2.5 rounded-2xl flex-1 mt-5'>
+            <TouchableOpacity onPress={() => navigate('/(tabs)/add-space')} className='bg-black p-2 px-2.5 rounded-2xl flex-1 mt-5 w-full'>
                 <Text className='text-primary text-lg text-center mt-0.5 font-semibold'>+ Add</Text>
             </TouchableOpacity>
         </View>

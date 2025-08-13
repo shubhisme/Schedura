@@ -7,7 +7,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { supabase } from '@/supabase/supabase';
 import { Image } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
-
+import { decode } from 'base64-arraybuffer'
 
 export default function AddSpacesScreen() {
   const [name, setName] = useState('');
@@ -17,58 +17,32 @@ export default function AddSpacesScreen() {
   const [pph, setPph] = useState('');
   const [ownerid, setOwnerId] = useState('');
   const [organizationid, setOrganizationId] = useState('');
-  const [images, setImages] = useState<string[]>([])
+  const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const { user } = useUser();
-// Function to pick and upload
+
     async function pickAndUploadFile(spaceId: string) {
         try {
-            // Pick a file (image, PDF, etc.)
             const result = await DocumentPicker.getDocumentAsync({
-            type: ["image/*"], // you can change this to ["*/*"] for any file
-            copyToCacheDirectory: true
+              type: ["image/*"],
+              copyToCacheDirectory: true
             });
 
             if (result.canceled) {
-            console.log("User cancelled file picker");
-            return null;
+              console.log("User cancelled file picker");
+              return null;
             }
-
             const file = result.assets[0];
             const fileExt = file.name.split(".").pop();
             const fileName = `${spaceId}-${Date.now()}.${fileExt}`;
             const filePath = `${fileName}`;
-
-            // Read file as base64
             const response = await fetch(file.uri);
-            const fileData = await response.blob();
-            setImages([file.uri])
-            // Upload to Supabase Storage
-            const { data, error } = await supabase.storage
-            .from("spaces") // bucket name
-            .upload(filePath, fileData, {
-                contentType: file.mimeType || "application/octet-stream"
-            });
-
-            if (error) {
-            console.error("Upload error:", error);
-            return null;
-            }
-
-            console.log("File uploaded:", data);
-
-            // Get public URL
-            const { data: publicUrlData } = supabase.storage
-            .from("spaces")
-            .getPublicUrl(filePath);
-
-            console.log("Public URL:", publicUrlData.publicUrl);
-
-            return publicUrlData.publicUrl;
+            const fileData = await (await response.blob()).arrayBuffer();
+            setImages({filePath, fileData, fileType:file.mimeType, fileUri:file.uri})
         } catch (err) {
             console.error("Error picking/uploading file:", err);
             return null;
         }
-        }
+    }
 
 
   const handleSubmit = async () => {
@@ -79,12 +53,12 @@ export default function AddSpacesScreen() {
 
     const { data, error } = await createSpace({
       name,
-      capacity: Number(capacity),
+      capacity: parseInt(capacity),
       location,
       description,
       pph,
       ownerid: user?.id!,
-    });
+    }, images);
     console.log(error)
     if (error) {
       Alert.alert('Error', error.message);
@@ -142,15 +116,16 @@ export default function AddSpacesScreen() {
           />
           <View>
             {
-                images.map((image, i)=>(
-                    <View key={i} className='rounded-xl overflow-hidden border border-black/20 w-fit'>
-                        <Image 
-                            className='h-20 w-20'
-                            source={{uri:image}}
-                        />
-                    </View>
-                ))
-            }
+              images.fileUri ?
+              <View className='rounded-xl overflow-hidden border border-black/20 w-fit'>
+                  <Image 
+                      className='h-20 w-20'
+                      source={{uri:images.fileUri}}
+                  />
+              </View>
+              :
+              <></>
+            }      
           </View>
           
           <TouchableOpacity
