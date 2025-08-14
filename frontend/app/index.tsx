@@ -1,4 +1,5 @@
-import { Image, Text, View, Dimensions, StatusBar } from 'react-native';
+import { Image, Text, View, Dimensions } from 'react-native';
+//@ts-ignore
 import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient'; // If you want gradient background
 import { useAuth, useUser } from '@clerk/clerk-expo';

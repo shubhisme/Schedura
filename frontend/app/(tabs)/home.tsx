@@ -10,6 +10,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getSpaces } from '@/supabase/controllers/spaces.controller';
 
 type Database = {
   public: {
@@ -59,38 +60,7 @@ interface Booking {
 }
 
 
-const featuredHalls: Hall[] = [
-  {
-    id: 1,
-    name: 'The Grandeur Hall',
-    location: 'Downtown Plaza',
-    price: 80000,
-    rating: 4.8,
-    image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&h=300&fit=crop',
-    capacity: '300',
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: 'Crystal Palace',
-    location: 'City Center',
-    price: 350000,
-    rating: 4.6,
-    image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&h=300&fit=crop',
-    capacity: '150',
-    isNew: false,
-  },
-  {
-    id: 3,
-    name: 'Royal Gardens',
-    location: 'Uptown District',
-    price: 75000,
-    rating: 4.9,
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop',
-    capacity: '500',
-    isNew: false,
-  },
-];
+
 
 const categories: Category[] = [
   { id: 1, name: 'Wedding', icon: 'heart-outline' },
@@ -221,6 +191,26 @@ const RecentBookingItem: FC<{ booking: Booking }> = ({ booking }) => (
 );
 
 const HomePage: FC<{ profile: UserProfile | null }> = ({ profile }) => {
+  const [spaces, setSpaces] = useState<any>([])
+  
+  const fetchSpaces = async () => {
+    try {
+      const { data, error } = await getSpaces();
+      if (error) {
+        console.error("Error fetching spaces:", error);
+      } else {
+        setSpaces(data || []);
+        console.log("Fetched spaces:", data);
+      }
+    } catch (error) {
+      console.error("Error in fetchSpaces:", error);
+    }
+  };
+
+  useEffect(()=>{
+    fetchSpaces();
+  },[])
+
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       <StatusBar barStyle="light-content" backgroundColor="#111827" />
@@ -239,7 +229,7 @@ const HomePage: FC<{ profile: UserProfile | null }> = ({ profile }) => {
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-6 pb-4">
-            {featuredHalls.map((hall) => <VenueCard key={hall.id} hall={hall} />)}
+            {spaces.map((space:any) => <VenueCard key={space.id} hall={{...space, price:space.pph, rating:5, isNew:true, image:space["spaces-images"][0].link}} />)}
           </ScrollView>
 
           <View className="flex-row justify-between items-center my-6">
@@ -269,6 +259,7 @@ const App: FC = () => {
       role: "user",
       avatar_url: "",
     };
+    
     setProfile(mockProfile);
 
   }, []);

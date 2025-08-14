@@ -66,7 +66,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              className={`flex-1 items-center `}
+              className={`flex-1 items-center ${route.name === 'add-space' && 'hidden'}`}
             >
               <View className=''>
                 <View className={`w-8 h-8 mx-auto items-center justify-center mb-0.5 ${
@@ -95,7 +95,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
 export default function TabLayout() {
   return (
     <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
+      tabBar={(props:any) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
       }}

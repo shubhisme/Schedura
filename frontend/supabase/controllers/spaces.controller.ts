@@ -15,7 +15,7 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
         organizationid: spaceData.organizationid
       }
     ])
-    .select(); // returns inserted rows
+    .select();
   const spaceId = data ? data[0].id! : null;
   
   const uploadedFileLink = await uploadFile(file);
@@ -55,4 +55,20 @@ const uploadFile = async({filePath, fileData, fileType}:{filePath:string, fileDa
   console.log("Public URL:", publicUrlData.publicUrl);
 
   return publicUrlData.publicUrl;
+}
+
+
+export const getSpaces = async () => {
+  const { data, error } = await supabase
+    .from('spaces')
+    .select('*, spaces-images(link)')
+  return { data, error };
+}
+
+export const getMySpaces = async (userId:string) => {
+  const { data, error } = await supabase
+    .from('spaces')
+    .select('*, spaces-images(link)')
+    .eq('ownerid', userId)
+  return { data, error };
 }
