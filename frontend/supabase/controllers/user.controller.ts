@@ -13,7 +13,7 @@ export const updateUserInfo = async (user:any) => {
             return data.status
         }
         catch(error){
-            
+            console.log(error);
         }
     }
 }
@@ -33,6 +33,6 @@ export const getUserInfo = async (userId: string) => {
         return data;
     }
     catch(error){
-
+        console.log(error);
     }
 }
