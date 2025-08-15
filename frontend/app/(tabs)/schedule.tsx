@@ -1,259 +1,278 @@
-import React, { useState, FC, useMemo } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-  Dimensions,
-  SafeAreaView,
-  StatusBar,
-  TextInput,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import CreateEventScreen from '../CreateEventScreen';
-
-const { width } = Dimensions.get('window');
-
-type EventStatus = 'Upcoming' | 'Completed' | 'Cancelled';
-type EventCategory = 'Wedding' | 'Conference' | 'Corporate' | 'Birthday' | 'Social';
-
-interface ScheduleEvent {
-  id: string;
-  title: string;
-  hallName: string;
-  time: string;
-  date: string;
-  status: EventStatus;
-  image: string;
-  category: EventCategory;
-  attendees?: number;
-}
-
-const scheduleData: ScheduleEvent[] = [
-  {
-    id: '1',
-    title: 'Wedding Reception',
-    hallName: 'The Grandeur Hall',
-    time: '4:00 PM - 10:00 PM',
-    date: 'Aug 10, 2025',
-    status: 'Upcoming',
-    image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=200&h=200&fit=crop',
-    category: 'Wedding',
-    attendees: 150,
-  },
-  {
-    id: '2',
-    title: 'Tech Conference 2025',
-    hallName: 'Crystal Palace',
-    time: '9:00 AM - 5:00 PM',
-    date: 'Aug 15, 2025',
-    status: 'Upcoming',
-    image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=200&h=200&fit=crop',
-    category: 'Conference',
-    attendees: 300,
-  },
-  {
-    id: '3',
-    title: 'Annual Corporate Gala',
-    hallName: 'Royal Gardens',
-    time: '7:00 PM - 11:00 PM',
-    date: 'Jul 28, 2025',
-    status: 'Completed',
-    image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=200&h=200&fit=crop',
-    category: 'Corporate',
-    attendees: 200,
-  },
-    {
-    id: '4',
-    title: 'Birthday Celebration',
-    hallName: 'Sunset Pavilion',
-    time: '6:00 PM - 9:00 PM',
-    date: 'Aug 22, 2025',
-    status: 'Upcoming',
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=200&h=200&fit=crop',
-    category: 'Birthday',
-    attendees: 50,
-  },
-   {
-    id: '5',
-    title: 'Product Launch Event',
-    hallName: 'Crystal Palace',
-    time: '2:00 PM - 5:00 PM',
-    date: 'Aug 15, 2025',
-    status: 'Cancelled',
-    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=200&h=200&fit=crop',
-    category: 'Corporate',
-    attendees: 120,
-  },
-];
+import React, { useEffect, useState } from "react";
+import { View, Text, ScrollView, TouchableOpacity, Image, SafeAreaView, StatusBar } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { getSpaces } from "@/supabase/controllers/spaces.controller";
 
 
+export default function SchedulePage() {
+  const [spaces, setSpaces] = useState<any>([]);
+  const [booked, setBooked] = useState<{ hall: string; time: string }[]>([]);
+  const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
 
-const ScheduleHeader: FC = () => (
-  <ThemedView className="px-6 pt-16 pb-8 relative overflow-hidden">
-    <View className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" />
-    <View className="absolute -top-10 -right-10 w-32 h-32 bg-white opacity-5 rounded-full" />
-    <View className="absolute top-20 -left-8 w-20 h-20 bg-white opacity-10 rounded-full" />
-    
-    <View className="relative z-10">
-      <View className="flex-row items-center justify-between mb-4">
-        <View>
-          <ThemedText type="title" className="text-white text-3xl font-bold mb-2">
-            My Schedule
-          </ThemedText>
-          <ThemedText className="text-purple-200 text-base">
-            Manage your upcoming events and bookings
-          </ThemedText>
-        </View>
-        <TouchableOpacity className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-          <Ionicons name="calendar-outline" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-      
-      <View className="flex-row gap-4 mt-6">
-        <View className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 flex-1">
-          <Text className="text-white/60 text-xs font-medium">UPCOMING</Text>
-          <Text className="text-white text-xl font-bold">3</Text>
-        </View>
-        <View className="bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-3 flex-1">
-          <Text className="text-white/60 text-xs font-medium">THIS WEEK</Text>
-          <Text className="text-white text-xl font-bold">2</Text>
-        </View>
-      </View>
-    </View>
-  </ThemedView>
-);
+  const fetchSpaces = async () => {
+    try {
+      const { data, error } = await getSpaces();
+      if (error) {
+        console.error("Error fetching spaces:", error);
+      } else {
+        setSpaces(data || []);
+      }
+    } catch (error) {
+      console.error("Error in fetchSpaces:", error);
+    }
+  };
 
+  useEffect(() => {
+    fetchSpaces();
+  }, []);
 
-const DateFilterPills: FC<{ activeFilter: string, onFilterChange: (filter: EventStatus | 'All') => void }> = ({ activeFilter, onFilterChange }) => {
-    const filters: (EventStatus | 'All')[] = ['All', 'Upcoming', 'Completed', 'Cancelled'];
+  const timeSlots = [
+    { time: "09:00 AM", label: "Morning" },
+    { time: "11:00 AM", label: "Late Morning" },
+    { time: "01:00 PM", label: "Afternoon" },
+    { time: "03:00 PM", label: "Late Afternoon" },
+    { time: "05:00 PM", label: "Evening" },
+    { time: "07:00 PM", label: "Night" },
+  ];
 
-    return (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12, gap: 10 }}>
-            {filters.map(filter => (
-                <TouchableOpacity
-                    key={filter}
-                    onPress={() => onFilterChange(filter)}
-                    className={`px-5 py-2.5 rounded-full ${activeFilter === filter ? 'bg-purple-600' : 'bg-white shadow-sm'}`}
-                >
-                    <Text className={`font-medium ${activeFilter === filter ? 'text-white' : 'text-gray-700'}`}>{filter}</Text>
-                </TouchableOpacity>
-            ))}
-        </ScrollView>
-    );
-};
+  // Generate next 7 days for date selection
+  const getNextDays = () => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      days.push(date);
+    }
+    return days;
+  };
 
+  const handleBooking = (hallName: string, time: string) => {
+    setBooked((prev) => [...prev, { hall: hallName, time }]);
+    alert(`✅ Successfully booked ${hallName} at ${time}`);
+  };
 
-const ScheduleCard: FC<{ event: ScheduleEvent }> = ({ event }) => {
-    const statusStyle = useMemo(() => {
-        switch(event.status) {
-            case 'Upcoming': return { container: 'bg-blue-50 border-blue-200', text: 'text-blue-800' };
-            case 'Completed': return { container: 'bg-green-50 border-green-200', text: 'text-green-800' };
-            case 'Cancelled': return { container: 'bg-red-50 border-red-200', text: 'text-red-800' };
-            default: return { container: 'bg-gray-50 border-gray-200', text: 'text-gray-800' };
-        }
-    }, [event.status]);
+  const isBooked = (hall: string, time: string) =>
+    booked.some((b) => b.hall === hall && b.time === time);
 
-    return (
-        <View className={`bg-white rounded-2xl p-4 border-l-4 ${statusStyle.container} mb-4`}>
-            <View className="flex-row gap-4 items-center">
-                <Image source={{ uri: event.image }} className="w-20 h-24 rounded-lg" />
-                <View className="flex-1">
-                    <Text className="text-lg font-bold text-gray-900 mb-1">{event.title}</Text>
-                    <View className="flex-row items-center mb-1 gap-1.5"><Ionicons name="location-outline" size={14} color="#6b7280" /><Text className="text-gray-600 text-sm">{event.hallName}</Text></View>
-                    <View className="flex-row items-center gap-1.5"><Ionicons name="time-outline" size={14} color="#6b7280" /><Text className="text-gray-600 text-sm">{event.time}</Text></View>
-                </View>
-                <Text className={`absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-full ${statusStyle.container} ${statusStyle.text}`}>{event.status}</Text>
-            </View>
-        </View>
-    );
-};
-
-const EmptyState: FC<{ onBook: () => void }> = ({ onBook }) => (
-  <View className="items-center justify-center py-16">
-    <View className="bg-gray-100 p-6 rounded-full mb-4">
-      <Ionicons name="calendar-outline" size={32} color="#9ca3af" />
-    </View>
-    <Text className="text-gray-500 text-lg font-semibold mb-2">No events found</Text>
-    <Text className="text-gray-400 text-sm text-center px-8">
-      You don't have any events scheduled yet. Create your first booking to get started.
-    </Text>
-    <TouchableOpacity onPress={onBook} className="bg-purple-600 px-6 py-3 rounded-full mt-6">
-      <Text className="text-white font-semibold">Book New Event</Text>
-    </TouchableOpacity>
-  </View>
-);
-
-const ScheduleListScreen: FC<{ onNavigateToCreate: () => void }> = ({ onNavigateToCreate }) => {
-  const [activeFilter, setActiveFilter] = useState<EventStatus | 'All'>('Upcoming');
-  
-  const filteredData = useMemo(() => activeFilter === 'All' 
-    ? scheduleData 
-    : scheduleData.filter(event => event.status === activeFilter), [activeFilter]);
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
 
   return (
-    <View className="flex-1 bg-gray-50">
-        <ParallaxScrollView
-            headerBackgroundColor={{ light: '#7c3aed', dark: '#7c3aed' }}
-            headerImage={<ScheduleHeader />}
+    <SafeAreaView className="flex-1" style={{ backgroundColor: '#E9F0E9' }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
+      
+      {/* Header */}
+      <View style={{ backgroundColor: '#E9F0E9' }} className="px-6 pt-12 pb-2">
+        <View className="flex-row items-center justify-between mb-4">
+          <View>
+            <Text className="text-3xl font-bold text-gray-900">Schedule</Text>
+            <Text className="text-lg text-gray-600 mt-1">Book your perfect venue</Text>
+          </View>
+          <TouchableOpacity className="bg-white/70 p-2 rounded-full">
+            <Ionicons name="calendar-outline" size={24} color="#374151" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Date Selection */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          className="mb-4"
+          contentContainerStyle={{ columnGap: 12 }}
         >
-            <ThemedView className="bg-gray-50">
-                <DateFilterPills activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-                
-                <View className="px-6 py-4 pb-24">
-                    {filteredData.length > 0 ? (
-                        <>
-                            <View className="flex-row items-center justify-between mb-6">
-                                <Text className="text-gray-900 text-lg font-bold">
-                                    {filteredData.length} {activeFilter.toLowerCase()} event{filteredData.length !== 1 ? 's' : ''}
-                                </Text>
-                                <TouchableOpacity className="flex-row items-center gap-1">
-                                    <Text className="text-purple-600 text-sm font-medium">Sort by</Text>
-                                    <Ionicons name="chevron-down-outline" size={16} color="#7c3aed" />
-                                </TouchableOpacity>
-                            </View>
-                            
-                            {filteredData.map(event => (
-                                <ScheduleCard key={event.id} event={event} />
-                            ))}
-                        </>
-                    ) : (
-                        <EmptyState onBook={onNavigateToCreate} />
-                    )}
+          {getNextDays().map((date, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => setSelectedDate(date.toDateString())}
+              className={`px-4 py-3 rounded-2xl min-w-[80px] items-center ${
+                selectedDate === date.toDateString() 
+                  ? "bg-gray-900" 
+                  : "bg-white/80"
+              }`}
+            >
+              <Text className={`text-sm font-semibold ${
+                selectedDate === date.toDateString() 
+                  ? "text-white" 
+                  : "text-gray-700"
+              }`}>
+                {formatDate(date)}
+              </Text>
+              {index === 0 && (
+                <Text className={`text-xs mt-1 ${
+                  selectedDate === date.toDateString() 
+                    ? "text-gray-300" 
+                    : "text-gray-500"
+                }`}>
+                  Today
+                </Text>
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <ScrollView 
+        className="flex-1 bg-gray-50" 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <View className="px-6 py-4">
+          {spaces.map(
+            (hall: {
+              id: number;
+              name: string;
+              location: string;
+              capacity: number;
+              "spaces-images": { link: string }[];
+            }) => (
+              <View
+                key={hall.id}
+                className="mb-6 bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100"
+              >
+                {/* Hall Image with Overlay Info */}
+                <View className="relative">
+                  <Image
+                    source={{
+                      uri: hall["spaces-images"]?.length
+                        ? hall["spaces-images"][0].link
+                        : "https://via.placeholder.com/400x200",
+                    }}
+                    className="w-full h-56"
+                  />
+                  <View className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  
+                  {/* Hall Name Overlay */}
+                  <View className="absolute bottom-4 left-4 right-4">
+                    <Text className="text-white text-2xl font-bold mb-2">
+                      {hall.name}
+                    </Text>
+                    <View className="flex-row items-center space-x-4">
+                      <View className="flex-row items-center">
+                        <View className="bg-white/20 rounded-full p-1 mr-2">
+                          <Ionicons name="location" size={14} color="white" />
+                        </View>
+                        <Text className="text-white text-sm font-medium">{hall.location}</Text>
+                      </View>
+                      <View className="flex-row items-center">
+                        <View className="bg-white/20 rounded-full p-1 mr-2">
+                          <Ionicons name="people" size={14} color="white" />
+                        </View>
+                        <Text className="text-white text-sm font-medium">
+                          {hall.capacity} guests
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Favorite Button */}
+                  <TouchableOpacity className="absolute top-4 right-4 bg-white/20 rounded-full p-2">
+                    <Ionicons name="heart-outline" size={20} color="white" />
+                  </TouchableOpacity>
                 </View>
-            </ThemedView>
-        </ParallaxScrollView>
-        <TouchableOpacity 
-            onPress={onNavigateToCreate}
-            className="absolute bottom-6 right-6 bg-purple-600 w-16 h-16 rounded-full items-center justify-center"
-            style={{
-                shadowColor: '#7c3aed',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-            }}
-        >
-            <Ionicons name="add" size={28} color="white" />
-        </TouchableOpacity>
-    </View>
+
+                {/* Time Slots Section */}
+                <View className="p-6">
+                  <View className="flex-row items-center justify-between mb-4">
+                    <Text className="text-lg font-bold text-gray-900">
+                      Available Time Slots
+                    </Text>
+                    <View className="flex-row items-center">
+                      <View className="w-3 h-3 bg-green-500 rounded-full mr-2"></View>
+                      <Text className="text-xs text-gray-500 mr-3">Available</Text>
+                      <View className="w-3 h-3 bg-red-500 rounded-full mr-2"></View>
+                      <Text className="text-xs text-gray-500">Booked</Text>
+                    </View>
+                  </View>
+                  
+                  <View className="space-y-3">
+                    {timeSlots.map((slot, idx) => {
+                      const isSlotBooked = isBooked(hall.name, slot.time);
+                      return (
+                        <TouchableOpacity
+                          key={idx}
+                          className={`flex-row items-center justify-between p-4 rounded-2xl border-2 ${
+                            isSlotBooked
+                              ? "bg-red-50 border-red-200"
+                              : "bg-green-50 border-green-200"
+                          }`}
+                          onPress={() =>
+                            !isSlotBooked && handleBooking(hall.name, slot.time)
+                          }
+                          disabled={isSlotBooked}
+                        >
+                          <View className="flex-row items-center">
+                            <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${
+                              isSlotBooked ? "bg-red-100" : "bg-green-100"
+                            }`}>
+                              <Ionicons 
+                                name={isSlotBooked ? "close-circle" : "time"} 
+                                size={24} 
+                                color={isSlotBooked ? "#EF4444" : "#10B981"} 
+                              />
+                            </View>
+                            <View>
+                              <Text className={`text-lg font-semibold ${
+                                isSlotBooked ? "text-red-700" : "text-gray-900"
+                              }`}>
+                                {slot.time}
+                              </Text>
+                              <Text className={`text-sm ${
+                                isSlotBooked ? "text-red-500" : "text-gray-600"
+                              }`}>
+                                {slot.label}
+                              </Text>
+                            </View>
+                          </View>
+                          
+                          <View className={`px-4 py-2 rounded-full ${
+                            isSlotBooked 
+                              ? "bg-red-500" 
+                              : "bg-green-500"
+                          }`}>
+                            <Text className="text-white font-semibold text-sm">
+                              {isSlotBooked ? "Booked" : "Book Now"}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+
+                  {/* Booking Stats */}
+                  <View className="mt-6 p-4 bg-gray-50 rounded-2xl">
+                    <Text className="text-center text-sm text-gray-600">
+                      {timeSlots.filter(slot => !isBooked(hall.name, slot.time)).length} of {timeSlots.length} slots available
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )
+          )}
+        </View>
+
+        {/* My Bookings Section */}
+        {booked.length > 0 && (
+          <View className="px-6 py-4 bg-white mx-6 rounded-3xl shadow-sm border border-gray-100">
+            <Text className="text-xl font-bold text-gray-900 mb-4">My Bookings</Text>
+            {booked.map((booking, idx) => (
+              <View key={idx} className="flex-row items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
+                <View>
+                  <Text className="font-semibold text-gray-900">{booking.hall}</Text>
+                  <Text className="text-sm text-gray-600">{booking.time}</Text>
+                </View>
+                <View className="bg-green-100 px-3 py-1 rounded-full">
+                  <Text className="text-green-700 text-xs font-semibold">Confirmed</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
-};
-
-
-const App: FC = () => {
-    const [isCreating, setIsCreating] = useState(false);
-
-    if (isCreating) {
-        return <CreateEventScreen onCancel={() => setIsCreating(false)} />;
-    }
-
-    return <ScheduleListScreen onNavigateToCreate={() => setIsCreating(true)} />;
 }
-
-
-export default App;

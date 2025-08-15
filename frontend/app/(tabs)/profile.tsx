@@ -1,14 +1,14 @@
-import React, { useState, useEffect, FC } from 'react';
-import { View,Text, ScrollView, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StatusBar } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useUser } from '@clerk/clerk-expo';
 import { getUserInfo } from '@/supabase/controllers/user.controller';
 import { MenuItem } from '@/components/MenuItem';
-import type { UserProfile } from '@/types/database.type';
 import { ProfileHeader } from '@/components/ProfileHeader';
 import SignOutModal from '@/components/Modals/SignOutModal';
+import type { UserProfile } from '@/types/database.type';
 
-const MenuSection: FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
+const MenuSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <View className="mb-6">
     <Text className="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">
       {title}
@@ -19,24 +19,32 @@ const MenuSection: FC<{ title: string, children: React.ReactNode }> = ({ title, 
   </View>
 );
 
-
-const ProfilePage: FC<{ profile: UserProfile | null, loading: boolean, onRefresh: () => void }> 
-  = ({ profile, loading, onRefresh }) => {
+const ProfileScreen = () => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-  const [signOutModalVisible, setSignOutModalVisible] = useState(false)
+  const [signOutModalVisible, setSignOutModalVisible] = useState(false);
+
+  const { user: authUser } = useUser();
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    const data = await getUserInfo(authUser?.id!);
+    setProfile({ ...data, avatar_url: authUser?.imageUrl });
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
 
   return (
     <SafeBoundingView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent /> 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-      >
-        <ProfileHeader 
-          profile={profile} 
-          loading={loading}
-          onRefresh={onRefresh}
-        />
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <ProfileHeader profile={profile} loading={loading} onRefresh={fetchProfile} />
+
         <View className="px-6 py-6">
           <MenuSection title="Account">
             <MenuItem
@@ -141,42 +149,19 @@ const ProfilePage: FC<{ profile: UserProfile | null, loading: boolean, onRefresh
                 label="Sign Out"
                 subtitle="Sign out of your account"
                 isDestructive
-                onPress={()=>setSignOutModalVisible(true)}
+                onPress={() => setSignOutModalVisible(true)}
                 disabled={loading}
               />
             </View>
           )}
+
           <View className="h-8" />
         </View>
       </ScrollView>
-      <SignOutModal visible={signOutModalVisible} setVisible={setSignOutModalVisible}/>
+
+      <SignOutModal visible={signOutModalVisible} setVisible={setSignOutModalVisible} />
     </SafeBoundingView>
   );
 };
 
-const App: FC = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(false); 
-  const { user : authUser  } = useUser();
-
-  const fetchProfile = async () => {
-    setLoading(true)
-    const data = await getUserInfo(authUser?.id!)
-    setProfile({...data, avatar_url:authUser?.imageUrl})
-    setLoading(false)
-  };
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
-
-  return (
-    <ProfilePage 
-      profile={profile} 
-      loading={loading}
-      onRefresh={fetchProfile}
-    />
-  );
-};
-
-export default App;
+export default ProfileScreen;

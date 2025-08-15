@@ -3,12 +3,12 @@ import React from 'react';
 import { Platform, View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+
 interface Tab {
   name: string;
   title: string;
   icon: any;
 }
-
 const tabs: Tab[] = [
   {
     name: "home",
@@ -35,7 +35,7 @@ const tabs: Tab[] = [
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
-    <View className={`bg-gray-100 px-5 pt-4 ${Platform.OS === 'ios' ? 'pb-12' : 'pb-12'}`}>
+    <View className={` px-3 pb-4`}>
       <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -66,7 +66,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              className={`flex-1 items-center ${route.name === 'add-space' && 'hidden'}`}
+              className={`flex-1 items-center ${['add-space', 'manage-space','edit-space', 'create-org', 'join-org'].includes(route.name) && 'hidden'}`}
             >
               <View className=''>
                 <View className={`w-8 h-8 mx-auto items-center justify-center mb-0.5 ${
