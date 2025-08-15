@@ -8,14 +8,39 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { getSpaces } from "@/supabase/controllers/spaces.controller";
-import "nativewind";
-import { useNavigation } from "@react-navigation/native";
-import { useUser } from '@clerk/clerk-expo';
-import { getUserInfo } from '@/supabase/controllers/user.controller';
-import type { UserProfile } from '@/types/database.type';
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { getSpaceFromId, getSpaces } from '@/supabase/controllers/spaces.controller';
+
+type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: {
+          id: string;
+          email: string;
+          name: string;
+          avatar_url?: string;
+          role: 'owner' | 'user';
+        };
+      };
+    };
+  };
+};
+
+type UserProfile = Database['public']['Tables']['users']['Row'];
+
+
+interface Hall {
+  id: number;
+  name: string;
+  location: string;
+  price: number;
+  rating: number;
+  image: string;
+  capacity: string;
+  isNew: boolean;
+}
 
 interface Category {
   id: number;
@@ -36,14 +61,76 @@ const categories: Category[] = [
   { id: 5, name: "Social", icon: "chatbubbles-outline" },
 ];
 
-const Home = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(false);
-  const navigation = useNavigation<any>(); // <-- Now inside the component
-  const [activeCategory, setActiveCategory] = useState(0);
-  const [spaces, setSpaces] = useState<any>([]);
+const recentBookings: Booking[] = [
+    {
+      id: 1,
+      hallName: 'Sunset Pavilion',
+      date: 'Dec 25, 2024',
+      status: 'Confirmed',
+      statusColor: '#16a34a',
+      statusBg: '#dcfce7',
+      amount: 'Rs. 50,000',
+      image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=100&h=100&fit=crop'
+    },
+    {
+      id: 2,
+      hallName: 'Royal Gardens',
+      date: 'Jan 15, 2025',
+      status: 'Pending',
+      statusColor: '#ea580c',
+      statusBg: '#fff7ed',
+      amount: 'Rs. 30,000',
+      image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop'
+    },
+];
 
-  const { user: authUser } = useUser();
+const Header: FC<{ profile: UserProfile | null }> = ({ profile }) => (
+  <View className="flex-row justify-between items-center px-6 pt-6 pb-4 mt-6">
+    <View>
+      <Text className="text-black text-3xl font-bold">Explore</Text>
+    </View>
+  </View>
+);
+
+const SearchBar: FC = () => (
+  <View className="flex-row gap-3 px-6 mt-4">
+    <View className="flex-1 flex-row items-center bg-white rounded-2xl px-6">
+      <Ionicons name="search" size={20} color="#9ca3af" className='-mt-1'/>
+      <TextInput
+        placeholder="Search venues, locations..."
+        placeholderTextColor="#9ca3af"
+        className="flex-1 text-black text-lg py-4 ml-2"
+      />
+   </View>
+    <TouchableOpacity className="bg-white aspect-square p-3 rounded-2xl justify-center items-center">
+      <Ionicons name="options-outline" size={24} color="#000" />
+    </TouchableOpacity>
+  </View>
+);
+
+const CategoryPills: FC = () => {
+  const [activeCategory, setActiveCategory] = useState<number>(0);
+
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, marginTop: 24, gap: 12, paddingBottom: 4 }}>
+      {categories.map((category, index) => (
+        <TouchableOpacity
+          key={category.id}
+          onPress={() => setActiveCategory(index)}
+          className={`flex-row justify-center items-center gap-2 px-5 py-3 rounded-full ${index === activeCategory ? 'bg-black' : 'bg-white'}`}
+        >
+          <Ionicons name={category.icon} size={20} color={index === activeCategory ? '#fff' : '#000'}  />
+          <Text className={`text-md mt-1 ${index === activeCategory ? 'text-white' : 'text-black'}`}>
+            {category.name}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+};
+
+const VenueCard: FC<{ hall: Hall }> = ({ hall }) => {
+  const [isLiked, setIsLiked] = useState(false);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -62,7 +149,9 @@ const Home = () => {
       if (error) {
         console.error("Error fetching spaces:", error);
       } else {
-        setSpaces(data || []);
+          setSpaces(data || []);
+        if(data && data.length>0 && data[0]?.id)
+          await spaceThruId(data[0]?.id)
         console.log("Fetched spaces:", data);
       }
     } catch (error) {
@@ -70,7 +159,17 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
+  const spaceThruId = async (spaceId:string)=>
+  {
+    try
+    {
+        const {data, error} = await getSpaceFromId(spaceId);
+        if(error){console.log(error?.message)}
+        else{console.log("Returned Data: ",data)}
+    }catch(error){console.log(error)}
+  }
+
+  useEffect(()=>{
     fetchSpaces();
   }, []);
   
@@ -149,34 +248,8 @@ const Home = () => {
               <Text className="text-indigo-600 font-semibold">View All</Text>
             </TouchableOpacity>
           </View>
-
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
-            {spaces.map((hall: any) => (
-              <TouchableOpacity
-                key={hall.id}
-                className="w-72 h-72 rounded-3xl overflow-hidden mr-4 bg-gray-700"
-                onPress={() => navigation.navigate("hall-details", { hall })}
-              >
-                <Image
-                  source={{ uri: hall["spaces-images"]?.[0]?.link }}
-                  className="absolute w-full h-full"
-                />
-                <View className="absolute inset-0 bg-black/30" />
-                <View className="absolute bottom-0 left-0 right-0 p-4">
-                  <Text className="text-white text-2xl font-bold mb-1">{hall.name}</Text>
-                  <View className="flex-row items-center space-x-4">
-                    <View className="flex-row items-center space-x-1">
-                      <Ionicons name="location" size={16} color="white" />
-                      <Text className="text-gray-200 text-sm">{hall.location}</Text>
-                    </View>
-                    <View className="flex-row items-center space-x-1">
-                      <Ionicons name="people" size={16} color="white" />
-                      <Text className="text-gray-200 text-sm">{hall.capacity}</Text>
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-6 pb-4">
+            {spaces.map((space:any) => <VenueCard key={space.id} hall={{...space, price:space.pph, rating:5, isNew:true, image:space["spaces_images"]?.[0]?.link}} />)}
           </ScrollView>
         </View>
 
@@ -253,4 +326,24 @@ const Home = () => {
   );
 };
 
-export default Home;
+
+const App: FC = () => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const mockProfile: UserProfile = {
+      id: "1",
+      email: "posture@gmail.com",
+      name: "Posture Man",
+      role: "user",
+      avatar_url: "",
+    };
+    
+    setProfile(mockProfile);
+  }, []);
+
+  return <HomePage profile={profile} />;
+}
+
+
+export default App;
