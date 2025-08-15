@@ -149,25 +149,15 @@ const VenueCard: FC<{ hall: Hall }> = ({ hall }) => {
       if (error) {
         console.error("Error fetching spaces:", error);
       } else {
-          setSpaces(data || []);
-        if(data && data.length>0 && data[0]?.id)
-          await spaceThruId(data[0]?.id)
+        
+        setSpaces(data || []);
         console.log("Fetched spaces:", data);
+
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
     }
   };
-
-  const spaceThruId = async (spaceId:string)=>
-  {
-    try
-    {
-        const {data, error} = await getSpaceFromId(spaceId);
-        if(error){console.log(error?.message)}
-        else{console.log("Returned Data: ",data)}
-    }catch(error){console.log(error)}
-  }
 
   useEffect(()=>{
     fetchSpaces();
