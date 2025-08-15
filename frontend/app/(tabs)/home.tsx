@@ -10,7 +10,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getSpaces } from '@/supabase/controllers/spaces.controller';
+import { getSpaceFromId, getSpaces } from '@/supabase/controllers/spaces.controller';
 
 type Database = {
   public: {
@@ -92,7 +92,6 @@ const recentBookings: Booking[] = [
       image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=100&h=100&fit=crop'
     },
 ];
-
 
 const Header: FC<{ profile: UserProfile | null }> = ({ profile }) => (
   <View className="flex-row justify-between items-center px-6 pt-6 pb-4 mt-6">
@@ -199,13 +198,25 @@ const HomePage: FC<{ profile: UserProfile | null }> = ({ profile }) => {
       if (error) {
         console.error("Error fetching spaces:", error);
       } else {
-        setSpaces(data || []);
+          setSpaces(data || []);
+        if(data && data.length>0 && data[0]?.id)
+          await spaceThruId(data[0]?.id)
         console.log("Fetched spaces:", data);
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
     }
   };
+
+  const spaceThruId = async (spaceId:string)=>
+  {
+    try
+    {
+        const {data, error} = await getSpaceFromId(spaceId);
+        if(error){console.log(error?.message)}
+        else{console.log("Returned Data: ",data)}
+    }catch(error){console.log(error)}
+  }
 
   useEffect(()=>{
     fetchSpaces();
@@ -229,7 +240,7 @@ const HomePage: FC<{ profile: UserProfile | null }> = ({ profile }) => {
             </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="-mx-4 px-6 pb-4">
-            {spaces.map((space:any) => <VenueCard key={space.id} hall={{...space, price:space.pph, rating:5, isNew:true, image:space["spaces-images"][0].link}} />)}
+            {spaces.map((space:any) => <VenueCard key={space.id} hall={{...space, price:space.pph, rating:5, isNew:true, image:space["spaces_images"]?.[0]?.link}} />)}
           </ScrollView>
 
           <View className="flex-row justify-between items-center my-6">
@@ -261,7 +272,6 @@ const App: FC = () => {
     };
     
     setProfile(mockProfile);
-
   }, []);
 
   return <HomePage profile={profile} />;

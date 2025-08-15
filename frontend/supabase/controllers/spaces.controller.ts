@@ -57,11 +57,17 @@ const uploadFile = async({filePath, fileData, fileType}:{filePath:string, fileDa
   return publicUrlData.publicUrl;
 }
 
+export const getSpaceFromId = async (spaceId:string)=>
+{
+    const {data, error} = await supabase.from("spaces").select("*, spaces_images(link)").eq("id",spaceId).single()
+
+    return {data, error};
+}
 
 export const getSpaces = async () => {
   const { data, error } = await supabase
     .from('spaces')
-    .select('*, spaces-images(link)')
+    .select('*, spaces_images(link)')
   return { data, error };
 }
 
