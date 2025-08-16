@@ -1,10 +1,9 @@
 import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { createSpace } from '@/supabase/controllers/spaces.controller';
 import * as DocumentPicker from "expo-document-picker";
-import { supabase } from '@/supabase/supabase';
+import * as FileSystem from "expo-file-system";
 import { Image } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import { decode } from 'base64-arraybuffer'
@@ -19,32 +18,41 @@ export default function AddSpacesScreen() {
   const [organizationid, setOrganizationId] = useState('');
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const { user } = useUser();
+  
 
-    async function pickAndUploadFile(spaceId: string) {
-        try {
-            const result = await DocumentPicker.getDocumentAsync({
-              type: ["image/*"],
-              copyToCacheDirectory: true
-            });
-
-            if (result.canceled) {
-              console.log("User cancelled file picker");
-              return null;
-            }
-            const file = result.assets[0];
-            const fileExt = file.name.split(".").pop();
-            const fileName = `${spaceId}-${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
-            const response = await fetch(file.uri);
-            const fileData = await (await response.blob()).arrayBuffer();
-            setImages({filePath, fileData, fileType:file.mimeType, fileUri:file.uri})
-        } catch (err) {
-            console.error("Error picking/uploading file:", err);
-            return null;
-        }
+  async function pickAndUploadFile(spaceId: string) {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*"],
+        copyToCacheDirectory: true
+      });
+  
+      if (result.canceled) {
+        console.log("User cancelled file picker");
+        return null;
+      }
+      const file = result.assets[0];
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${spaceId}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      const base64 = await FileSystem.readAsStringAsync(file.uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const fileData = decode(base64);
+  
+      setImages({
+        filePath,
+        fileData,
+        fileType: file.mimeType,
+        fileUri: file.uri,
+      });
+  
+      return filePath;
+    } catch (err) {
+      console.error("Error picking/uploading file:", err);
+      return null;
     }
-
-
+  }
   const handleSubmit = async () => {
     if (!name || !capacity || !location || !description || !pph) {
       Alert.alert('Error', 'Please fill all fields');
@@ -58,6 +66,7 @@ export default function AddSpacesScreen() {
       description,
       pph,
       ownerid: user?.id!,
+      id: undefined
     }, images);
     console.log(error)
     if (error) {
@@ -133,7 +142,6 @@ export default function AddSpacesScreen() {
                 const url = await pickAndUploadFile("space123");
                 if (url) {
                 console.log("Uploaded file URL:", url);
-                // Save this URL in your spaces table along with other fields
                 }
             }}
             className="bg-black p-4 rounded-xl mt-2"
