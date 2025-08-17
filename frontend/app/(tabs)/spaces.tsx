@@ -1,6 +1,7 @@
 import { Image, ScrollView, Text, TouchableOpacity, View, StatusBar, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+//@ts-ignore
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { getMySpaces } from '@/supabase/controllers/spaces.controller';
@@ -44,11 +45,11 @@ export default function SpacesScreen() {
             <Text className="text-gray-600 text-lg mt-1">Manage your venues</Text>
           </View>
           <View className="flex-row space-x-4 mt-4 gap-2">
-            <View className="bg-white/80 rounded-2xl p-4 flex-1 shadow-sm">
+            <View className="bg-white/80 rounded-2xl p-4 flex-1">
               <Text className="text-2xl font-bold text-gray-900">{spaces?.length || 0}</Text>
               <Text className="text-sm text-gray-600">Total Spaces</Text>
             </View>
-            <View className="bg-white/80 rounded-2xl p-4 flex-1 shadow-sm">
+            <View className="bg-white/80 rounded-2xl p-4 flex-1">
               <Text className="text-2xl font-bold text-green-600">Active</Text>
               <Text className="text-sm text-gray-600">Status</Text>
             </View>
@@ -59,8 +60,8 @@ export default function SpacesScreen() {
           <View className="flex-row items-center justify-between mb-6">
             <Text className="text-gray-900 text-xl font-bold">Your Venues</Text>
             <TouchableOpacity
-              onPress={() => navigate('/(tabs)/add-space')}
-              className="bg-gray-900 px-4 py-2 rounded-xl flex-row items-center shadow-sm"
+              onPress={() => navigate('/space/create')}
+              className="bg-gray-900 px-4 py-2 rounded-xl flex-row items-center "
             >
               <Ionicons name="add" size={20} color="#E9F0E9" />
               <Text className="text-white font-semibold ml-1">Add Space</Text>
@@ -73,7 +74,7 @@ export default function SpacesScreen() {
                 <TouchableOpacity
                   key={space.id}
                   onPress={() => navigate(`/spaces?id=${space.id}`)}
-                  className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 w-72"
+                  className="bg-white rounded-3xl overflow-hidden border border-gray-100 w-72"
                 >
                   <View className="relative">
                     <Image
@@ -105,14 +106,14 @@ export default function SpacesScreen() {
                     </View>
                     <View className="flex-row mt-4 gap-2">
                       <TouchableOpacity
-                        onPress={() => navigate(`/manage-space?id=${space.id}`)}
-                        className="bg-gray-900 rounded-xl px-4 py-2 flex-1 shadow-sm"
+                        onPress={() => navigate(`/space/${space.id}/manage`)}
+                        className="bg-gray-900 rounded-xl px-4 py-2 flex-1 "
                       >
                         <Text className="text-white text-center font-semibold">Manage</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => navigate(`/edit-space?id=${space.id}`)}
-                        className="bg-gray-100 rounded-xl px-4 py-2 flex-1 shadow-sm"
+                        onPress={() => navigate(`/space/${space.id}/edit`)}
+                        className="bg-gray-100 rounded-xl px-4 py-2 flex-1"
                       >
                         <Text className="text-gray-900 text-center font-semibold">Edit</Text>
                       </TouchableOpacity>
@@ -129,8 +130,8 @@ export default function SpacesScreen() {
               <Text className="text-xl font-semibold text-gray-900 mb-2">No spaces yet</Text>
               <Text className="text-gray-600 text-center mb-6">Create your first venue to start managing bookings</Text>
               <TouchableOpacity
-                onPress={() => navigate('/(tabs)/add-space')}
-                className="bg-gray-900 py-3 px-6 rounded-xl shadow-sm"
+                onPress={() => navigate('/space/create')}
+                className="bg-gray-900 py-3 px-6 rounded-xl"
               >
                 <Text className="text-white text-lg font-semibold">Create Your First Space</Text>
               </TouchableOpacity>
@@ -145,45 +146,29 @@ export default function SpacesScreen() {
               <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
             </TouchableOpacity>
           </View>
-          <View className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+          <View className="bg-white rounded-3xl p-6 border border-gray-100">
             <View className="flex-row items-center mb-6">
-              <View className="bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rounded-2xl mr-4">
-                <MaterialCommunityIcons name="office-building" size={32} color="#4F46E5" />
+              <View className="bg-primary p-4 rounded-2xl mr-4">
+                <MaterialCommunityIcons name="office-building" size={32} color="black" />
               </View>
               <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-900 mb-1">Cult Hub</Text>
-                <Text className="text-gray-600">Join or create a Cult to collaborate</Text>
+                <Text className="text-lg font-semibold text-gray-900 mb-1">Organisation</Text>
+                <Text className="text-gray-600">Join or create an org to collaborate</Text>
               </View>
             </View>
-            <View className="bg-gray-50 rounded-2xl p-4 mb-6">
-              <Text className="font-semibold text-gray-900 mb-3">Benefits of joining:</Text>
-              <View className="space-y-2">
-                <View className="flex-row items-center">
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text className="text-gray-600 ml-2">Shared space management</Text>
-                </View>
-                <View className="flex-row items-center">
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text className="text-gray-600 ml-2">Team collaboration tools</Text>
-                </View>
-                <View className="flex-row items-center">
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text className="text-gray-600 ml-2">Advanced analytics</Text>
-                </View>
-              </View>
-            </View>
-            <View className="flex-row space-x-3 gap-2">
+            
+            <View className="flex-row items-center space-x-3 gap-2">
               <TouchableOpacity
                 onPress={() => navigate('/create-org')}
-                className="bg-gray-900 py-3 px-4 rounded-xl flex-1 shadow-sm"
+                className="bg-gray-900 py-2 px-4 rounded-xl flex-1 border-2"
               >
-                <Text className="text-white text-base text-center font-semibold">Create a Cult</Text>
+                <Text className="text-white  text-base text-center font-semibold">Create</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => navigate('/join-org')}
-                className="border-2 border-gray-200 py-3 px-4 rounded-xl flex-1 shadow-sm"
+                className="border-2 border-gray-200 py-2 px-4 rounded-xl flex-1 "
               >
-                <Text className="text-gray-900 text-base text-center font-semibold">Join a Cult</Text>
+                <Text className="text-gray-900 text-base text-center font-semibold">Join</Text>
               </TouchableOpacity>
             </View>
           </View>

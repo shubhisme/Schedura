@@ -11,11 +11,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaces } from "@/supabase/controllers/spaces.controller";
-import "nativewind";
-import { useNavigation } from "@react-navigation/native";
 import { useUser } from '@clerk/clerk-expo';
 import { getUserInfo } from '@/supabase/controllers/user.controller';
 import type { UserProfile } from '@/types/database.type';
+//@ts-ignore
+import { useRouter } from 'expo-router';
 
 interface Category {
   id: number;
@@ -39,7 +39,7 @@ const categories: Category[] = [
 const Home = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation<any>(); // <-- Now inside the component
+  const { navigate } = useRouter();
   const [activeCategory, setActiveCategory] = useState(0);
   const [spaces, setSpaces] = useState<any>([]);
 
@@ -76,13 +76,12 @@ const Home = () => {
   
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView className="flex-1 bg-white">
       <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
-      <View style={{ backgroundColor: "#E9F0E9" }} className="px-6 pt-12 pb-6">
-        <View className="flex-row items-center justify-between mb-4">
+      <View  className="bg-primary rounded-b-3xl pt-12 pb-6">
+        <View className="flex-row items-center justify-between px-6  mb-2">
           <View className="flex-1">
-            <Text className="text-3xl font-bold text-gray-900">Explore</Text>
-            <Text className="text-lg text-gray-600 mt-1">Hi, {profile?.name}!</Text>
+            <Text className="text-3xl font-bold text-black">Explore</Text>
           </View>
           <View className="flex-row items-center space-x-3">
             <TouchableOpacity className="bg-white/70 p-2 rounded-full">
@@ -94,44 +93,41 @@ const Home = () => {
           </View>
         </View>
 
-        <View className="flex-row items-center space-x-3">
-          <View className="flex-1 flex-row items-center bg-white/80 rounded-2xl px-4 shadow-sm border border-white/50">
+        <View className="flex-row items-center space-x-3 px-6 pt-2">
+          <View className="flex-1 flex-row items-center bg-white/80 rounded-2xl px-4 border border-white/50">
             <Ionicons name="search" size={20} color="#6b7280" />
             <TextInput
               placeholder="Search venues, locations..."
               placeholderTextColor="#6b7280"
-              className="flex-1 py-4 ml-3 text-base text-gray-900"
+              className="flex-1 py-3 ml-3 text-base text-gray-900"
             />
           </View>
-          <TouchableOpacity className="bg-white/80 p-3 rounded-2xl shadow-sm border border-white/50">
-            <Ionicons name="options-outline" size={24} color="#374151" />
+          <TouchableOpacity className="bg-white/80 p-3 rounded-2xl border border-white/50">
+            <Ionicons name="options-outline" size={20} color="#374151" />
           </TouchableOpacity>
         </View>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-gray-100">
-        {/* Categories */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="px-4 mt-6"
+          className="px-6 mt-6"
           contentContainerStyle={{ columnGap: 12 }}
         >
           {categories.map((category: Category, index: number) => (
             <TouchableOpacity
               key={category.id}
               onPress={() => setActiveCategory(index)}
-              className={`flex-row items-center space-x-2 px-5 py-3 rounded-full ${
-                index === activeCategory ? "bg-gray-900" : "bg-white"
+              className={`flex-row items-center space-x-2 px-4 py-2.5 rounded-full ${
+                index === activeCategory ? "bg-black" : "bg-white"
               }`}
             >
               <Ionicons
                 name={category.icon}
-                size={20}
+                size={16}
                 color={index === activeCategory ? "#fff" : "#000"}
+                className="-mt-1"
               />
               <Text
-                className={`text-sm font-medium ${
+                className={`text-xs font-medium ${
                   index === activeCategory ? "text-white" : "text-black"
                 }`}
               >
@@ -140,13 +136,18 @@ const Home = () => {
             </TouchableOpacity>
           ))}
         </ScrollView>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-white">
+        {/* Categories */}
+        
 
         {/* Featured Venues */}
         <View className="mt-8">
           <View className="flex-row justify-between items-center px-6 mb-4">
-            <Text className="text-xl font-bold text-gray-900">Featured Venues</Text>
+            <Text className="text-xl font-bold text-black">Featured Venues</Text>
             <TouchableOpacity>
-              <Text className="text-indigo-600 font-semibold">View All</Text>
+              <Text className="text-black font-semibold">View All</Text>
             </TouchableOpacity>
           </View>
 
@@ -155,7 +156,7 @@ const Home = () => {
               <TouchableOpacity
                 key={hall.id}
                 className="w-72 h-72 rounded-3xl overflow-hidden mr-4 bg-gray-700"
-                onPress={() => navigation.navigate("hall-details", { hall })}
+                onPress={() => navigate(`/space/${hall.id}`)}
               >
                 <Image
                   source={{ uri: hall["spaces-images"]?.[0]?.link }}
@@ -194,7 +195,7 @@ const Home = () => {
               <TouchableOpacity
                 key={`rec-${hall.id}`}
                 className="w-64 h-64 rounded-2xl overflow-hidden mr-4 bg-gray-700"
-                onPress={() => navigation.navigate("hall-details", { hall })}
+                onPress={() => navigate(`/space/${hall.id}`)}
               >
                 <Image
                   source={{ uri: hall["spaces-images"]?.[0]?.link }}
@@ -223,7 +224,7 @@ const Home = () => {
               <TouchableOpacity
                 key={`promo-${hall.id}`}
                 className="w-80 h-48 rounded-2xl overflow-hidden mr-4 bg-gray-700"
-                onPress={() => navigation.navigate("hall-details", { hall })}
+                onPress={() => navigate(`/space/${hall.id}`)}
               >
                 <Image
                   source={{ uri: hall["spaces-images"]?.[0]?.link }}

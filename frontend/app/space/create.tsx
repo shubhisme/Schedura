@@ -1,4 +1,4 @@
-import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useState } from 'react';
 import { createSpace } from '@/supabase/controllers/spaces.controller';
@@ -7,6 +7,8 @@ import * as FileSystem from "expo-file-system";
 import { Image } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import { decode } from 'base64-arraybuffer'
+import { Ionicons } from '@expo/vector-icons';
+
 
 export default function AddSpacesScreen() {
   const [name, setName] = useState('');
@@ -84,7 +86,8 @@ export default function AddSpacesScreen() {
   };
 
   return (
-    <SafeBoundingView className="flex-1">
+    <SafeBoundingView className="flex-1 bg-white">
+      <StatusBar backgroundColor="#E9F0E9" />
       <ScrollView>
         <View className='p-6 bg-primary rounded-b-3xl pb-7'>
           <Text className="text-black text-3xl font-bold mt-6">Add Spaces</Text>
@@ -115,6 +118,7 @@ export default function AddSpacesScreen() {
             value={description}
             onChangeText={setDescription}
             multiline
+            numberOfLines={10}
             className="bg-white p-4 rounded-xl border border-gray-200"
           />
           <TextInput
@@ -123,7 +127,7 @@ export default function AddSpacesScreen() {
             onChangeText={setPph}
             className="bg-white p-4 rounded-xl border border-gray-200"
           />
-          <View>
+          <View className="flex-row items-center gap-4">
             {
               images.fileUri ?
               <View className='rounded-xl overflow-hidden border border-black/20 w-fit'>
@@ -134,20 +138,19 @@ export default function AddSpacesScreen() {
               </View>
               :
               <></>
-            }      
+            }
+            <TouchableOpacity
+                  onPress={async () => {
+                      const url = await pickAndUploadFile("schedura-space");
+                      if (url) {
+                        console.log("Uploaded file URL:", url);
+                      }
+                  }}
+                  className=" border-2 border-dashed p-4 rounded-xl h-20 w-20 justify-center items-center"
+                >
+                  <Ionicons name="add" size={24} color="black" />
+            </TouchableOpacity>      
           </View>
-          
-          <TouchableOpacity
-            onPress={async () => {
-                const url = await pickAndUploadFile("space123");
-                if (url) {
-                console.log("Uploaded file URL:", url);
-                }
-            }}
-            className="bg-black p-4 rounded-xl mt-2"
-            >
-            <Text className="text-white text-center">Upload Image</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleSubmit}

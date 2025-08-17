@@ -35,7 +35,7 @@ const tabs: Tab[] = [
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
-    <View className={` px-3 pb-4`}>
+    <View className={` px-3 pb-4 bg-white`}>
       <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -47,7 +47,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
 
           const isFocused = state.index === index;
           const tab = tabs.find(t => t.name === route.name);
-
+          const hiddenRoutes = ['add-space', 'create-space'];
           const onPress = () => {
             const event = navigation.emit({
               type: 'tabPress',

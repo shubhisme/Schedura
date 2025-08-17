@@ -10,11 +10,11 @@ import {
   RefreshControl,
   Dimensions
 } from "react-native";
-import { useRouter } from "expo-router";
+//@ts-ignore
+import { useRouter, navigate } from "expo-router";
 import { deleteMySpace } from "@/supabase/controllers/spaces.controller";
 import { useUser } from "@clerk/clerk-expo";
 import { getMySpaces } from "@/supabase/controllers/spaces.controller";
-import { navigate } from "expo-router/build/global-state/routing";
 
 type Space = {
   id: string;
@@ -25,8 +25,6 @@ type Space = {
   pph: number;
   images?: string[];
 };
-
-const { width } = Dimensions.get('window');
 
 export default function ManageSpacesPage() {
   const router = useRouter();
@@ -112,7 +110,7 @@ export default function ManageSpacesPage() {
         Start earning by listing your first space. It only takes a few minutes to get started.
       </Text>
       <TouchableOpacity
-        className="bg-blue-500 px-8 py-4 rounded-xl shadow-sm active:bg-blue-600"
+        className="bg-blue-500 px-8 py-4 rounded-xl  active:bg-blue-600"
         onPress={() => navigate("/add-space")}
       >
         <Text className="text-white font-semibold text-lg">Create Your First Space</Text>
@@ -121,7 +119,7 @@ export default function ManageSpacesPage() {
   );
 
   const SpaceCard = ({ space }: { space: any }) => (
-    <View className="bg-white rounded-2xl mb-6 shadow-sm border border-gray-100 overflow-hidden">\
+    <View className="bg-white rounded-2xl mb-6  border border-gray-100 overflow-hidden">
       {(space["spaces-images"]?.length > 0) ? (
         <Image
           source={{ uri: space["spaces-images"][0].link }}
@@ -174,7 +172,7 @@ export default function ManageSpacesPage() {
         <View className="flex-row gap-3">
           <TouchableOpacity
             className="flex-1 bg-blue-500 py-3 rounded-xl active:bg-blue-600"
-            onPress={() => navigate(`/edit-space?id=${space.id}`)}
+            onPress={() => navigate(`/space/${space.id}/edit`)}
           >
             <Text className="text-white font-semibold text-center text-base">
               ✏️ Edit

@@ -1,22 +1,19 @@
-// screens/HallDetails.tsx
 import React, { useState, useEffect } from "react";
 import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Share, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { RouteProp, useRoute } from "@react-navigation/native";
-import { getSpaces } from "@/supabase/controllers/spaces.controller";
-import { useNavigation } from '@react-navigation/native';
-type HallDetailsRouteProp = RouteProp<{ HallDetails: { hall: any } }, "HallDetails">;
+import { getSpaceById } from "@/supabase/controllers/spaces.controller";
+//@ts-ignore
+import { useLocalSearchParams, useRouter } from 'expo-router';
+
 const { width } = Dimensions.get('window');
 
 export default function HallDetails() {
-  const navigation = useNavigation();
-  const route = useRoute<HallDetailsRouteProp>();
-  const { hall } = route.params;
-  
+  const { id } = useLocalSearchParams();
+  const [loading, setLoading] = useState(false) 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  
-  const images = hall["spaces-images"];
+  const { back } = useRouter();
+
   
   const facilities = [
     { name: "WiFi", icon: "wifi", available: true },
@@ -27,36 +24,47 @@ export default function HallDetails() {
     { name: "Sound System", icon: "volume-high", available: true },
   ];
 
-  const [spaces, setSpaces] = useState<any>([]);
+  const [space, setSpace] = useState<any>();
 
-  const fetchSpaces = async () => {
+  const fetchSpace = async () => {
     try {
-      const { data, error } = await getSpaces();
+      setLoading(true);
+      const { data, error } = await getSpaceById(id as string);
       if (error) {
         console.error("Error fetching spaces:", error);
       } else {
-        setSpaces(data || []);
-        console.log("Fetched spaces:", data);
+        setSpace(data);
+        console.log(`Space with ${id} fetched:`, data);
       }
+      setLoading(false);
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
     }
   };
 
   useEffect(() => {
-    fetchSpaces();
+    fetchSpace();
   }, []);
   
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out this amazing venue: ${hall.name} at ${hall.location}`,
+        message: `Check out this amazing venue: ${space.name} at ${space.location}`,
       });
     } catch (error) {
       console.log('Error sharing:', error);
     }
   };
-
+  if (loading || !space) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-gray-600">Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
@@ -75,10 +83,10 @@ export default function HallDetails() {
             }}
             scrollEventThrottle={20}
           >
-            {images.map((image: any, index: number) => (
+            {space?.images.map((image: any, index: number) => (
               <Image
                 key={index}
-                source={{ uri: image.link }}
+                source={{ uri: image }}
                 style={{ width, height: 300 }}
                 className="bg-gray-200"
               />
@@ -86,9 +94,9 @@ export default function HallDetails() {
           </ScrollView>
           
 
-          {images.length > 1 && (
+          {space?.images.length > 1 && (
             <View className="absolute bottom-4 self-center flex-row space-x-2">
-              {images.map((_: any, index: number) => (
+              {space.images.map((_: any, index: number) => (
                 <View
                   key={index}
                   className={`w-2 h-2 rounded-full ${
@@ -102,7 +110,7 @@ export default function HallDetails() {
 
           <View className="absolute top-0 left-0 right-0 flex-row justify-between items-center p-6 pt-12">
             <TouchableOpacity 
-                onPress={() => navigation.goBack()}
+                onPress={() => back()}
                 className="bg-black/30 rounded-full p-3">
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
@@ -132,18 +140,18 @@ export default function HallDetails() {
           <View className="p-6 pb-4">
             <View className="flex-row justify-between items-start mb-4">
               <View className="flex-1">
-                <Text className="text-3xl font-bold text-gray-900 mb-2">{hall.name}</Text>
+                <Text className="text-3xl font-bold text-gray-900 mb-2">{space.name}</Text>
                 <View className="flex-row items-center mb-2">
                   <View className="bg-gray-100 rounded-full p-2 mr-3">
                     <Ionicons name="location" size={16} color="#6B7280" />
                   </View>
-                  <Text className="text-gray-600 text-lg flex-1">{hall.location}</Text>
+                  <Text className="text-gray-600 text-lg flex-1">{space.location}</Text>
                 </View>
                 <View className="flex-row items-center">
                   <View className="bg-gray-100 rounded-full p-2 mr-3">
                     <Ionicons name="people" size={16} color="#6B7280" />
                   </View>
-                  <Text className="text-gray-600 text-lg">Up to {hall.capacity} guests</Text>
+                  <Text className="text-gray-600 text-lg">Up to {space.capacity} guests</Text>
                 </View>
               </View>
               
@@ -165,11 +173,11 @@ export default function HallDetails() {
 
           <View className="px-6 pb-6">
             <View className="flex-row gap-2">
-              <TouchableOpacity className="bg-gray-900 rounded-2xl px-6 py-4 flex-1">
-                <Text className="text-white text-center font-semibold text-lg">Book Now</Text>
+              <TouchableOpacity className="bg-gray-900  rounded-2xl px-6 py-3 flex-1">
+                <Text className="text-white text-center font-semibold text-lg my-auto">Book Now</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="border-2 border-gray-200 rounded-2xl px-6 py-4 flex-1">
-                <Text className="text-gray-900 text-center font-semibold text-lg">Check Availability</Text>
+              <TouchableOpacity className="border-2 border-gray-200 rounded-2xl px-6 py-3 flex-1">
+                <Text className="text-gray-900 text-center font-semibold text-lg">Check Avail</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -178,7 +186,7 @@ export default function HallDetails() {
           <View className="px-6 py-4 border-t border-gray-100">
             <Text className="text-xl font-bold text-gray-900 mb-4">About This Venue</Text>
             <Text className="text-gray-600 leading-relaxed text-base">
-              Experience luxury and elegance at {hall.name}. Our premium venue offers the perfect setting for your special events, from intimate gatherings to grand celebrations. With state-of-the-art facilities and exceptional service, we ensure your event will be unforgettable.
+              Experience luxury and elegance at {space.name}. Our premium venue offers the perfect setting for your special events, from intimate gatherings to grand celebrations. With state-of-the-art facilities and exceptional service, we ensure your event will be unforgettable.
             </Text>
           </View>
 
@@ -220,18 +228,18 @@ export default function HallDetails() {
             <Text className="text-xl font-bold text-gray-900 mb-4">Pricing</Text>
             <View className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6">
               <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-2xl font-bold text-gray-900">₹{hall.pph}</Text>
+                <Text className="text-2xl font-bold text-gray-900">₹{space.pph}</Text>
                 <Text className="text-gray-600">per day</Text>
               </View>
               <Text className="text-gray-600 mb-4">Base price includes venue rental for 8 hours</Text>
               <View className="space-y-2">
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600">Security deposit</Text>
-                  <Text className="text-gray-900 font-semibold">₹{hall.pph}</Text>
+                  <Text className="text-gray-900 font-semibold">₹{space.pph}</Text>
                 </View>
                 <View className="flex-row justify-between">
                   <Text className="text-gray-600">Cleaning fee</Text>
-                  <Text className="text-gray-900 font-semibold">₹{hall.pph}</Text>
+                  <Text className="text-gray-900 font-semibold">₹{space.pph}</Text>
                 </View>
               </View>
             </View>
@@ -296,7 +304,7 @@ export default function HallDetails() {
       <View className="bg-white border-t border-gray-200 px-6 py-4">
         <View className="flex-row items-center justify-between">
           <View>
-            <Text className="text-2xl font-bold text-gray-900">₹{hall.pph}</Text>
+            <Text className="text-2xl font-bold text-gray-900">₹{space.pph}</Text>
             <Text className="text-gray-600">per day</Text>
           </View>
           <TouchableOpacity className="bg-gray-900 rounded-2xl px-8 py-3">
@@ -304,6 +312,7 @@ export default function HallDetails() {
           </TouchableOpacity>
         </View>
       </View>
+      
     </SafeAreaView>
   );
 }

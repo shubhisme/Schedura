@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView, RefreshControl, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+//@ts-ignore
 import { useRouter } from "expo-router";
 import { supabase } from "../../supabase/supabase";
 import { useUser } from "@clerk/clerk-expo";

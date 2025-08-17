@@ -36,13 +36,13 @@ export const ProfileHeader: FC<{
         </Text>
 
         {/* Role Badge */}
-        {(profile?.role) && (
+        {/*(profile?.role) && (
           <View className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
             <Text className="text-black text-sm font-semibold capitalize">
               {profile?.role}
             </Text>
           </View>
-        )}
+        )*/}
 
         {/* Stats Row */}
         <View className="flex-row gap-6 mt-2">
