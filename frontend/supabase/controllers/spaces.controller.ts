@@ -191,3 +191,19 @@ export const getMySpaces = async (userId:string) => {
     .eq('ownerid', userId)
   return { data, error };
 }
+
+export const getSpaceById = async (spaceId: string) => {
+  const { data, error } = await supabase
+    .from('spaces')
+    .select('*, spaces-images(link)')
+    .eq('id', spaceId)
+    .single();
+
+  type SpaceWithImages = Space & { 'spaces-images'?: { link: string }[]; images?: string[] };
+
+  let spaceData = data as SpaceWithImages | null;
+  if (spaceData && Array.isArray(spaceData['spaces-images'])) {
+    spaceData.images = spaceData['spaces-images'].map((img) => img.link);
+  }
+  return { data: spaceData, error };
+}

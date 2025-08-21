@@ -8,6 +8,7 @@ import { ProfileHeader } from '@/components/ProfileHeader';
 import SignOutModal from '@/components/Modals/SignOutModal';
 import type { UserProfile } from '@/types/database.type';
 
+
 const MenuSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <View className="mb-6">
     <Text className="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">
