@@ -160,11 +160,27 @@ const uploadFile = async({filePath, fileData, fileType}:{filePath:string, fileDa
   return publicUrlData.publicUrl;
 }
 
+export const getImagefromId = async (spaceId:string)=>
+{
+    const {data, error} = await supabase.from("spaces_images").select("link").eq("spaceid", spaceId);
+    console.log("Link fetch data: ",data);
+
+    if(error){console.log("Link fetch error: ",error?.message)}
+    return {data, error};
+} 
+
+export const getSpaceFromId = async (spaceId:string)=>
+{
+    const {data, error} = await supabase.from("spaces").select("*").eq("id",spaceId).single();
+    const spaceImage = await getImagefromId(spaceId);
+
+    return {data, error, spaceImage};
+}
 
 export const getSpaces = async () => {
   const { data, error } = await supabase
     .from('spaces')
-    .select('*, spaces-images(link)')
+    .select('*, spaces_images(link)')
   return { data, error };
 }
 

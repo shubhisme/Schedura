@@ -62,15 +62,17 @@ const Home = () => {
       if (error) {
         console.error("Error fetching spaces:", error);
       } else {
+        
         setSpaces(data || []);
         console.log("Fetched spaces:", data);
+
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
     }
   };
 
-  useEffect(() => {
+  useEffect(()=>{
     fetchSpaces();
   }, []);
   
@@ -254,4 +256,24 @@ const Home = () => {
   );
 };
 
-export default Home;
+
+const App: FC = () => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    const mockProfile: UserProfile = {
+      id: "1",
+      email: "posture@gmail.com",
+      name: "Posture Man",
+      role: "user",
+      avatar_url: "",
+    };
+    
+    setProfile(mockProfile);
+  }, []);
+
+  return <HomePage profile={profile} />;
+}
+
+
+export default App;
