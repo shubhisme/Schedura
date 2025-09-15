@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FC } from "react";
 import {
   View,
   Text,
@@ -36,8 +36,8 @@ const categories: Category[] = [
   { id: 5, name: "Social", icon: "chatbubbles-outline" },
 ];
 
-const Home = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+const Home = ({profile,setProfile}:any) => {
+//   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const { navigate } = useRouter();
   const [activeCategory, setActiveCategory] = useState(0);
@@ -267,12 +267,13 @@ const App: FC = () => {
       name: "Posture Man",
       role: "user",
       avatar_url: "",
+      created_at: ""
     };
     
     setProfile(mockProfile);
   }, []);
 
-  return <HomePage profile={profile} />;
+  return <Home profile={profile} setProfile= {setProfile} />;
 }
 
 

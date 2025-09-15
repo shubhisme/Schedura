@@ -19,6 +19,7 @@ export const joinOrganisation = async (userId: string, organisationId: string) =
     if (error) throw error;
     return data;
   };
+  
   export const leaveOrganisation = async (userId: string, organisationId: string) => {
     const { error } = await supabase
       .from("user_organisations")
