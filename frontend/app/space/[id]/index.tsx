@@ -12,7 +12,7 @@ export default function HallDetails() {
   const [loading, setLoading] = useState(false) 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-  const { back } = useRouter();
+  const { back, push } = useRouter();
 
   
   const facilities = [
@@ -173,7 +173,7 @@ export default function HallDetails() {
 
           <View className="px-6 pb-6">
             <View className="flex-row gap-2">
-              <TouchableOpacity className="bg-gray-900  rounded-2xl px-6 py-3 flex-1">
+              <TouchableOpacity onPress={()=>push(`/space/${id}/book`)} className="bg-gray-900  rounded-2xl px-6 py-3 flex-1">
                 <Text className="text-white text-center font-semibold text-lg my-auto">Book Now</Text>
               </TouchableOpacity>
               <TouchableOpacity className="border-2 border-gray-200 rounded-2xl px-6 py-3 flex-1">

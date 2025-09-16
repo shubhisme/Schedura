@@ -8,6 +8,7 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaces } from "@/supabase/controllers/spaces.controller";
@@ -58,6 +59,7 @@ const Home = ({profile,setProfile}:any) => {
 
   const fetchSpaces = async () => {
     try {
+      setLoading(true);
       const { data, error } = await getSpaces();
       if (error) {
         console.error("Error fetching spaces:", error);
@@ -67,6 +69,7 @@ const Home = ({profile,setProfile}:any) => {
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
     }
+    setLoading(false);
   };
 
   useEffect(()=>{
@@ -137,7 +140,14 @@ const Home = ({profile,setProfile}:any) => {
         </ScrollView>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 h-full bg-tertiary">
+      <ScrollView 
+        refreshControl={<RefreshControl
+          refreshing={loading}
+          onRefresh={fetchSpaces}
+          colors={["#374151"]}
+          tintColor="#374151"
+        />} 
+        showsVerticalScrollIndicator={false} className="flex-1 h-full bg-tertiary">
 
         {/* Featured Venues */}
         <View className="mt-8">

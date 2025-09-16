@@ -60,7 +60,10 @@ function AuthGate() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {isSignedIn ? (
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="space" options={{ headerShown: false }} />
+        </>
       ) : (
         <Stack.Screen name="index" options={{ headerShown: false }} />
       )}
