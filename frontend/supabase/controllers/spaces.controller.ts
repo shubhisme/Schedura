@@ -180,16 +180,22 @@ export const getSpaceFromId = async (spaceId:string)=>
 export const getSpaces = async () => {
   const { data, error } = await supabase
     .from('spaces')
-    .select('*, spaces_images(link)')
+    .select('*, spaces-images(link)')
   return { data, error };
 }
 
 export const getMySpaces = async (userId:string) => {
+  console.log("GONNA GET MAH SPACWS")
+  try{
   const { data, error } = await supabase
     .from('spaces')
     .select('*, spaces-images(link)')
     .eq('ownerid', userId)
-  return { data, error };
+    return { data, error };
+  }
+  catch(e){
+    console.log(e)
+  }
 }
 
 export const getSpaceById = async (spaceId: string) => {

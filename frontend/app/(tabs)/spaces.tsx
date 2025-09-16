@@ -15,7 +15,6 @@ export default function SpacesScreen() {
 
   const fetchMySpaces = async () => {
     const { data } = await getMySpaces(user?.id!);
-    console.log(data)
     setSpaces(data);
   }
   
@@ -26,7 +25,6 @@ export default function SpacesScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         className="flex-1"

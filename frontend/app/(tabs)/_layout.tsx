@@ -3,6 +3,8 @@ import React from 'react';
 import { Platform, View, Text, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import SafeBoundingView from '@/components/SafeBoundingView';
 
 interface Tab {
   name: string;
@@ -35,7 +37,7 @@ const tabs: Tab[] = [
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
-    <View className={` px-3 pb-4 bg-white`}>
+    <View className=" bg-tertiary  w-full px-5 py-4">
       <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -69,12 +71,12 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               className={`flex-1 items-center ${['add-space', 'manage-space','edit-space', 'create-org', 'join-org'].includes(route.name) && 'hidden'}`}
             >
               <View className=''>
-                <View className={`w-8 h-8 mx-auto items-center justify-center mb-0.5 ${
+                <View className={`w-8 h-8 mx-auto items-center justify-center  ${
                   isFocused ? ' rounded-full' : ''
                 }`}>
                   <Feather
                     name={tab?.icon}
-                    size={25}
+                    size={20}
                     color={isFocused ? 'black' : '#8E8E93'}
                   />
                 </View>
@@ -98,6 +100,7 @@ export default function TabLayout() {
       tabBar={(props:any) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        freezeOnBlur: true
       }}
     >
       {tabs.map((tab, i) => (
@@ -105,6 +108,7 @@ export default function TabLayout() {
           key={i}
           name={tab.name}
           options={{title: tab.title,}}
+          style={{ zIndex: 10}}
         />
       ))}
     </Tabs>

@@ -62,10 +62,7 @@ const Home = ({profile,setProfile}:any) => {
       if (error) {
         console.error("Error fetching spaces:", error);
       } else {
-        
         setSpaces(data || []);
-        console.log("Fetched spaces:", data);
-
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
@@ -78,14 +75,14 @@ const Home = ({profile,setProfile}:any) => {
   
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-tertiary">
       <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
       <View  className="bg-primary rounded-b-3xl pt-12 pb-6">
         <View className="flex-row items-center justify-between px-6  mb-2">
           <View className="flex-1">
             <Text className="text-3xl font-bold text-black">Explore</Text>
           </View>
-          <View className="flex-row items-center space-x-3">
+          <View className="flex-row items-center gap-x-3">
             <TouchableOpacity className="bg-white/70 p-2 rounded-full">
               <Ionicons name="notifications-outline" size={22} color="#374151" />
             </TouchableOpacity>
@@ -95,7 +92,7 @@ const Home = ({profile,setProfile}:any) => {
           </View>
         </View>
 
-        <View className="flex-row items-center space-x-3 px-6 pt-2">
+        <View className="flex-row items-center gap-x-3 px-6 pt-2">
           <View className="flex-1 flex-row items-center bg-white/80 rounded-2xl px-4 border border-white/50">
             <Ionicons name="search" size={20} color="#6b7280" />
             <TextInput
@@ -118,7 +115,7 @@ const Home = ({profile,setProfile}:any) => {
             <TouchableOpacity
               key={category.id}
               onPress={() => setActiveCategory(index)}
-              className={`flex-row items-center space-x-2 px-4 py-2.5 rounded-full ${
+              className={`flex-row items-center gap-x-2 px-4 py-2.5 rounded-full ${
                 index === activeCategory ? "bg-black" : "bg-white"
               }`}
             >
@@ -126,7 +123,7 @@ const Home = ({profile,setProfile}:any) => {
                 name={category.icon}
                 size={16}
                 color={index === activeCategory ? "#fff" : "#000"}
-                className="-mt-1"
+                className=""
               />
               <Text
                 className={`text-xs font-medium ${
@@ -140,9 +137,7 @@ const Home = ({profile,setProfile}:any) => {
         </ScrollView>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 bg-white">
-        {/* Categories */}
-        
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 h-full bg-tertiary">
 
         {/* Featured Venues */}
         <View className="mt-8">
@@ -153,7 +148,7 @@ const Home = ({profile,setProfile}:any) => {
             </TouchableOpacity>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
+          <ScrollView decelerationRate={0.9} horizontal showsHorizontalScrollIndicator={false} className="pl-4">
             {spaces.map((hall: any) => (
               <TouchableOpacity
                 key={hall.id}
@@ -167,12 +162,12 @@ const Home = ({profile,setProfile}:any) => {
                 <View className="absolute inset-0 bg-black/30" />
                 <View className="absolute bottom-0 left-0 right-0 p-4">
                   <Text className="text-white text-2xl font-bold mb-1">{hall.name}</Text>
-                  <View className="flex-row items-center space-x-4">
-                    <View className="flex-row items-center space-x-1">
+                  <View className="flex-row items-center gap-x-3">
+                    <View className="flex-row items-center gap-x-1">
                       <Ionicons name="location" size={16} color="white" />
                       <Text className="text-gray-200 text-sm">{hall.location}</Text>
                     </View>
-                    <View className="flex-row items-center space-x-1">
+                    <View className="flex-row items-center gap-x-1">
                       <Ionicons name="people" size={16} color="white" />
                       <Text className="text-gray-200 text-sm">{hall.capacity}</Text>
                     </View>
@@ -240,7 +235,7 @@ const Home = ({profile,setProfile}:any) => {
                   </Text>
                 </View>
                 <View className="absolute bottom-0 left-0 right-0 p-4">
-                  <View className="flex-row items-center space-x-2">
+                  <View className="flex-row items-center gap-x-2">
                     <Ionicons name="pricetag" size={16} color="white" />
                     <Text className="text-white text-sm font-semibold">
                       Limited Time Deal
@@ -257,23 +252,8 @@ const Home = ({profile,setProfile}:any) => {
 };
 
 
-const App: FC = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    const mockProfile: UserProfile = {
-      id: "1",
-      email: "posture@gmail.com",
-      name: "Posture Man",
-      role: "user",
-      avatar_url: "",
-      created_at: ""
-    };
-    
-    setProfile(mockProfile);
-  }, []);
-
-  return <Home profile={profile} setProfile= {setProfile} />;
+const App = () => {
+  return <Home  />;
 }
 
 

@@ -7,7 +7,6 @@ import { TextInput, Text, View } from 'react-native';
 
 export default function HomeScreen() {
 
-  const [text, setText] = useState('CHECK')
   return (
     <SafeBoundingView className="flex-1 justify-center items-center">
       <View className='w-full px-10'>

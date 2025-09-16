@@ -1,19 +1,70 @@
 import { Stack } from 'expo-router';
 import "../globals.css";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ClerkProvider } from '@clerk/clerk-expo';
+import { ClerkProvider, useAuth, useUser } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache';
+import * as NavigationBar from 'expo-navigation-bar';
+import { useEffect } from 'react';
+import { AppState, View } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import { updateUserInfo } from '@/supabase/controllers/user.controller';
+//@ts-ignore
+import { useRouter } from 'expo-router';
+
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   return (
-    <ClerkProvider tokenCache={tokenCache}>
-      <SafeAreaProvider >
-        <Stack screenOptions={{headerShown: false }}>
-          <Stack.Screen name="index" options={{ headerShown: false }}/>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+    <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
+      <SafeAreaProvider>
+          <AuthGate />
       </SafeAreaProvider>
     </ClerkProvider>
+  );
+}
+
+function AuthGate() {
+  const { isSignedIn, isLoaded } = useAuth();
+  const { user } = useUser();
+  const { replace } = useRouter();
+
+  const handleRedirect = async () => {
+    if (!user) return;
+    const status = await updateUserInfo(user);
+    if (status === 201 || status === 409) {
+      SplashScreen.hide();
+      replace("/(tabs)/home");
+    }
+  };
+
+  useEffect(() => {
+    const hideNav = async () => {
+      await NavigationBar.setVisibilityAsync("hidden");
+    };
+    hideNav();
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") hideNav();
+    });
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    if (isSignedIn) {
+      handleRedirect();
+    }
+  }, [isSignedIn]);
+
+  if (!isLoaded) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {isSignedIn ? (
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      ) : (
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+      )}
+      <Stack.Screen name="+not-found" />
+    </Stack>
   );
 }

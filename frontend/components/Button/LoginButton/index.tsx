@@ -13,11 +13,11 @@ function LoginButton() {
           strategy: 'oauth_google',
           redirectUrl: AuthSession.makeRedirectUri(),
         })
-        console.log(createdSessionId)
+        console.log("SESSION ID: ",createdSessionId)
   
         if (createdSessionId) {
           setActive!({ session: createdSessionId })
-          console.log(createdSessionId)
+          console.log("SESSION ID: ",createdSessionId)
         } else {
         }
       } catch (err) {

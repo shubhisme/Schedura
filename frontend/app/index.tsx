@@ -1,16 +1,15 @@
-import { Image, Text, View, Dimensions } from 'react-native';
+import { Image, Text, View, Dimensions, SafeAreaView } from 'react-native';
 //@ts-ignore
 import { Link, useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient'; // If you want gradient background
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { updateUserInfo } from '@/supabase/controllers/user.controller';
 import Button from '@/components/Button';
 //@ts-ignore
-import Logo from "@/assets/images/logo.png";
+import Logo from "@/assets/images/logo.jpg";
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useEffect } from 'react';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const { isSignedIn } = useAuth()
@@ -19,7 +18,6 @@ export default function HomeScreen() {
 
   const handleRedirect = async () => {
     const status = await updateUserInfo(user)
-    console.log(status)   
     if(status == 201 || status == 409) {
       return replace('/(tabs)/home')
     }
@@ -83,7 +81,7 @@ export default function HomeScreen() {
           </View>
 
           <View className="">
-            <Text className="text-md text-black/60 text-left  mb-2 px-1">
+            <Text className="text-md text-black/60 text-left  mb-4 px-1">
               By continuing you agree with our{' '}
               <Link 
                 href="https://google.com" 
@@ -99,11 +97,12 @@ export default function HomeScreen() {
                 privacy policy
               </Link>
             </Text>
-            
-            <Button 
-              link="/(auth)" 
-              text="Get Started"
-            />
+            <View className='pb-5'>
+              <Button 
+                link="/(auth)" 
+                text="Get Started"
+              />
+            </View>
           </View>
         </View>
       </SafeBoundingView>
