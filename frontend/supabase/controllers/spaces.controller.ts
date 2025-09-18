@@ -32,6 +32,7 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
     
   return {data, error};
 }
+
 export async function deleteMySpace(spaceId: string, userId: string) {
   try {
     const { data: spaceData, error: spaceError } = await supabase
@@ -96,7 +97,8 @@ export async function deleteMySpace(spaceId: string, userId: string) {
     return { data: null, error: error instanceof Error ? error : new Error("Unknown error occurred") };
   }
 }
-export async function updateSpace(spaceId: string, userId: string, spaceData: Partial<Space>) {
+
+export async function updateSpace(spaceId: string, userId: string, filePath: string , fileData: string , fileType:string ,spaceData: Partial<Space>) {
   try {
     const { data: spaceCheck, error: checkError } = await supabase
       .from("spaces")
@@ -124,18 +126,24 @@ export async function updateSpace(spaceId: string, userId: string, spaceData: Pa
       })
       .eq("id", spaceId)
       .select();
+    
+    const fileurl = await uploadFile({filePath, fileData, fileType});
+    console.log("Uploaded file URL:", fileurl);
 
-    if (error) {
-      console.error("Error updating space:", error);
-      return { data: null, error };
+    const {data : image_data , error: image_error} = await supabase.from("spaces-images").upsert({spaceid:spaceId, link:fileurl});
+
+    if (image_error) {
+      console.error("Error updating space image:", image_error);
+      return { data: null, error: image_error };
     }
 
-    return { data: data[0], error: null };
+    return { data: data && data.length > 0 ? data[0] : null, error: null };
   } catch (error) {
     console.error("Unexpected error:", error);
     return { data: null, error: error instanceof Error ? error : new Error("Unknown error occurred") };
   }
 }
+
 const uploadFile = async({filePath, fileData, fileType}:{filePath:string, fileData:string, fileType:string}) => {
   const { data, error } = await supabase
   .storage
