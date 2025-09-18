@@ -2,12 +2,23 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Image, SafeAreaView, StatusBar } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaces } from "@/supabase/controllers/spaces.controller";
+import { sendBookRequest } from "@/supabase/controllers/request.controller";
+import { useUser } from "@clerk/clerk-expo";
+import { getUserInfo } from "@/supabase/controllers/user.controller";
+import { UserProfile } from "@/types/database.type";
 
 
 export default function SchedulePage() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [spaces, setSpaces] = useState<any>([]);
-  const [booked, setBooked] = useState<{ hall: string; time: string }[]>([]);
+  const [booked, setBooked] = useState<{ hallid: string; time: string; hallname: string }[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toDateString());
+  const { user: authUser } = useUser();
+
+  const fetchProfile = async () => {
+    const data = await getUserInfo(authUser?.id!);
+    setProfile({ ...data, avatar_url: authUser?.imageUrl });
+  };
 
   const fetchSpaces = async () => {
     try {
@@ -16,6 +27,7 @@ export default function SchedulePage() {
         console.error("Error fetching spaces:", error);
       } else {
         setSpaces(data || []);
+        // console.log("Fetched spaces: ",data);
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
@@ -24,6 +36,7 @@ export default function SchedulePage() {
 
   useEffect(() => {
     fetchSpaces();
+    fetchProfile();
   }, []);
 
   const timeSlots = [
@@ -46,13 +59,32 @@ export default function SchedulePage() {
     return days;
   };
 
-  const handleBooking = (hallName: string, time: string) => {
-    setBooked((prev) => [...prev, { hall: hallName, time }]);
-    alert(`✅ Successfully booked ${hallName} at ${time}`);
+  const handleBooking = async (hallId: string, time: string, hallname: string) => {
+    setBooked((prev) => [...prev, { hallid: hallId, time: time, hallname: hallname }]);
+
+    console.log("Booking Detalis: ", { hallId, time, selectedDate });
+
+    try {
+        const result = await sendBookRequest(
+          hallId,
+          selectedDate + ' ' + time,
+          selectedDate + ' ' + time,
+          profile?.id!
+        );
+
+        if (!result.success) {
+            console.error("Error in sending Booking request");
+        } else {
+            console.log("Booking Request Sent");
+        }
+
+    } catch (err) {console.error("Error in handleBooking: ", err);}
+
+    alert(`✅ Successfully booked ${hallname} at ${time}`);
   };
 
-  const isBooked = (hall: string, time: string) =>
-    booked.some((b) => b.hall === hall && b.time === time);
+  const isBooked = (hallname: string, time: string, hallid: string) =>
+    booked.some((b) => b.hallname === hallname && b.time === time && b.hallid === hallid);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
@@ -124,7 +156,7 @@ export default function SchedulePage() {
         <View className="px-6 py-4">
           {spaces.map(
             (hall: {
-              id: number;
+              id: string;
               name: string;
               location: string;
               capacity: number;
@@ -191,53 +223,70 @@ export default function SchedulePage() {
                   
                   <View className="space-y-3">
                     {timeSlots.map((slot, idx) => {
-                      const isSlotBooked = isBooked(hall.name, slot.time);
+                      const isSlotBooked = isBooked(hall.name, slot.time, hall.id);
                       return (
                         <TouchableOpacity
-                          key={idx}
-                          className={`flex-row items-center justify-between p-4 rounded-2xl border-2 ${
+                        key={idx}
+                        className={`flex-col items-center justify-between p-4 rounded-2xl border-2 gap-y-3 ${
                             isSlotBooked
-                              ? "bg-red-50 border-red-200"
-                              : "bg-green-50 border-green-200"
-                          }`}
-                          onPress={() =>
-                            !isSlotBooked && handleBooking(hall.name, slot.time)
-                          }
-                          disabled={isSlotBooked}
+                            ? "bg-red-50 border-red-200"
+                            : "bg-green-50 border-green-200"
+                        }`}
+                        onPress={() => !isSlotBooked && handleBooking(hall.id, slot.time, hall.name)}
+                        disabled={isSlotBooked}
                         >
-                          <View className="flex-row items-center">
-                            <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${
-                              isSlotBooked ? "bg-red-100" : "bg-green-100"
-                            }`}>
-                              <Ionicons 
-                                name={isSlotBooked ? "close-circle" : "time"} 
-                                size={24} 
-                                color={isSlotBooked ? "#EF4444" : "#10B981"} 
-                              />
+                            
+                        <View className="flex flex-row justify-center gap-x-2">
+                            <View className="flex-row items-center">
+                                <View
+                                className={`w-12 h-12 rounded-2xl items-center justify-center mr-4 ${
+                                    isSlotBooked ? "bg-red-100" : "bg-green-100"
+                                }`}
+                                >
+                                <Ionicons
+                                    name={isSlotBooked ? "close-circle" : "time"}
+                                    size={24}
+                                    color={isSlotBooked ? "#EF4444" : "#10B981"}
+                                />
+                                </View>
+
+                                <View>
+                                <Text
+                                    className={`text-lg font-semibold ${
+                                    isSlotBooked ? "text-red-700" : "text-gray-900"
+                                    }`}
+                                >
+                                    {slot.time}
+                                </Text>
+                                <Text
+                                    className={`text-sm ${
+                                    isSlotBooked ? "text-red-500" : "text-gray-600"
+                                    }`}
+                                >
+                                    {slot.label}
+                                </Text>
+                                </View>
                             </View>
-                            <View>
-                              <Text className={`text-lg font-semibold ${
-                                isSlotBooked ? "text-red-700" : "text-gray-900"
-                              }`}>
-                                {slot.time}
-                              </Text>
-                              <Text className={`text-sm ${
-                                isSlotBooked ? "text-red-500" : "text-gray-600"
-                              }`}>
-                                {slot.label}
-                              </Text>
+
+                            <View className="flex flex-col items-end">
+                                <View
+                                className={`px-4 py-2 rounded-full ${
+                                    isSlotBooked ? "bg-red-500" : "bg-green-500"
+                                }`}
+                                >
+                                    <Text className="text-white font-semibold text-sm">
+                                        {isSlotBooked ? "Booked" : "Book Now"}
+                                    </Text>
+                                </View>
+
                             </View>
-                          </View>
-                          
-                          <View className={`px-4 py-2 rounded-full ${
-                            isSlotBooked 
-                              ? "bg-red-500" 
-                              : "bg-green-500"
-                          }`}>
-                            <Text className="text-white font-semibold text-sm">
-                              {isSlotBooked ? "Booked" : "Book Now"}
-                            </Text>
-                          </View>
+                        </View>
+
+                        {isSlotBooked && (
+                        <Text className="text-xs text-red-600 mt-1">
+                            Request sent to owner for approval.
+                        </Text>
+                        )}
                         </TouchableOpacity>
                       );
                     })}
@@ -246,7 +295,7 @@ export default function SchedulePage() {
                   {/* Booking Stats */}
                   <View className="mt-6 p-4 bg-gray-50 rounded-2xl">
                     <Text className="text-center text-sm text-gray-600">
-                      {timeSlots.filter(slot => !isBooked(hall.name, slot.time)).length} of {timeSlots.length} slots available
+                      {timeSlots.filter(slot => !isBooked(hall.name, slot.time, hall.id)).length} of {timeSlots.length} slots available
                     </Text>
                   </View>
                 </View>
@@ -262,7 +311,7 @@ export default function SchedulePage() {
             {booked.map((booking, idx) => (
               <View key={idx} className="flex-row items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
                 <View>
-                  <Text className="font-semibold text-gray-900">{booking.hall}</Text>
+                  <Text className="font-semibold text-gray-900">{booking.hallname}</Text>
                   <Text className="text-sm text-gray-600">{booking.time}</Text>
                 </View>
                 <View className="bg-green-100 px-3 py-1 rounded-full">

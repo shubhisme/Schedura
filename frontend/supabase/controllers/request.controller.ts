@@ -1,8 +1,9 @@
 import type { Space,UserProfile } from "@/types/database.type";
 import { supabase } from "../supabase"
+import { use } from "react";
 
-export const sendBookRequest = async(space_id:string , start_date: Date , end_date:Date, created_by:UserProfile)=>{
-    const {error} =await supabase.from("requests").insert([{spaceid: space_id , start: start_date.toISOString() , end: end_date.toISOString(), approved:false, created_by:created_by.id}])
+export const sendBookRequest = async(space_id:string , start_date: string , end_date:string, user_id:string)=>{
+    const {error} =await supabase.from("requests").insert({spaceid: space_id , start: start_date , end: end_date , approved:false, created_by:user_id})
 
     if(error){console.log("Error Inserting in Requests table: ",error); throw error;}
 

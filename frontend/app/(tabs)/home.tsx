@@ -37,8 +37,8 @@ const categories: Category[] = [
   { id: 5, name: "Social", icon: "chatbubbles-outline" },
 ];
 
-const Home = ({profile,setProfile}:any) => {
-//   const [profile, setProfile] = useState<UserProfile | null>(null);
+const Home = () => {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const { navigate } = useRouter();
   const [activeCategory, setActiveCategory] = useState(0);

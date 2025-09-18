@@ -8,6 +8,7 @@ import type { Space } from "@/types/database.type";
 //@ts-ignore
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
+import SpacesScreen from "@/app/(tabs)/spaces";
 
 export default function EditSpacesScreen() {
   const { user } = useUser();
@@ -90,7 +91,7 @@ export default function EditSpacesScreen() {
       return;
     }
 
-    const { data, error } = await updateSpace(selectedSpace.id, user?.id!, {
+    const { data, error } = await updateSpace(selectedSpace.id, user?.id!, images.filePath , images.fileData , images.fileType, {
       name,
       capacity: parseInt(capacity),
       location,
@@ -101,7 +102,7 @@ export default function EditSpacesScreen() {
     if (error) {
       Alert.alert("Error", error.message);
     } else {
-      Alert.alert("Success", "Space updated successfully");
+      Alert.alert("Success", `${selectedSpace.name} updated successfully`);
     }
   };
 
