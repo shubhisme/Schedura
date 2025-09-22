@@ -1,30 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Share, Dimensions } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
-
-const { width } = Dimensions.get('window');
+import {Calendar} from 'react-native-calendars';
+import SafeBoundingView from "@/components/SafeBoundingView";
+import dayjs from "dayjs"; 
+import { sendBookRequest } from "@/supabase/controllers/request.controller";
+import { useUser } from "@clerk/clerk-expo";
 
 export default function HallBooking() {
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(false) 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const { back, push } = useRouter();
-
-  
-  const facilities = [
-    { name: "WiFi", icon: "wifi", available: true },
-    { name: "Parking", icon: "car", available: true },
-    { name: "AC", icon: "snow", available: true },
-    { name: "Projector", icon: "tv", available: true },
-    { name: "Catering", icon: "restaurant", available: false },
-    { name: "Sound System", icon: "volume-high", available: true },
-  ];
-
+  const [functionalLoading, setFunctionalLoading] = useState(false) 
+  const [markedDates, setMarkedDates] = useState({});
+  const { back } = useRouter();
+  const [reason, setReason] = useState('');
+  const [range, setRange] = useState<{ startDate?: string; endDate?: string }>({});
+  const { user } = useUser();
   const [space, setSpace] = useState<any>();
 
   const fetchSpace = async () => {
@@ -47,15 +41,55 @@ export default function HallBooking() {
     fetchSpace();
   }, []);
   
-  const handleShare = async () => {
-    try {
-      await Share.share({
-        message: `Check out this amazing venue: ${space.name} at ${space.location}`,
-      });
-    } catch (error) {
-      console.log('Error sharing:', error);
+  const markDate = (date: string) => {
+  let { startDate, endDate } = range;
+
+  if (!startDate || (startDate && endDate)) {
+    setRange({ startDate: date, endDate: undefined });
+    setMarkedDates({
+      [date]: { startingDay: true, endingDay: true, color: "black", textColor: "white" },
+    });
+    return;
+  }
+
+  if (dayjs(date).isAfter(dayjs(startDate))) {
+    endDate = date;
+    setRange({ startDate, endDate });
+
+    const rangeObj: any = {};
+    let current = dayjs(startDate);
+    while (current.isBefore(dayjs(endDate)) || current.isSame(dayjs(endDate))) {
+      const dateStr = current.format("YYYY-MM-DD");
+      if (dateStr === startDate) {
+        rangeObj[dateStr] = { startingDay: true, color: "black", textColor: "white" };
+      } else if (dateStr === endDate) {
+        rangeObj[dateStr] = { endingDay: true, color: "black", textColor: "white" };
+      } else {
+        rangeObj[dateStr] = { color: "black", textColor: "white" };
+      }
+      current = current.add(1, "day");
+    }
+    setMarkedDates(rangeObj);
+  } else {
+    setRange({ startDate: date, endDate: undefined });
+    setMarkedDates({
+      [date]: { startingDay: true, endingDay: true, color: "black", textColor: "white" },
+    });
+  }
+};
+
+
+  const sendBookingRequest = async() => {
+    if (range.startDate && user) {
+      setFunctionalLoading(true);
+      const status = await sendBookRequest(space.id, range.startDate, range.endDate || range.startDate, user.id, reason);
+      setFunctionalLoading(false);
+      if(status.success){
+        alert("Booking Request Sent Successfully");
+      }
     }
   };
+
   if (loading || !space) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50">
@@ -67,76 +101,18 @@ export default function HallBooking() {
     );
   }
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeBoundingView className="flex-1 bg-tertiary">
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="relative">
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={({ nativeEvent }) => {
-              const slide = Math.ceil(nativeEvent.contentOffset.x / nativeEvent.layoutMeasurement.width);
-              if (slide !== currentImageIndex) {
-                setCurrentImageIndex(slide);
-              }
-            }}
-            scrollEventThrottle={20}
-          >
-            {space?.images.map((image: any, index: number) => (
-              <Image
-                key={index}
-                source={{ uri: image }}
-                style={{ width, height: 300 }}
-                className="bg-gray-200"
-              />
-            ))}
-          </ScrollView>
-          
-
-          {space?.images.length > 1 && (
-            <View className="absolute bottom-4 self-center flex-row space-x-2">
-              {space.images.map((_: any, index: number) => (
-                <View
-                  key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
-                />
-              ))}
-            </View>
-          )}
-          
-
-          <View className="absolute top-0 left-0 right-0 flex-row justify-between items-center p-6 pt-12">
+      <ScrollView className="flex-1 relative" showsVerticalScrollIndicator={false}>
+          <View className=" bg-tertiary flex-row justify-between items-center px-6 z-10 h-14">
             <TouchableOpacity 
                 onPress={() => back()}
                 className="bg-black/30 rounded-full p-3">
-              <Ionicons name="arrow-back" size={24} color="white" />
+              <Ionicons name="arrow-back" size={15} color="white" />
             </TouchableOpacity>
-            <View className="flex-row space-x-3">
-              <TouchableOpacity 
-                onPress={handleShare}
-                className="bg-black/30 rounded-full p-3"
-              >
-                <Ionicons name="share-outline" size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => setIsFavorite(!isFavorite)}
-                className="bg-black/30 rounded-full p-3"
-              >
-                <Ionicons 
-                  name={isFavorite ? "heart" : "heart-outline"} 
-                  size={24} 
-                  color={isFavorite ? "#EF4444" : "white"} 
-                />
-              </TouchableOpacity>
-            </View>
           </View>
-        </View>
-
-        <View className="bg-white rounded-t-3xl -mt-6 relative z-10">
+        <View className="bg-tertiary rounded-t-3xl -mt-6 relative ">
 
           <View className="p-6 pb-4">
             <View className="flex-row justify-between items-start mb-4">
@@ -149,8 +125,6 @@ export default function HallBooking() {
                 <Text className="text-green-800 font-semibold">Available</Text>
               </View>
             </View>
-            
-
             <View className="flex-row items-center mb-4">
               <View className="flex-row items-center bg-yellow-100 rounded-full px-3 py-1 mr-3">
                 <Ionicons name="star" size={16} color="#F59E0B" />
@@ -158,28 +132,43 @@ export default function HallBooking() {
               </View>
               <Text className="text-gray-600">Based on 124 reviews</Text>
             </View>
-          </View>
             <Calendar
+                style={{ borderRadius: 16, overflow: 'hidden' }}
                 onDayPress={day => {
-                    console.log('selected day', day);
+                    markDate(day.dateString);
                 }}
+                markingType={'period'}
+                markedDates={markedDates}
+                enableSwipeMonths={true}
             />
-
+          </View>
+        </View>
+        <View className="px-6">
+          <Text className='mb-1 font-semibold text-xl'>Reason</Text>
+          <TextInput
+            placeholder="Reason for booking"
+            value={reason}
+            onChangeText={setReason}
+            multiline
+            numberOfLines={50}
+            className="p-4 rounded-xl border-2 border-black h-40"
+            textAlignVertical='top'
+          />
         </View>
       </ScrollView>
 
       <View className="bg-white border-t border-gray-200 px-6 py-4">
         <View className="flex-row items-center justify-between">
           <View>
-            <Text className="text-2xl font-bold text-gray-900">₹{space.pph}</Text>
-            <Text className="text-gray-600">per day</Text>
+            <Text className="text-2xl font-bold text-gray-900">₹{space.pph * Object.keys(markedDates).length}</Text>
+            <Text className="text-gray-600">₹{space.pph} per day</Text>
           </View>
-          <TouchableOpacity className="bg-gray-900 rounded-2xl px-8 py-3">
-            <Text className="text-white font-semibold text-lg">Book Now</Text>
+          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} className="bg-gray-900 rounded-2xl px-8 py-3">
+            <Text className="text-white font-semibold text-lg">Request Booking</Text>
           </TouchableOpacity>
         </View>
       </View>
       
-    </SafeAreaView>
+    </SafeBoundingView>
   );
 }

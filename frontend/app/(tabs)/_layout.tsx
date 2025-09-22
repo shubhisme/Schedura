@@ -37,8 +37,8 @@ const tabs: Tab[] = [
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   return (
-    <View className=" bg-tertiary  w-full px-5 py-4">
-      <View className="flex-row bg-white rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
+    <View className="bg-tertiary  w-full px-5 py-4">
+      <View className="flex-row bg-white border rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label = options.tabBarLabel !== undefined
@@ -100,7 +100,7 @@ export default function TabLayout() {
       tabBar={(props:any) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        freezeOnBlur: true
+        freezeOnBlur: true,
       }}
     >
       {tabs.map((tab, i) => (
