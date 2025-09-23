@@ -12,7 +12,7 @@ import { updateUserInfo } from '@/supabase/controllers/user.controller';
 import { useRouter } from 'expo-router';
 
 
-SplashScreen.preventAutoHideAsync();
+//SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   return (

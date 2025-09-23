@@ -34,7 +34,6 @@ export default function HallDetails() {
         console.error("Error fetching spaces:", error);
       } else {
         setSpace(data);
-        console.log(`Space with ${id} fetched:`, data);
       }
       setLoading(false);
     } catch (error) {

@@ -9,12 +9,15 @@ import SafeBoundingView from "@/components/SafeBoundingView";
 import dayjs from "dayjs"; 
 import { sendBookRequest } from "@/supabase/controllers/request.controller";
 import { useUser } from "@clerk/clerk-expo";
+import { getBookingsForSpaceByMonthYear } from "@/supabase/controllers/booking.controller";
 
 export default function HallBooking() {
   const { id } = useLocalSearchParams();
-  const [loading, setLoading] = useState(false) 
+  const [loading, setLoading] = useState(false)
+  const [calendarLoading, setCalendarLoading] = useState(false) 
   const [functionalLoading, setFunctionalLoading] = useState(false) 
   const [markedDates, setMarkedDates] = useState({});
+  const [bookedDates, setBookedDates] = useState({});
   const { back } = useRouter();
   const [reason, setReason] = useState('');
   const [range, setRange] = useState<{ startDate?: string; endDate?: string }>({});
@@ -29,7 +32,6 @@ export default function HallBooking() {
         console.error("Error fetching spaces:", error);
       } else {
         setSpace(data);
-        console.log(`Space with ${id} fetched:`, data);
       }
       setLoading(false);
     } catch (error) {
@@ -37,9 +39,37 @@ export default function HallBooking() {
     }
   };
 
+  const fetchBookingsForMonth = async (month: number, year: number) => {
+    if(!space) return;
+    setCalendarLoading(true);
+    const {data, error} = await getBookingsForSpaceByMonthYear(space.id, month, year);
+    if(error) {
+      console.log("Error fetching bookings for month: ", error);
+      return;
+    }
+    if(data) {
+      const blockedDates: any = {};
+      data.forEach((booking: any) => {
+        let current = dayjs(booking.start_date);
+        const end = dayjs(booking.end_date);
+        while (current.isBefore(end) || current.isSame(end)) {
+          const dateStr = current.format("YYYY-MM-DD");
+          blockedDates[dateStr] = { disabled: true, disableTouchEvent: true, marked: true, dotColor: 'red' };
+          current = current.add(1, "day");
+        }
+      });
+      setBookedDates(blockedDates);
+    }
+    setCalendarLoading(false);
+  }
+  
   useEffect(() => {
     fetchSpace();
   }, []);
+
+  useEffect(() => {
+    fetchBookingsForMonth(dayjs().month() + 1, dayjs().year());
+  }, [space]);
   
   const markDate = (date: string) => {
   let { startDate, endDate } = range;
@@ -137,9 +167,13 @@ export default function HallBooking() {
                 onDayPress={day => {
                     markDate(day.dateString);
                 }}
+                onMonthChange={(month) => fetchBookingsForMonth(month.month, month.year)}
                 markingType={'period'}
-                markedDates={markedDates}
+                markedDates={{...markedDates, ...bookedDates}}
                 enableSwipeMonths={true}
+                displayLoadingIndicator={calendarLoading}
+                disableAllTouchEventsForDisabledDays={true}
+                disabledByDefault={calendarLoading}
             />
           </View>
         </View>
