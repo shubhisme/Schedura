@@ -97,7 +97,8 @@ export default function AddSpacesScreen() {
       description,
       pph,
       ownerid: user?.id!,
-      id: undefined
+      id: undefined,
+      amenities: amenities.filter(facility=>facility.selected).map(facility=>facility.name),
     }, images);
     console.log(error)
     if (error) {

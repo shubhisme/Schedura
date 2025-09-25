@@ -25,6 +25,22 @@ export const getRequestsForSpace = async (space_id: string) => {
     };
 }
 
+export const getRequestsOfUser = async (user_id: string) => {
+    const { data, error } = await supabase
+        .from("requests")
+        .select("*, users:created_by(*), space:spaceid(*)")
+        .eq("created_by", user_id)
+        .order("created_at", { ascending: false });
+    if (error) {
+        console.log("Error Fetching Requests for user: ", error);
+        throw error;
+    }
+    return {
+        data: data as (UserProfile & { id: string; users: UserProfile; space: { name: string } })[] | null,
+        error
+    };
+}
+
 export const acceptRequest = async(requestid: string, userid:string) => {
     
     const { data: requestData, error: requestError } = await supabase

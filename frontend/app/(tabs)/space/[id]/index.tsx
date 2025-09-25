@@ -197,24 +197,24 @@ export default function HallDetails() {
                 <View 
                   key={index} 
                   className={`flex-row items-center mr-6 mb-4 ${
-                    facility.available ? 'opacity-100' : 'opacity-50'
+                    space.amenities.includes(facility.name) ? 'opacity-100' : 'opacity-50'
                   }`}
                 >
                   <View className={`p-2 rounded-xl mr-3 ${
-                    facility.available ? 'bg-green-100' : 'bg-gray-100'
+                    space.amenities.includes(facility.name) ? 'bg-green-100' : 'bg-gray-100'
                   }`}>
                     <Ionicons 
                       name={facility.icon as any} 
                       size={20} 
-                      color={facility.available ? '#10B981' : '#6B7280'} 
+                      color={space.amenities.includes(facility.name) ? '#10B981' : '#6B7280'} 
                     />
                   </View>
                   <Text className={`font-medium ${
-                    facility.available ? 'text-gray-900' : 'text-gray-400'
+                    space.amenities.includes(facility.name) ? 'text-gray-900' : 'text-gray-400'
                   }`}>
                     {facility.name}
                   </Text>
-                  {!facility.available && (
+                  {!space.amenities.includes(facility.name) && (
                     <Text className="text-gray-400 ml-1">(Not Available)</Text>
                   )}
                 </View>

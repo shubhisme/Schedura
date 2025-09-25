@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Text className="mt-2 text-xl">
           Manage all your spaces with ease, {'\n'}get powerful insights
         </Text>
-        <Image source={CSpace} className="absolute -right-5 bottom-0" />
+        <Image source={CSpace} className="absolute -right-5 bottom-0 hidden" />
       </View>
 
       <View className="p-6">

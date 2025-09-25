@@ -45,3 +45,20 @@ export const getBookingsForSpace = async (space_id: string) => {
         error
     };
 }
+
+export const getBookingsOfUser = async (user_id: string) => {
+    const { data, error } = await supabase
+        .from("bookings")
+        .select("*, users:userid(*), space:spaceid(*)")
+        .eq("userid", user_id)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.log("Error Fetching Bookings for space: ", error);
+        throw error;
+    }
+    return {
+        data: data as (UserProfile & { id: string; users: UserProfile })[] | null,
+        error
+    };
+}

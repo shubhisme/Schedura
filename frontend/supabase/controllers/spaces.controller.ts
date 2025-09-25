@@ -12,12 +12,23 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
         description: spaceData.description,
         pph: spaceData.pph,
         ownerid: spaceData.ownerid,
-        organizationid: spaceData.organizationid
+        organizationid: spaceData.organizationid,
       }
     ])
     .select();
   const spaceId = data ? data[0].id! : null;
-  
+
+  const amenities = spaceData?.amenities?.map(name => ({spaceid: spaceId, amenity:name}));  
+  const {  amenitiesError } = await supabase
+    .from("spaces_amenities")
+    .insert(amenities || [])
+    .select();
+
+  if (amenitiesError) {
+    console.error("Error inserting amenities:", amenitiesError);
+    return { data: null, error: amenitiesError };
+  }
+
   const uploadedFileLink = await uploadFile(file);
   
   await supabase
@@ -203,15 +214,18 @@ export const getMySpaces = async (userId:string) => {
 export const getSpaceById = async (spaceId: string) => {
   const { data, error } = await supabase
     .from('spaces')
-    .select('*, spaces-images(link)')
+    .select('*, spaces-images(link), spaces_amenities(*)')
     .eq('id', spaceId)
     .single();
-
-  type SpaceWithImages = Space & { 'spaces-images'?: { link: string }[]; images?: string[] };
-
-  let spaceData = data as SpaceWithImages | null;
-  if (spaceData && Array.isArray(spaceData['spaces-images'])) {
-    spaceData.images = spaceData['spaces-images'].map((img) => img.link);
-  }
+    type SpaceWithImages = Space & { 'spaces-images'?: { link: string }[]; images?: string[] };
+    
+    let spaceData = data as SpaceWithImages & {'spaces_amenities'?: { amenity: string }[]} | null;
+    if (spaceData && Array.isArray(spaceData['spaces-images'])) {
+      spaceData.images = spaceData['spaces-images'].map((img) => img.link);
+    }
+    if (spaceData && Array.isArray(spaceData['spaces_amenities'])) {
+      spaceData.amenities = spaceData['spaces_amenities'].map((amenity) => amenity.amenity);
+    }
+  console.log("Space by ID data:", data);
   return { data: spaceData, error };
 }
