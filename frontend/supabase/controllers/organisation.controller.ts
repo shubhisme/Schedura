@@ -1,5 +1,6 @@
 import type { Organisation } from "@/types/database.type";
 import { supabase } from "../supabase"
+import { uploadFile } from "./spaces.controller";
 
 export const joinOrganisation = async (userId: string, organisationId: string) => {
     const { error } = await supabase
@@ -31,3 +32,46 @@ export const joinOrganisation = async (userId: string, organisationId: string) =
     return { success: true };
   };
   
+  export const createOrganisation = async (userId: string, organisationName: string, description: string, type: "Educational" | "CoWorking", file:{filePath:string, fileData:string, fileType:string}): Promise<{ data: Organisation | null; error: string | null }> => {
+    
+    let fileurl = null;
+    if(file.filePath !== "" && file.fileData !== "" && file.fileType !== ""){
+      fileurl = await uploadFile({...file, table: "organisations"});
+    }
+    const { data, error } = await supabase
+      .from("organisations")
+      .insert([{ ownerid: userId, name: organisationName, description, type, logo: fileurl }])
+      .select()
+      .single();
+    console.log("createOrganisation", { data, error });
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    return { data, error: null };
+  }
+
+  export const searchOrganisations = async (query: string): Promise<{ data: Organisation[] | null; error: string | null }> => {
+    const { data, error } = await supabase
+      .from("organisations")
+      .select("*")
+      .ilike("name", `%${query}%`)
+      .limit(10);
+    console.log("searchOrganisations", { data, error });
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    return { data, error: null };
+  }
+
+  export const getOrganisationById = async (organisationId: string): Promise<{ data: Organisation | null; error: string | null }> => {
+    const { data, error } = await supabase
+      .from("organisations")
+      .select("*")
+      .eq("id", organisationId)
+      .single();
+    console.log("getOrganisationById", { data, error });
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    return { data, error: null };
+  }

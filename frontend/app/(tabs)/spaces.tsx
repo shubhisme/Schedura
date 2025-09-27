@@ -88,7 +88,7 @@ export default function SpacesScreen() {
                   </View>
                   <View className="p-5">
                     <Text className="text-xl font-bold text-gray-900 mb-2">{space.name}</Text>
-                    <View className="space-y-2">
+                    <View className="gap-y-2">
                       <View className="flex-row items-center">
                         <View className="bg-gray-100 rounded-full p-1 mr-3">
                           <Ionicons name="location" size={14} color="#6B7280" />
@@ -157,13 +157,13 @@ export default function SpacesScreen() {
             
             <View className="flex-row items-center space-x-3 gap-2">
               <TouchableOpacity
-                onPress={() => navigate('/create-org')}
+                onPress={() => navigate('/organisation/create')}
                 className="bg-gray-900 py-2 px-4 rounded-xl flex-1 border-2"
               >
                 <Text className="text-white  text-base text-center font-semibold">Create</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => navigate('/join-org')}
+                onPress={() => navigate('/organisation/join')}
                 className="border-2 border-gray-200 py-2 px-4 rounded-xl flex-1 "
               >
                 <Text className="text-gray-900 text-base text-center font-semibold">Join</Text>

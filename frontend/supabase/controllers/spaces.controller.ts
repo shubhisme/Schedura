@@ -19,7 +19,7 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
   const spaceId = data ? data[0].id! : null;
 
   const amenities = spaceData?.amenities?.map(name => ({spaceid: spaceId, amenity:name}));  
-  const {  amenitiesError } = await supabase
+  const {  error:amenitiesError } = await supabase
     .from("spaces_amenities")
     .insert(amenities || [])
     .select();
@@ -29,7 +29,7 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
     return { data: null, error: amenitiesError };
   }
 
-  const uploadedFileLink = await uploadFile(file);
+  const uploadedFileLink = await uploadFile({...file, table: "spaces"});
   
   await supabase
     .from("spaces-images")
@@ -137,8 +137,8 @@ export async function updateSpace(spaceId: string, userId: string, filePath: str
       })
       .eq("id", spaceId)
       .select();
-    
-    const fileurl = await uploadFile({filePath, fileData, fileType});
+
+    const fileurl = await uploadFile({filePath, fileData, fileType, table: "spaces"});
     console.log("Uploaded file URL:", fileurl);
 
     const {data : image_data , error: image_error} = await supabase.from("spaces-images").upsert({spaceid:spaceId, link:fileurl});
@@ -155,10 +155,10 @@ export async function updateSpace(spaceId: string, userId: string, filePath: str
   }
 }
 
-const uploadFile = async({filePath, fileData, fileType}:{filePath:string, fileData:string, fileType:string}) => {
+export const uploadFile = async({filePath, fileData, fileType, table}:{filePath:string, fileData:string, fileType:string, table: "spaces" | "organisations"}) => {
   const { data, error } = await supabase
   .storage
-  .from("spaces")
+  .from(table)
   .upload(filePath, fileData, {
       contentType: fileType || "application/octet-stream"
   });
@@ -171,7 +171,7 @@ const uploadFile = async({filePath, fileData, fileType}:{filePath:string, fileDa
   console.log("File uploaded:", data);
 
   const { data: publicUrlData } = supabase.storage
-  .from("spaces")
+  .from(table)
   .getPublicUrl(filePath);
 
   console.log("Public URL:", publicUrlData.publicUrl);
@@ -226,6 +226,5 @@ export const getSpaceById = async (spaceId: string) => {
     if (spaceData && Array.isArray(spaceData['spaces_amenities'])) {
       spaceData.amenities = spaceData['spaces_amenities'].map((amenity) => amenity.amenity);
     }
-  console.log("Space by ID data:", data);
   return { data: spaceData, error };
 }

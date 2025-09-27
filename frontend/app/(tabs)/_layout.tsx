@@ -68,7 +68,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              className={`flex-1 items-center ${['add-space', 'manage-space','edit-space', 'create-org', 'join-org', 'space/create', 'space/[id]/edit', 'space/[id]/manage', 'space/[id]/index', 'space/[id]/bookings', 'space/[id]/requests', 'space/[id]/book/index'].includes(route.name) && 'hidden'}`}
+              className={`flex-1 items-center ${['add-space', 'manage-space','edit-space', 'create-org', 'join-org', 'space/create', 'space/[id]/edit', 'space/[id]/manage', 'space/[id]/index', 'space/[id]/bookings', 'space/[id]/requests', 'space/[id]/book/index', 'organisation/create', 'organisation/join'].includes(route.name) && 'hidden'}`}
             >
               <View className=''>
                 <View className={`w-8 h-8 mx-auto items-center justify-center  ${
