@@ -10,7 +10,7 @@ let navOptions = [
   { name: "Overview", suffix: "/manage", icon: "bar-chart" },
   { name: "Bookings", suffix: "/manage/bookings", icon: "calendar" },
   { name: "Requests", suffix: "/manage/requests", icon: "send" },
-  { name: "Logs", suffix: "/manage/access-logs", icon: "credit-card" },
+  { name: "Logs", suffix: "/manage/logs", icon: "credit-card" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
