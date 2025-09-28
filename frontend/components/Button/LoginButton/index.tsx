@@ -25,9 +25,9 @@ function LoginButton() {
       }
     }, [])
   return (
-    <TouchableOpacity className=" flex flex-row items-center justify-center gap-5 border border-[rgba(0,0,0,0.3)] p-3 w-full rounded-xl" onPress={onPress}> 
+    <TouchableOpacity className="bg-white flex flex-row items-center justify-center gap-5 border border-[rgba(0,0,0,0.3)] p-3 w-full rounded-xl" onPress={onPress}> 
         <FontAwesome6 name="google" size={28} color="black"/>
-        <Text className="text-xl font-bold tracking-wide">Continue with Google</Text>
+        <Text className="text-xl font-bold tracking-wide mt-1.5">Continue with Google</Text>
     </TouchableOpacity>
   )
 }
