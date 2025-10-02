@@ -6,8 +6,10 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { getMySpaces } from '@/supabase/controllers/spaces.controller';
 import { useUser } from '@clerk/clerk-expo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function SpacesScreen() {
+  const { colors, isDark } = useTheme();
   const { navigate, back } = useRouter();
   const [spaces, setSpaces] = useState<any>();
   const { user } = useUser();
@@ -23,46 +25,46 @@ export default function SpacesScreen() {
   },[])
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.primary} />
       <ScrollView
         showsVerticalScrollIndicator={false}
-        className="flex-1"
+        style={{ flex: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={fetchMySpaces}
-            colors={["#374151"]}
-            tintColor="#374151"
+            colors={[colors.text]}
+            tintColor={colors.text}
           />
         }
       >
-        <View style={{ backgroundColor: '#E9F0E9' }} className="px-6 pt-6 pb-8 rounded-b-3xl">
-          <View className="mb-4">
-            <Text className="text-black text-3xl font-bold">My Spaces</Text>
-            <Text className="text-gray-600 text-lg mt-1">Manage your venues</Text>
+        <View style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 32, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}>
+          <View style={{ marginBottom: 16 }}>
+            <Text style={{ color: colors.accent, fontSize: 30, fontWeight: 'bold' }}>My Spaces</Text>
+            <Text style={{ color: colors.textSecondary, fontSize: 18, marginTop: 4 }}>Manage your venues</Text>
           </View>
-          <View className="flex-row space-x-4 mt-4 gap-2">
-            <View className="bg-white/80 rounded-2xl p-4 flex-1">
-              <Text className="text-2xl font-bold text-gray-900">{spaces?.length || 0}</Text>
-              <Text className="text-sm text-gray-600">Total Spaces</Text>
+          <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
+            <View style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', borderRadius: 16, padding: 16, flex: 1 }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>{spaces?.length || 0}</Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>Total Spaces</Text>
             </View>
-            <View className="bg-white/80 rounded-2xl p-4 flex-1">
-              <Text className="text-2xl font-bold text-green-600">Active</Text>
-              <Text className="text-sm text-gray-600">Status</Text>
+            <View style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', borderRadius: 16, padding: 16, flex: 1 }}>
+              <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.success }}>Active</Text>
+              <Text style={{ fontSize: 14, color: colors.textSecondary }}>Status</Text>
             </View>
           </View>
         </View>
 
-        <View className="px-6 py-8">
-          <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-gray-900 text-xl font-bold">Your Venues</Text>
+        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Your Venues</Text>
             <TouchableOpacity
               onPress={() => navigate('/space/create')}
-              className="bg-gray-900 px-4 py-2 rounded-xl flex-row items-center "
+              style={{ backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }}
             >
-              <Ionicons name="add" size={20} color="#E9F0E9" />
-              <Text className="text-white font-semibold ml-1">Add Space</Text>
+              <Ionicons name="add" size={20} color={isDark ? '#000' : '#E9F0E9'} />
+              <Text style={{ color: isDark ? '#000' : '#ffffff', fontWeight: '600', marginLeft: 4 }}>Add Space</Text>
             </TouchableOpacity>
           </View>
 
@@ -72,48 +74,48 @@ export default function SpacesScreen() {
                 <TouchableOpacity
                   key={space.id}
                   onPress={() => navigate(`/spaces?id=${space.id}`)}
-                  className="bg-white rounded-3xl overflow-hidden border border-gray-100 w-72"
+                  style={{ backgroundColor: colors.card, borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 288 }}
                 >
-                  <View className="relative">
+                  <View style={{ position: 'relative' }}>
                     <Image
                       source={{
                         uri: space['spaces-images']?.[0]?.link || 'https://via.placeholder.com/300x200.png?text=No+Image+Available'
                       }}
-                      className="h-48 w-full"
+                      style={{ height: 192, width: '100%' }}
                     />
-                    <View className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                    <View className="absolute top-3 right-3 bg-green-500 rounded-full px-3 py-1">
-                      <Text className="text-white text-xs font-semibold">Active</Text>
+                    <View style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                    <View style={{ position: 'absolute', top: 12, right: 12, backgroundColor: colors.success, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 }}>
+                      <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '600' }}>Active</Text>
                     </View>
                   </View>
-                  <View className="p-5">
-                    <Text className="text-xl font-bold text-gray-900 mb-2">{space.name}</Text>
-                    <View className="gap-y-2">
-                      <View className="flex-row items-center">
-                        <View className="bg-gray-100 rounded-full p-1 mr-3">
-                          <Ionicons name="location" size={14} color="#6B7280" />
+                  <View style={{ padding: 20 }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>{space.name}</Text>
+                    <View style={{ gap: 8 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 20, padding: 4, marginRight: 12 }}>
+                          <Ionicons name="location" size={14} color={colors.textSecondary} />
                         </View>
-                        <Text className="text-gray-600 flex-1">{space.location}</Text>
+                        <Text style={{ color: colors.textSecondary, flex: 1 }}>{space.location}</Text>
                       </View>
-                      <View className="flex-row items-center">
-                        <View className="bg-gray-100 rounded-full p-1 mr-3">
-                          <Ionicons name="people" size={14} color="#6B7280" />
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 20, padding: 4, marginRight: 12 }}>
+                          <Ionicons name="people" size={14} color={colors.textSecondary} />
                         </View>
-                        <Text className="text-gray-600">Up to {space.capacity} guests</Text>
+                        <Text style={{ color: colors.textSecondary }}>Up to {space.capacity} guests</Text>
                       </View>
                     </View>
-                    <View className="flex-row mt-4 gap-2">
+                    <View style={{ flexDirection: 'row', marginTop: 16, gap: 8 }}>
                       <TouchableOpacity
                         onPress={() => navigate(`/space/${space.id}/manage`)}
-                        className="bg-gray-900 rounded-xl px-4 py-2 flex-1 "
+                        style={{ backgroundColor: colors.accent, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, flex: 1 }}
                       >
-                        <Text className="text-white text-center font-semibold">Manage</Text>
+                        <Text style={{ color: isDark ? '#000' : '#ffffff', textAlign: 'center', fontWeight: '600' }}>Manage</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={() => navigate(`/space/${space.id}/edit`)}
-                        className="bg-gray-100 rounded-xl px-4 py-2 flex-1"
+                        style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 8, flex: 1 }}
                       >
-                        <Text className="text-gray-900 text-center font-semibold">Edit</Text>
+                        <Text style={{ color: colors.text, textAlign: 'center', fontWeight: '600' }}>Edit</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -121,52 +123,52 @@ export default function SpacesScreen() {
               ))}
             </ScrollView>
           ) : (
-            <View className="bg-white rounded-3xl border-2 border-dashed border-gray-300 p-8 items-center justify-center">
-              <View className="bg-gray-100 rounded-full p-4 mb-4">
-                <MaterialCommunityIcons name="home-plus-outline" size={48} color="#9CA3AF" />
+            <View style={{ backgroundColor: colors.card, borderRadius: 24, borderWidth: 2, borderStyle: 'dashed', borderColor: colors.border, padding: 32, alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 40, padding: 16, marginBottom: 16 }}>
+                <MaterialCommunityIcons name="home-plus-outline" size={48} color={colors.textTertiary} />
               </View>
-              <Text className="text-xl font-semibold text-gray-900 mb-2">No spaces yet</Text>
-              <Text className="text-gray-600 text-center mb-6">Create your first venue to start managing bookings</Text>
+              <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text, marginBottom: 8 }}>No spaces yet</Text>
+              <Text style={{ color: colors.textSecondary, textAlign: 'center', marginBottom: 24 }}>Create your first venue to start managing bookings</Text>
               <TouchableOpacity
                 onPress={() => navigate('/space/create')}
-                className="bg-gray-900 py-3 px-6 rounded-xl"
+                style={{ backgroundColor: colors.accent, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12 }}
               >
-                <Text className="text-white text-lg font-semibold">Create Your First Space</Text>
+                <Text style={{ color: isDark ? '#000' : '#ffffff', fontSize: 18, fontWeight: '600' }}>Create Your First Space</Text>
               </TouchableOpacity>
             </View>
           )}
         </View>
 
-        <View className="px-6 pb-8">
-          <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-gray-900 text-xl font-bold">Organization</Text>
+        <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Organization</Text>
             <TouchableOpacity>
-              <Ionicons name="information-circle-outline" size={24} color="#6B7280" />
+              <Ionicons name="information-circle-outline" size={24} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
-          <View className="bg-white rounded-3xl p-6 border border-gray-100">
-            <View className="flex-row items-center mb-6">
-              <View className="bg-primary p-4 rounded-2xl mr-4">
-                <MaterialCommunityIcons name="office-building" size={32} color="black" />
+          <View style={{ backgroundColor: colors.card, borderRadius: 24, padding: 24, borderWidth: 1, borderColor: colors.border }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24 }}>
+              <View style={{ backgroundColor: colors.primary, padding: 16, borderRadius: 16, marginRight: 16 }}>
+                <MaterialCommunityIcons name="office-building" size={32} color={colors.accent} />
               </View>
-              <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-900 mb-1">Organisation</Text>
-                <Text className="text-gray-600">Join or create an org to collaborate</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 4 }}>Organisation</Text>
+                <Text style={{ color: colors.textSecondary }}>Join or create an org to collaborate</Text>
               </View>
             </View>
             
-            <View className="flex-row items-center space-x-3 gap-2">
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <TouchableOpacity
                 onPress={() => navigate('/organisation/create')}
-                className="bg-gray-900 py-2 px-4 rounded-xl flex-1 border-2"
+                style={{ backgroundColor: colors.accent, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, flex: 1, borderWidth: 2, borderColor: colors.accent }}
               >
-                <Text className="text-white  text-base text-center font-semibold">Create</Text>
+                <Text style={{ color: isDark ? '#000' : '#ffffff', fontSize: 16, textAlign: 'center', fontWeight: '600' }}>Create</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => navigate('/organisation/join')}
-                className="border-2 border-gray-200 py-2 px-4 rounded-xl flex-1 "
+                style={{ borderWidth: 2, borderColor: colors.border, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, flex: 1 }}
               >
-                <Text className="text-gray-900 text-base text-center font-semibold">Join</Text>
+                <Text style={{ color: colors.text, fontSize: 16, textAlign: 'center', fontWeight: '600' }}>Join</Text>
               </TouchableOpacity>
             </View>
           </View>

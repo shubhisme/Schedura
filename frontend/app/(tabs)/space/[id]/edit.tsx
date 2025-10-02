@@ -9,8 +9,10 @@ import type { Space } from "@/types/database.type";
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
 import SpacesScreen from "@/app/(tabs)/spaces";
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function EditSpacesScreen() {
+  const { colors, isDark } = useTheme();
   const { user } = useUser();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,7 @@ export default function EditSpacesScreen() {
   });
   
   useEffect(() => {
-    handleSelectSpace(id)
+    handleSelectSpace(id as string)
   }, [user?.id])
 
   const handleSelectSpace = async(spaceId: string) => {
@@ -91,7 +93,7 @@ export default function EditSpacesScreen() {
       return;
     }
 
-    const { data, error } = await updateSpace(selectedSpace.id, user?.id!, images.filePath , images.fileData , images.fileType, {
+    const { data, error } = await updateSpace(selectedSpace.id!, user?.id!, images.filePath , images.fileData , images.fileType, {
       name,
       capacity: parseInt(capacity),
       location,
@@ -108,10 +110,10 @@ export default function EditSpacesScreen() {
 
   if(loading) {
     return (
-      <SafeBoundingView className="flex-1">
+      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView>
-          <View className="p-6 bg-primary rounded-b-3xl pb-7">
-            <Text className="text-black text-3xl font-bold mt-6">Loading...</Text>
+          <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 28 }}>
+            <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', marginTop: 24 }}>Loading...</Text>
           </View>
         </ScrollView>
       </SafeBoundingView>
@@ -119,70 +121,75 @@ export default function EditSpacesScreen() {
   }
 
   return (
-    <SafeBoundingView className="flex-1 bg-white">
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView>
-        <View className="p-6 bg-primary rounded-b-3xl pb-7">
-          <Text className="text-black text-3xl font-bold mt-6">Edit Spaces</Text>
+        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 28 }}>
+          <Text style={{ color: colors.text, fontSize: 30, fontWeight: 'bold', marginTop: 24 }}>Edit Spaces</Text>
         </View>
 
-        <View className="p-6 gap-4">
+        <View style={{ padding: 24, gap: 16 }}>
           {selectedSpace && (
             <>
               <TextInput
                 placeholder="Name"
+                placeholderTextColor={colors.textSecondary}
                 value={name}
                 onChangeText={setName}
-                className="bg-white p-4 rounded-xl border border-gray-200"
+                style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.text }}
               />
               <TextInput
                 placeholder="Capacity"
+                placeholderTextColor={colors.textSecondary}
                 keyboardType="numeric"
                 value={capacity}
                 onChangeText={setCapacity}
-                className="bg-white p-4 rounded-xl border border-gray-200"
+                style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.text }}
               />
               <TextInput
                 placeholder="Location"
+                placeholderTextColor={colors.textSecondary}
                 value={location}
                 onChangeText={setLocation}
-                className="bg-white p-4 rounded-xl border border-gray-200"
+                style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.text }}
               />
               <TextInput
                 placeholder="Description"
+                placeholderTextColor={colors.textSecondary}
                 value={description}
                 multiline
                 onChangeText={setDescription}
                 numberOfLines={10}
-                className="bg-white p-4 rounded-xl border border-gray-200"
+                style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.text }}
               />
               <TextInput
                 placeholder="Price per Hour"
+                placeholderTextColor={colors.textSecondary}
                 keyboardType="numeric"
                 value={pph}
                 onChangeText={setPph}
-                className="bg-white p-4 rounded-xl border border-gray-200"
+                style={{ backgroundColor: colors.card, padding: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.border, color: colors.text }}
               />
-              <View className="flex-row items-center gap-4">
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
                 {/* Image preview */}
                 {images.fileUri ? (
-                  <View className="rounded-xl overflow-hidden border border-black/20 w-fit">
-                    <Image className="h-20 w-20" source={{ uri: images.fileUri }} />
+                  <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
+                    <Image style={{ height: 80, width: 80 }} source={{ uri: images.fileUri }} />
                   </View>
                 ) : null}
 
                 <TouchableOpacity
-                  onPress={() => pickAndUploadFile(selectedSpace.id)}
-                  className=" border-2 border-dashed p-4 rounded-xl h-20 w-20 justify-center items-center"
+                  onPress={() => pickAndUploadFile(selectedSpace.id!)}
+                  style={{ borderWidth: 2, borderStyle: 'dashed', padding: 16, borderRadius: 12, height: 80, width: 80, justifyContent: 'center', alignItems: 'center', borderColor: colors.border, backgroundColor: colors.card }}
                 >
-                  <Ionicons name="add" size={24} color="black" />
+                  <Ionicons name="add" size={24} color={colors.text} />
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity
                 onPress={handleSubmit}
-                className="bg-black p-4 rounded-2xl mt-4"
+                style={{ backgroundColor: colors.accent, padding: 16, borderRadius: 16, marginTop: 16 }}
               >
-                <Text className="text-primary text-lg text-center font-semibold">
+                <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
                   Update Space
                 </Text>
               </TouchableOpacity>

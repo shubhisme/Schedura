@@ -10,9 +10,11 @@ import { decode } from 'base64-arraybuffer'
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 //@ts-ignore
 import CSpace from "@/assets/images/illustrations/cspace.png"
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 export default function AddSpacesScreen() {
+  const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
   const [capacity, setCapacity] = useState('');
   const [location, setLocation] = useState('');
@@ -20,6 +22,7 @@ export default function AddSpacesScreen() {
   const [pph, setPph] = useState('');
   const [ownerid, setOwnerId] = useState('');
   const [organizationid, setOrganizationId] = useState('');
+  const [category, setCategory] = useState<'Wedding' | 'Corporate' | 'Birthday' | 'Conference' | 'Social'>('Social');
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const { user } = useUser();
   const [loading, setLoading] = useState(false)
@@ -31,6 +34,8 @@ export default function AddSpacesScreen() {
     { name: "Catering", icon: "restaurant", id:5, selected:false },
     { name: "Sound System", icon: "volume-high", id:6, selected:false },
   ])
+  
+  const categories: Array<'Wedding' | 'Corporate' | 'Birthday' | 'Conference' | 'Social'> = ['Wedding', 'Corporate', 'Birthday', 'Conference', 'Social'];
   const rotateValue = new Animated.Value(0); 
 
   const rotateAnimation = rotateValue.interpolate({
@@ -98,6 +103,7 @@ export default function AddSpacesScreen() {
       pph,
       ownerid: user?.id!,
       id: undefined,
+      category,
       amenities: amenities.filter(facility=>facility.selected).map(facility=>facility.name),
     }, images);
     console.log(error)
@@ -123,87 +129,108 @@ export default function AddSpacesScreen() {
     setAmenities(amenitiesCopy) 
   }
   return (
-    <SafeBoundingView className="flex-1 bg-white">
-      <StatusBar backgroundColor="#E9F0E9" />
-      <ScrollView className=' bg-tertiary'>
-        <View className='p-6 bg-primary rounded-b-3xl pb-12'>
-          <Text className="text-black text-4xl font-bold mt-6">Create new Space</Text>
-          <Text className='mt-2 text-xl'>Set up your space and let people {'\n'}reserve it with ease</Text>
-          <Image source={CSpace}  className='absolute -right-2 bottom-0'/>
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+      <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
+        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
+          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Create new Space</Text>
+          <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+          <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
         </View>
 
-        <Text className='text-2xl font-bold mx-5 mt-6'>Basic Details</Text>
-        <View className="mb-6 p-6 gap-y-6">
+        <Text style={{ fontSize: 24, fontWeight: 'bold', marginHorizontal: 20, marginTop: 24, color: colors.text }}>Basic Details</Text>
+        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Name</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Name</Text>
             <TextInput
               placeholder="Convention Center"
+              placeholderTextColor={colors.textSecondary}
               value={name}
               onChangeText={setName}
-              className="p-4 rounded-xl border-2 border-black"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Capacity</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Capacity</Text>
             <TextInput
               placeholder="200"
+              placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
               value={capacity}
               onChangeText={setCapacity}
-              className="p-4 rounded-xl border-2 border-black"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Location</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Location</Text>
             <TextInput
               placeholder="Panaji, Goa"
+              placeholderTextColor={colors.textSecondary}
               value={location}
               onChangeText={setLocation}
-              className="p-4 rounded-xl border-2 border-black"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Description</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Description</Text>
             <TextInput
               placeholder="A very spacious and elegant hall with..."
+              placeholderTextColor={colors.textSecondary}
               value={description}
               onChangeText={setDescription}
               multiline
               numberOfLines={50}
-              className="p-4 rounded-xl border-2 border-black h-40"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
               textAlignVertical='top'
             />
           </View>
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Price per Day {"($)"}</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Price per Day {"($)"}</Text>
             <TextInput
               placeholder="20000"
+              placeholderTextColor={colors.textSecondary}
               value={pph}
               onChangeText={setPph}
-              className="p-4 rounded-xl border-2 border-black"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Facilities and Amenities</Text>
-            <View className='border-black border-2 p-5 rounded-xl flex-row flex-wrap gap-5 gap-x-8'>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Category</Text>
+            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 12, backgroundColor: colors.card }}>
               {
-                amenities.map((facility, i)=>(
-                  <TouchableOpacity onPress={()=>handleAmenities(i)} key={facility.id} className='flex-row gap-2 items-center'>
-                    <View className='p-2.5 rounded-xl  w-fit' style={{backgroundColor: facility.selected ? "#dcfce7" : "#f3f4f6"}}>
-                      <Ionicons name={facility.icon} size={15} color={facility.selected ? '#10B981' : '#6B7280'}/>
-                    </View>
-                    <Text className='font-medium' style={{color: facility.selected ? '#111827' : '#9ca3af'}}>{facility.name}</Text>
+                categories.map((cat)=>(
+                  <TouchableOpacity 
+                    onPress={()=>setCategory(cat)} 
+                    key={cat} 
+                    style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: category === cat ? colors.accent : colors.backgroundSecondary }}
+                  >
+                    <Text style={{ fontWeight: '500', color: category === cat ? 'white' : colors.textSecondary }}>{cat}</Text>
                   </TouchableOpacity>
                 ))
               }
             </View>
           </View>
-          <View className="flex-row items-center gap-4">
+          <View>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Facilities and Amenities</Text>
+            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 20, columnGap: 32, backgroundColor: colors.card }}>
+              {
+                amenities.map((facility, i)=>(
+                  <TouchableOpacity onPress={()=>handleAmenities(i)} key={facility.id} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                    <View style={{ padding: 10, borderRadius: 12, backgroundColor: facility.selected ? (isDark ? '#065f46' : '#dcfce7') : colors.backgroundSecondary }}>
+                      <Ionicons name={facility.icon as any} size={15} color={facility.selected ? '#10B981' : colors.textSecondary}/>
+                    </View>
+                    <Text style={{ fontWeight: '500', color: facility.selected ? colors.text : colors.textSecondary }}>{facility.name}</Text>
+                  </TouchableOpacity>
+                ))
+              }
+            </View>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
             {
               images.fileUri ?
-              <View className='rounded-xl overflow-hidden border border-black/20 w-fit'>
+              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
                   <Image 
-                      className='h-20 w-20'
+                      style={{ height: 80, width: 80 }}
                       source={{uri:images.fileUri}}
                   />
               </View>
@@ -217,18 +244,18 @@ export default function AddSpacesScreen() {
                         console.log("Uploaded file URL:", url);
                       }
                   }}
-                  className=" border-2 border-dashed p-4 rounded-xl h-20 w-20 justify-center items-center"
+                  style={{ borderWidth: 2, borderStyle: 'dashed', padding: 16, borderRadius: 12, height: 80, width: 80, justifyContent: 'center', alignItems: 'center', borderColor: colors.border, backgroundColor: colors.card }}
                 >
-                  <Ionicons name="add" size={24} color="black" />
+                  <Ionicons name="add" size={24} color={colors.text} />
             </TouchableOpacity>      
           </View>
 
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className='bg-black p-4 rounded-2xl mt-4 flex-row items-center justify-center gap-x-5'
+            style={{ backgroundColor: colors.accent, padding: 16, borderRadius: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 }}
           >
-            <Text className='text-primary text-lg text-center font-semibold'>
+            <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
               Add Space
             </Text>
             {
@@ -236,8 +263,18 @@ export default function AddSpacesScreen() {
               <Animated.View
                 style={{
                   transform: [{ rotate: rotateAnimation }],
+                  borderTopWidth: 2,
+                  borderLeftWidth: 2,
+                  borderRightWidth: 2,
+                  borderBottomWidth: 2,
+                  borderRightColor: 'white',
+                  borderLeftColor: 'white',
+                  borderTopColor: 'white',
+                  borderBottomColor: 'transparent',
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10
                 }}
-                className="border-t-2 border-l-2 border-r-2 border-b-2 border-r-white border-l-white border-t-white h-5 w-5 rounded-full "
               >
               </Animated.View>
               }

@@ -13,7 +13,7 @@ export type Database = {
       };
       spaces: {
         Row: {
-            id: Key | null | undefined;
+            id: string | null | undefined;
             name: string,
             capacity: number,
             location: string,
@@ -22,6 +22,8 @@ export type Database = {
             ownerid: string,
             organizationid?: number,
             updated_at?: string | null;
+            category?: 'Wedding' | 'Corporate' | 'Birthday' | 'Conference' | 'Social';
+            amenities?: string[];
         };
       };
       organisations: {

@@ -1,65 +1,131 @@
 import type { UserProfile } from "@/types/database.type";
 import type { FC } from "react";
 import { ActivityIndicator, Image, Text, View } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 
 export const ProfileHeader: FC<{ 
   profile: UserProfile | null; 
   loading: boolean; 
   onRefresh: () => void;
-}> = ({ profile, loading, onRefresh }) => (
-  <View className="relative overflow-hidden bg-primary">
-    <View className="items-center pt-16 pb-8 px-6 relative z-10">
-      <View className="relative mb-6">
-        {loading ? (
-          <View className="w-28 h-28 rounded-full border-4 border-white/30 items-center justify-center bg-white/20 backdrop-blur-sm">
-            <ActivityIndicator color="white" size="large" />
-          </View>
-        ) : (
-          <>
-            <Image
-              source={{
-                uri: profile?.avatar_url 
-              }}
-              className="w-28 h-28 rounded-full border-4 border-black/30"
-            />
-            <View className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 rounded-full border-2 border-black" />
-          </>
-        )}
-      </View>
-      <View className="items-center">
-        <Text className="text-black text-2xl font-bold mb-1">
-          {loading ? 'Loading...' : profile?.name }
-        </Text>
-        <Text className="text-black/80 text-base mb-3">
-          {loading ? '' : profile?.email }
-        </Text>
+}> = ({ profile, loading, onRefresh }) => {
+  const { colors, isDark } = useTheme();
+  
+  return (
+    <View style={{ 
+      position: 'relative', 
+      overflow: 'hidden', 
+      backgroundColor: colors.primary 
+    }}>
+      <View style={{ 
+        alignItems: 'center', 
+        paddingTop: 64, 
+        paddingBottom: 32, 
+        paddingHorizontal: 24,
+        position: 'relative',
+        zIndex: 10
+      }}>
+        <View style={{ position: 'relative', marginBottom: 24 }}>
+          {loading ? (
+            <View style={{
+              width: 112,
+              height: 112,
+              borderRadius: 56,
+              borderWidth: 4,
+              borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+            }}>
+              <ActivityIndicator color={colors.accent} size="large" />
+            </View>
+          ) : (
+            <>
+              <Image
+                source={{
+                  uri: profile?.avatar_url 
+                }}
+                style={{
+                  width: 112,
+                  height: 112,
+                  borderRadius: 56,
+                  borderWidth: 4,
+                  borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
+                }}
+              />
+              <View style={{
+                position: 'absolute',
+                bottom: 8,
+                right: 8,
+                width: 24,
+                height: 24,
+                backgroundColor: '#10b981',
+                borderRadius: 12,
+                borderWidth: 2,
+                borderColor: colors.primary
+              }} />
+            </>
+          )}
+        </View>
+        <View style={{ alignItems: 'center' }}>
+          <Text style={{ 
+            color: colors.accent, 
+            fontSize: 24, 
+            fontWeight: 'bold', 
+            marginBottom: 4 
+          }}>
+            {loading ? 'Loading...' : profile?.name }
+          </Text>
+          <Text style={{ 
+            color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)', 
+            fontSize: 16, 
+            marginBottom: 12 
+          }}>
+            {loading ? '' : profile?.email }
+          </Text>
 
-        {/* Role Badge */}
-        {/*(profile?.role) && (
-          <View className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-4">
-            <Text className="text-black text-sm font-semibold capitalize">
-              {profile?.role}
-            </Text>
-          </View>
-        )*/}
-
-        {/* Stats Row */}
-        <View className="flex-row gap-6 mt-2">
-          <View className="items-center">
-            <Text className="text-black text-xl font-bold">12</Text>
-            <Text className="text-black/70 text-xs">Events</Text>
-          </View>
-          <View className="items-center">
-            <Text className="text-black text-xl font-bold">5</Text>
-            <Text className="text-black/70 text-xs">Upcoming</Text>
-          </View>
-          <View className="items-center">
-            <Text className="text-black text-xl font-bold">7</Text>
-            <Text className="text-black/70 text-xs">Completed</Text>
+          {/* Stats Row */}
+          <View style={{ 
+            flexDirection: 'row', 
+            gap: 24, 
+            marginTop: 8 
+          }}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ 
+                color: colors.accent, 
+                fontSize: 20, 
+                fontWeight: 'bold' 
+              }}>12</Text>
+              <Text style={{ 
+                color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)', 
+                fontSize: 12 
+              }}>Events</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ 
+                color: colors.accent, 
+                fontSize: 20, 
+                fontWeight: 'bold' 
+              }}>5</Text>
+              <Text style={{ 
+                color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)', 
+                fontSize: 12 
+              }}>Upcoming</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ 
+                color: colors.accent, 
+                fontSize: 20, 
+                fontWeight: 'bold' 
+              }}>7</Text>
+              <Text style={{ 
+                color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)', 
+                fontSize: 12 
+              }}>Completed</Text>
+            </View>
           </View>
         </View>
       </View>
     </View>
-  </View>
-);
+  );
+};

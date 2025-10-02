@@ -4,10 +4,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function HallDetails() {
+  const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(false) 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -56,20 +58,20 @@ export default function HallDetails() {
   };
   if (loading || !space) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-600">Loading...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: colors.textSecondary }}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
   }
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        <View className="relative">
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <View style={{ position: 'relative' }}>
           <ScrollView
             horizontal
             pagingEnabled
@@ -86,43 +88,40 @@ export default function HallDetails() {
               <Image
                 key={index}
                 source={{ uri: image }}
-                style={{ width, height: 300 }}
-                className="bg-gray-200"
+                style={{ width, height: 300, backgroundColor: colors.backgroundSecondary }}
               />
             ))}
           </ScrollView>
           
 
           {space?.images.length > 1 && (
-            <View className="absolute bottom-4 self-center flex-row space-x-2">
+            <View style={{ position: 'absolute', bottom: 16, alignSelf: 'center', flexDirection: 'row', gap: 8 }}>
               {space.images.map((_: any, index: number) => (
                 <View
                   key={index}
-                  className={`w-2 h-2 rounded-full ${
-                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
+                  style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)' }}
                 />
               ))}
             </View>
           )}
           
 
-          <View className="absolute top-0 left-0 right-0 flex-row justify-between items-center p-6 pt-12">
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 24, paddingTop: 48 }}>
             <TouchableOpacity 
                 onPress={() => back()}
-                className="bg-black/30 rounded-full p-3">
+                style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12 }}>
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
-            <View className="flex-row space-x-3">
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity 
                 onPress={handleShare}
-                className="bg-black/30 rounded-full p-3"
+                style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12 }}
               >
                 <Ionicons name="share-outline" size={24} color="white" />
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => setIsFavorite(!isFavorite)}
-                className="bg-black/30 rounded-full p-3"
+                style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12 }}
               >
                 <Ionicons 
                   name={isFavorite ? "heart" : "heart-outline"} 
@@ -134,88 +133,96 @@ export default function HallDetails() {
           </View>
         </View>
 
-        <View className="bg-white rounded-t-3xl -mt-6 relative z-10">
+        <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -24, position: 'relative', zIndex: 10 }}>
 
-          <View className="p-6 pb-4">
-            <View className="flex-row justify-between items-start mb-4">
-              <View className="flex-1">
-                <Text className="text-3xl font-bold text-gray-900 mb-2">{space.name}</Text>
-                <View className="flex-row items-center mb-2">
-                  <View className="bg-gray-100 rounded-full p-2 mr-3">
-                    <Ionicons name="location" size={16} color="#6B7280" />
+          <View style={{ padding: 24, paddingBottom: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>{space.name}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <View style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 20, padding: 8, marginRight: 12 }}>
+                    <Ionicons name="location" size={16} color={colors.textSecondary} />
                   </View>
-                  <Text className="text-gray-600 text-lg flex-1">{space.location}</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 18, flex: 1 }}>{space.location}</Text>
                 </View>
-                <View className="flex-row items-center">
-                  <View className="bg-gray-100 rounded-full p-2 mr-3">
-                    <Ionicons name="people" size={16} color="#6B7280" />
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 20, padding: 8, marginRight: 12 }}>
+                    <Ionicons name="people" size={16} color={colors.textSecondary} />
                   </View>
-                  <Text className="text-gray-600 text-lg">Up to {space.capacity} guests</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 18 }}>Up to {space.capacity} guests</Text>
                 </View>
               </View>
               
-              <View className="bg-green-100 rounded-2xl px-4 py-2">
-                <Text className="text-green-800 font-semibold">Available</Text>
+              <View style={{ backgroundColor: colors.success + '20', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8 }}>
+                <Text style={{ color: colors.success, fontWeight: '600' }}>Available</Text>
               </View>
             </View>
             
 
-            <View className="flex-row items-center mb-4">
-              <View className="flex-row items-center bg-yellow-100 rounded-full px-3 py-1 mr-3">
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginRight: 12 }}>
                 <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text className="text-yellow-800 font-semibold ml-1">4.8</Text>
+                <Text style={{ color: '#92400E', fontWeight: '600', marginLeft: 4 }}>4.8</Text>
               </View>
-              <Text className="text-gray-600">Based on 124 reviews</Text>
+              <Text style={{ color: colors.textSecondary }}>Based on 124 reviews</Text>
             </View>
           </View>
 
 
-          <View className="px-6 pb-6">
-            <View className="flex-row gap-2">
-              <TouchableOpacity onPress={()=>push(`/space/${id}/book`)} className="bg-gray-900  rounded-2xl px-6 py-3 flex-1">
-                <Text className="text-white text-center font-semibold text-lg my-auto">Book Now</Text>
+          <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity onPress={()=>push(`/space/${id}/book` as any)} style={{ backgroundColor: colors.accent, borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, flex: 1 }}>
+                <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', fontSize: 18, marginVertical: 'auto' }}>Book Now</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="border-2 border-gray-200 rounded-2xl px-6 py-3 flex-1">
-                <Text className="text-gray-900 text-center font-semibold text-lg">Check Avail</Text>
+              <TouchableOpacity style={{ borderWidth: 2, borderColor: colors.border, borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, flex: 1, backgroundColor: colors.card }}>
+                <Text style={{ color: colors.text, textAlign: 'center', fontWeight: '600', fontSize: 18 }}>Check Avail</Text>
               </TouchableOpacity>
             </View>
           </View>
 
 
-          <View className="px-6 py-4 border-t border-gray-100">
-            <Text className="text-xl font-bold text-gray-900 mb-4">About This Venue</Text>
-            <Text className="text-gray-600 leading-relaxed text-base">
+          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>About This Venue</Text>
+            <Text style={{ color: colors.textSecondary, lineHeight: 24, fontSize: 16 }}>
               Experience luxury and elegance at {space.name}. Our premium venue offers the perfect setting for your special events, from intimate gatherings to grand celebrations. With state-of-the-art facilities and exceptional service, we ensure your event will be unforgettable.
             </Text>
           </View>
 
 
-          <View className="px-6 py-4 border-t border-gray-100">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Facilities & Amenities</Text>
-            <View className="flex-row flex-wrap">
+          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Facilities & Amenities</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
               {facilities.map((facility, index) => (
                 <View 
                   key={index} 
-                  className={`flex-row items-center mr-6 mb-4 ${
-                    space.amenities.includes(facility.name) ? 'opacity-100' : 'opacity-50'
-                  }`}
+                  style={{ 
+                    flexDirection: 'row', 
+                    alignItems: 'center', 
+                    marginRight: 24, 
+                    marginBottom: 16,
+                    opacity: space.amenities.includes(facility.name) ? 1 : 0.5
+                  }}
                 >
-                  <View className={`p-2 rounded-xl mr-3 ${
-                    space.amenities.includes(facility.name) ? 'bg-green-100' : 'bg-gray-100'
-                  }`}>
+                  <View style={{ 
+                    padding: 8, 
+                    borderRadius: 12, 
+                    marginRight: 12,
+                    backgroundColor: space.amenities.includes(facility.name) ? colors.success + '20' : colors.backgroundSecondary
+                  }}>
                     <Ionicons 
                       name={facility.icon as any} 
                       size={20} 
-                      color={space.amenities.includes(facility.name) ? '#10B981' : '#6B7280'} 
+                      color={space.amenities.includes(facility.name) ? colors.success : colors.textSecondary} 
                     />
                   </View>
-                  <Text className={`font-medium ${
-                    space.amenities.includes(facility.name) ? 'text-gray-900' : 'text-gray-400'
-                  }`}>
+                  <Text style={{ 
+                    fontWeight: '500',
+                    color: space.amenities.includes(facility.name) ? colors.text : colors.textSecondary
+                  }}>
                     {facility.name}
                   </Text>
                   {!space.amenities.includes(facility.name) && (
-                    <Text className="text-gray-400 ml-1">(Not Available)</Text>
+                    <Text style={{ color: colors.textSecondary, marginLeft: 4 }}>(Not Available)</Text>
                   )}
                 </View>
               ))}
@@ -223,59 +230,59 @@ export default function HallDetails() {
           </View>
 
 
-          <View className="px-6 py-4 border-t border-gray-100">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Pricing</Text>
-            <View className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6">
-              <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-2xl font-bold text-gray-900">₹{space.pph}</Text>
-                <Text className="text-gray-600">per day</Text>
+          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Pricing</Text>
+            <View style={{ backgroundColor: colors.accent + '10', borderRadius: 16, padding: 24 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>₹{space.pph}</Text>
+                <Text style={{ color: colors.textSecondary }}>per day</Text>
               </View>
-              <Text className="text-gray-600 mb-4">Base price includes venue rental for 8 hours</Text>
-              <View className="space-y-2">
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-600">Security deposit</Text>
-                  <Text className="text-gray-900 font-semibold">₹{space.pph}</Text>
+              <Text style={{ color: colors.textSecondary, marginBottom: 16 }}>Base price includes venue rental for 8 hours</Text>
+              <View style={{ gap: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ color: colors.textSecondary }}>Security deposit</Text>
+                  <Text style={{ color: colors.text, fontWeight: '600' }}>₹{space.pph}</Text>
                 </View>
-                <View className="flex-row justify-between">
-                  <Text className="text-gray-600">Cleaning fee</Text>
-                  <Text className="text-gray-900 font-semibold">₹{space.pph}</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ color: colors.textSecondary }}>Cleaning fee</Text>
+                  <Text style={{ color: colors.text, fontWeight: '600' }}>₹{space.pph}</Text>
                 </View>
               </View>
             </View>
           </View>
 
 
-          <View className="px-6 py-4 border-t border-gray-100">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Location</Text>
-            <TouchableOpacity className="flex-row items-center justify-center border border-gray-300 rounded-2xl py-3">
-              <Ionicons name="map" size={20} color="#374151" />
-              <Text className="text-gray-900 font-semibold ml-2">View on Map</Text>
+          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Location</Text>
+            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 12 }}>
+              <Ionicons name="map" size={20} color={colors.text} />
+              <Text style={{ color: colors.text, fontWeight: '600', marginLeft: 8 }}>View on Map</Text>
             </TouchableOpacity>
           </View>
 
 
-          <View className="px-6 py-4 border-t border-gray-100">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-gray-900">Reviews</Text>
+          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Reviews</Text>
               <TouchableOpacity>
-                <Text className="text-blue-600 font-semibold">See All</Text>
+                <Text style={{ color: colors.link, fontWeight: '600' }}>See All</Text>
               </TouchableOpacity>
             </View>
             
-            <View className="space-y-4">
+            <View style={{ gap: 16 }}>
               {[1, 2].map((review) => (
-                <View key={review} className="bg-gray-50 rounded-2xl p-4">
-                  <View className="flex-row items-center justify-between mb-2">
-                    <View className="flex-row items-center">
-                      <View className="w-10 h-10 bg-gray-300 rounded-full mr-3"></View>
-                      <Text className="font-semibold text-gray-900">John Doe</Text>
+                <View key={review} style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 16, padding: 16 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <View style={{ width: 40, height: 40, backgroundColor: colors.border, borderRadius: 20, marginRight: 12 }}></View>
+                      <Text style={{ fontWeight: '600', color: colors.text }}>John Doe</Text>
                     </View>
-                    <View className="flex-row items-center">
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Ionicons name="star" size={16} color="#F59E0B" />
-                      <Text className="text-gray-600 ml-1">5.0</Text>
+                      <Text style={{ color: colors.textSecondary, marginLeft: 4 }}>5.0</Text>
                     </View>
                   </View>
-                  <Text className="text-gray-600">
+                  <Text style={{ color: colors.textSecondary }}>
                     Amazing venue with excellent facilities. The staff was very helpful and the location is perfect for events.
                   </Text>
                 </View>
@@ -284,30 +291,30 @@ export default function HallDetails() {
           </View>
 
 
-          <View className="px-6 py-4 border-t border-gray-100 mb-8">
-            <Text className="text-xl font-bold text-gray-900 mb-4">Contact Host</Text>
-            <View className="flex-row gap-2">
-              <TouchableOpacity className="bg-green-500 rounded-2xl px-6 py-3 flex-1 flex-row items-center justify-center">
+          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border, marginBottom: 32 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Contact Host</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity style={{ backgroundColor: '#10B981', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="call" size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Call</Text>
+                <Text style={{ color: 'white', fontWeight: '600', marginLeft: 8 }}>Call</Text>
               </TouchableOpacity>
-              <TouchableOpacity className="bg-blue-500 rounded-2xl px-6 py-3 flex-1 flex-row items-center justify-center">
+              <TouchableOpacity style={{ backgroundColor: '#3B82F6', borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="chatbubble" size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Message</Text>
+                <Text style={{ color: 'white', fontWeight: '600', marginLeft: 8 }}>Message</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View className="bg-white border-t border-gray-200 px-6 py-4">
-        <View className="flex-row items-center justify-between">
+      <View style={{ backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 24, paddingVertical: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View>
-            <Text className="text-2xl font-bold text-gray-900">₹{space.pph}</Text>
-            <Text className="text-gray-600">per day</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>₹{space.pph}</Text>
+            <Text style={{ color: colors.textSecondary }}>per day</Text>
           </View>
-          <TouchableOpacity className="bg-gray-900 rounded-2xl px-8 py-3">
-            <Text className="text-white font-semibold text-lg">Book Now</Text>
+          <TouchableOpacity onPress={()=>push(`/space/${id}/book` as any)} style={{ backgroundColor: colors.accent, borderRadius: 16, paddingHorizontal: 32, paddingVertical: 12 }}>
+            <Text style={{ color: 'white', fontWeight: '600', fontSize: 18 }}>Book Now</Text>
           </TouchableOpacity>
         </View>
       </View>

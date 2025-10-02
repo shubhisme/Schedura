@@ -13,6 +13,7 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
         pph: spaceData.pph,
         ownerid: spaceData.ownerid,
         organizationid: spaceData.organizationid,
+        category: spaceData.category || 'Social',
       }
     ])
     .select();

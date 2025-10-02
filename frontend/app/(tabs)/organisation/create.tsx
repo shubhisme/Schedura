@@ -13,9 +13,11 @@ import CSpace from "@/assets/images/illustrations/cspace.png"
 import RolesModal from '@/components/Modals/RolesModal';
 import { createOrganisation } from '@/supabase/controllers/organisation.controller';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 export default function CreateOrganisationScreen() {
+  const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
@@ -110,16 +112,16 @@ export default function CreateOrganisationScreen() {
 
  
   return (
-    <SafeBoundingView className="flex-1 bg-white">
-      <StatusBar backgroundColor="#E9F0E9" />
-      <ScrollView className=' bg-tertiary'>
-        <View className='p-6 bg-primary rounded-b-3xl pb-12'>
-          <Text className="text-black text-4xl font-bold mt-6">Create Organisation</Text>
-          <Text className='mt-2 text-xl'>Set up your space and let people {'\n'}reserve it with ease</Text>
-          <Image source={CSpace}  className='absolute -right-2 bottom-0'/>
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+      <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
+        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
+          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Create Organisation</Text>
+          <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+          <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
         </View>
 
-        <View className="mb-6 p-6 gap-y-6">
+        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
           <TouchableOpacity
                   onPress={async () => {
                       const url = await pickAndUploadFile("schedura-space");
@@ -127,40 +129,42 @@ export default function CreateOrganisationScreen() {
                         console.log("Uploaded file URL:", url);
                       }
                   }}
-                  className=" border-2 border-dashed p-4 rounded-xl h-20 w-20 justify-center items-center"
+                  style={{ borderWidth: 2, borderStyle: 'dashed', padding: 16, borderRadius: 12, height: 80, width: 80, justifyContent: 'center', alignItems: 'center', borderColor: colors.border, backgroundColor: colors.card }}
                 >
-                  <Ionicons name="add" size={24} color="black" />
+                  <Ionicons name="add" size={24} color={colors.text} />
           </TouchableOpacity>    
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Organisation Name</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Organisation Name</Text>
             <TextInput
               placeholder="Convention Center"
+              placeholderTextColor={colors.textSecondary}
               value={name}
               onChangeText={setName}
-              className="p-4 rounded-xl border-2 border-black"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Description</Text>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Description</Text>
             <TextInput
               placeholder="A very spacious and elegant hall with..."
+              placeholderTextColor={colors.textSecondary}
               value={description}
               onChangeText={setDescription}
               multiline
               numberOfLines={50}
-              className="p-4 rounded-xl border-2 border-black h-40"
+              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
               textAlignVertical='top'
             />
           </View>
           
           
-          <View className="flex-row items-center gap-4">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
             {
               images.fileUri ?
-              <View className='rounded-xl overflow-hidden border border-black/20 w-fit'>
+              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
                   <Image 
-                      className='h-20 w-20'
+                      style={{ height: 80, width: 80 }}
                       source={{uri:images.fileUri}}
                   />
               </View>
@@ -173,9 +177,9 @@ export default function CreateOrganisationScreen() {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className='bg-black p-4 rounded-2xl mt-4 flex-row items-center justify-center gap-x-5'
+            style={{ backgroundColor: colors.accent, padding: 16, borderRadius: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 }}
           >
-            <Text className='text-primary text-lg text-center font-semibold'>
+            <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
               Create Organisation
             </Text>
             {
@@ -183,8 +187,18 @@ export default function CreateOrganisationScreen() {
               <Animated.View
                 style={{
                   transform: [{ rotate: rotateAnimation }],
+                  borderTopWidth: 2,
+                  borderLeftWidth: 2,
+                  borderRightWidth: 2,
+                  borderBottomWidth: 2,
+                  borderRightColor: 'white',
+                  borderLeftColor: 'white',
+                  borderTopColor: 'white',
+                  borderBottomColor: 'transparent',
+                  height: 20,
+                  width: 20,
+                  borderRadius: 10
                 }}
-                className="border-t-2 border-l-2 border-r-2 border-b-2 border-r-white border-l-white border-t-white h-5 w-5 rounded-full "
               >
               </Animated.View>
               }

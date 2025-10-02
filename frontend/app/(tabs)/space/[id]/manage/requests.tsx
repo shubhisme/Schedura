@@ -4,9 +4,11 @@ import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, 
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 export default function RequestsSpaceScreen() {
+  const { colors } = useTheme();
   const [requests, setRequests] = useState<any[]>([]);
   const [actionLoader, setActionLoader] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -16,7 +18,7 @@ export default function RequestsSpaceScreen() {
 
   const getRequests = async() => {
     setRefreshing(true);
-    const {data, error} = await getRequestsForSpace(space_id);
+    const {data, error} = await getRequestsForSpace(space_id as string);
     if (error) {
       console.log("Error fetching requests: ", error);
       return;
@@ -31,25 +33,25 @@ export default function RequestsSpaceScreen() {
     getRequests();
   },[])
   return (
-    <ScrollView className='bg-tertiary px-6' 
+    <ScrollView style={{ backgroundColor: colors.backgroundSecondary, paddingHorizontal: 24 }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={getRequests}
-          colors={["#374151"]}
-          tintColor="#374151"
+          colors={[colors.accent]}
+          tintColor={colors.accent}
         />
       }
     >
       {requests.map((request) => {
-        return <RequestCard key={request.id} request={request} getRequests={getRequests} setActionLoader={setRefreshing} actionLoader={refreshing} userId={user?.id!}/>
+        return <RequestCard key={request.id} request={request} getRequests={getRequests} setActionLoader={setRefreshing} actionLoader={refreshing} userId={user?.id!} colors={colors}/>
       })}
     </ScrollView>
   );
 }
 
 
-function RequestCard({request, userId, setActionLoader, actionLoader, getRequests}: {request: any, userId: string, setActionLoader: any, actionLoader: any, getRequests: any}) {
+function RequestCard({request, userId, setActionLoader, actionLoader, getRequests, colors}: {request: any, userId: string, setActionLoader: any, actionLoader: any, getRequests: any, colors: any}) {
 
   const handleAccept = async() => {
     if(actionLoader) return;
@@ -61,21 +63,21 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
   }
 
   return (
-    <View className='p-6 border rounded-2xl mb-4'>
-      <Text className='text-2xl font-bold'>{request.space.name}</Text>
-      <Text className='text-xl font-medium'>{request.users.name}</Text>
-      <Text className='text-lg font-medium mb-4'>{new Date(request.start).toLocaleDateString()} - {new Date(request.end).toLocaleDateString()}</Text>
-      <View className='w-full h-[1px] mb-4 bg-black/10'></View>
-      <Text className=' text-xl font-semibold'>Reason</Text>
-      <Text>
+    <View style={{ padding: 24, borderWidth: 1, borderColor: colors.border, borderRadius: 16, marginBottom: 16, backgroundColor: colors.card }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>{request.space.name}</Text>
+      <Text style={{ fontSize: 20, fontWeight: '500', color: colors.text }}>{request.users.name}</Text>
+      <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 16, color: colors.textSecondary }}>{new Date(request.start).toLocaleDateString()} - {new Date(request.end).toLocaleDateString()}</Text>
+      <View style={{ width: '100%', height: 1, marginBottom: 16, backgroundColor: colors.border }}></View>
+      <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text }}>Reason</Text>
+      <Text style={{ color: colors.textSecondary }}>
         {request.reason || "No reason provided"}
       </Text>
-      <View className='flex-row gap-4 mt-4 space-x-4'>
-        <TouchableOpacity onPress={handleAccept}  className='bg-primary border flex-1 px-4 py-2 rounded-xl'>
-          <Text className='text-center font-semibold text-black'>Accept</Text>
+      <View style={{ flexDirection: 'row', gap: 16, marginTop: 16 }}>
+        <TouchableOpacity onPress={handleAccept} style={{ backgroundColor: colors.accent, borderWidth: 1, borderColor: colors.border, flex: 1, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
+          <Text style={{ textAlign: 'center', fontWeight: '600', color: 'white' }}>Accept</Text>
         </TouchableOpacity>
-        <TouchableOpacity  className='bg-red-500 flex-1 px-4 py-2 rounded-xl'>
-          <Text className='text-white font-semibold text-center'>Reject</Text>
+        <TouchableOpacity style={{ backgroundColor: colors.error, flex: 1, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
+          <Text style={{ color: 'white', fontWeight: '600', textAlign: 'center' }}>Reject</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -5,6 +5,7 @@ import { Feather } from '@expo/vector-icons';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SafeBoundingView from '@/components/SafeBoundingView';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Tab {
   name: string;
@@ -36,9 +37,24 @@ const tabs: Tab[] = [
 
 
 const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
+  const { colors, isDark } = useTheme();
+  
   return (
-    <View className="bg-tertiary  w-full px-5 py-4">
-      <View className="flex-row bg-white border rounded-3xl py-3 px-2 shadow-lg shadow-black/10">
+    <View style={{ backgroundColor: colors.tertiary, width: '100%', paddingHorizontal: 20, paddingVertical: 16 }}>
+      <View style={{ 
+        flexDirection: 'row', 
+        backgroundColor: colors.tabBarBackground, 
+        borderWidth: 1,
+        borderColor: colors.tabBarBorder,
+        borderRadius: 24, 
+        paddingVertical: 12, 
+        paddingHorizontal: 8,
+        shadowColor: colors.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4
+      }}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label = options.tabBarLabel !== undefined
@@ -61,6 +77,9 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               navigation.navigate(route.name, route.params);
             }
           };
+          
+          const isHidden = ['add-space', 'manage-space','edit-space', 'create-org', 'join-org', 'space/create', 'space/[id]/edit', 'space/[id]/manage', 'space/[id]/index', 'space/[id]/bookings', 'space/[id]/requests', 'space/[id]/book/index', 'organisation/create', 'organisation/join', 'profile/edit', 'profile/privacy', 'profile/billing'].includes(route.name);
+          
           return (
             <TouchableOpacity
               key={index}
@@ -68,21 +87,33 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
               onPress={onPress}
-              className={`flex-1 items-center ${['add-space', 'manage-space','edit-space', 'create-org', 'join-org', 'space/create', 'space/[id]/edit', 'space/[id]/manage', 'space/[id]/index', 'space/[id]/bookings', 'space/[id]/requests', 'space/[id]/book/index', 'organisation/create', 'organisation/join'].includes(route.name) && 'hidden'}`}
+              style={{ 
+                flex: 1, 
+                alignItems: 'center',
+                display: isHidden ? 'none' : 'flex'
+              }}
             >
-              <View className=''>
-                <View className={`w-8 h-8 mx-auto items-center justify-center  ${
-                  isFocused ? ' rounded-full' : ''
-                }`}>
+              <View>
+                <View style={{
+                  width: 32,
+                  height: 32,
+                  marginHorizontal: 'auto',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: isFocused ? 16 : 0
+                }}>
                   <Feather
-                    name={tab?.icon}
+                    name={tab?.icon as any}
                     size={20}
-                    color={isFocused ? 'black' : '#8E8E93'}
+                    color={isFocused ? colors.tabIconSelected : colors.tabIconDefault}
                   />
                 </View>
-                <Text className={`text-sm font-medium text-center ${
-                  isFocused ? 'text-black font-semibold' : 'text-gray-500/90'
-                }`}>
+                <Text style={{
+                  fontSize: 14,
+                  fontWeight: isFocused ? '600' : '500',
+                  textAlign: 'center',
+                  color: isFocused ? colors.tabIconSelected : colors.tabIconDefault
+                }}>
                   {typeof label === 'string' ? label : ''}
                 </Text>
               </View>
@@ -107,8 +138,7 @@ export default function TabLayout() {
         <Tabs.Screen
           key={i}
           name={tab.name}
-          options={{title: tab.title,}}
-          style={{ zIndex: 10}}
+          options={{title: tab.title}}
         />
       ))}
     </Tabs>

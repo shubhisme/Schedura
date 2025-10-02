@@ -10,8 +10,10 @@ import dayjs from "dayjs";
 import { sendBookRequest } from "@/supabase/controllers/request.controller";
 import { useUser } from "@clerk/clerk-expo";
 import { getBookingsForSpaceByMonthYear } from "@/supabase/controllers/booking.controller";
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function HallBooking() {
+  const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams();
   const [loading, setLoading] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(false) 
@@ -122,48 +124,61 @@ export default function HallBooking() {
 
   if (loading || !space) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
-        <StatusBar barStyle="dark-content" backgroundColor="#E9F0E9" />
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-600">Loading...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: colors.textSecondary }}>Loading...</Text>
         </View>
       </SafeAreaView>
     );
   }
   return (
-    <SafeBoundingView className="flex-1 bg-tertiary">
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
-      <ScrollView className="flex-1 relative" showsVerticalScrollIndicator={false}>
-          <View className=" bg-tertiary flex-row justify-between items-center px-6 z-10 h-14">
+      <ScrollView style={{ flex: 1, position: 'relative' }} showsVerticalScrollIndicator={false}>
+          <View style={{ backgroundColor: colors.backgroundSecondary, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, zIndex: 10, height: 56 }}>
             <TouchableOpacity 
                 onPress={() => back()}
-                className="bg-black/30 rounded-full p-3">
+                style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12 }}>
               <Ionicons name="arrow-back" size={15} color="white" />
             </TouchableOpacity>
           </View>
-        <View className="bg-tertiary rounded-t-3xl -mt-6 relative ">
+        <View style={{ backgroundColor: colors.backgroundSecondary, borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -24, position: 'relative' }}>
 
-          <View className="p-6 pb-4">
-            <View className="flex-row justify-between items-start mb-4">
-              <View className="flex-1">
-                <Text className="text-3xl font-bold text-gray-900 mb-2">{space.name}</Text>
+          <View style={{ padding: 24, paddingBottom: 16 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>{space.name}</Text>
                 
               </View>
               
-              <View className="bg-green-100 rounded-2xl px-4 py-2">
-                <Text className="text-green-800 font-semibold">Available</Text>
+              <View style={{ backgroundColor: colors.success + '20', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8 }}>
+                <Text style={{ color: colors.success, fontWeight: '600' }}>Available</Text>
               </View>
             </View>
-            <View className="flex-row items-center mb-4">
-              <View className="flex-row items-center bg-yellow-100 rounded-full px-3 py-1 mr-3">
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginRight: 12 }}>
                 <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text className="text-yellow-800 font-semibold ml-1">4.8</Text>
+                <Text style={{ color: '#92400E', fontWeight: '600', marginLeft: 4 }}>4.8</Text>
               </View>
-              <Text className="text-gray-600">Based on 124 reviews</Text>
+              <Text style={{ color: colors.textSecondary }}>Based on 124 reviews</Text>
             </View>
             <Calendar
                 style={{ borderRadius: 16, overflow: 'hidden' }}
+                theme={{
+                  backgroundColor: colors.card,
+                  calendarBackground: colors.card,
+                  textSectionTitleColor: colors.textSecondary,
+                  selectedDayBackgroundColor: colors.accent,
+                  selectedDayTextColor: '#ffffff',
+                  todayTextColor: colors.link,
+                  dayTextColor: colors.text,
+                  textDisabledColor: colors.textSecondary,
+                  monthTextColor: colors.text,
+                  textMonthFontWeight: 'bold',
+                  arrowColor: colors.accent,
+                }}
                 onDayPress={day => {
                     markDate(day.dateString);
                 }}
@@ -177,28 +192,29 @@ export default function HallBooking() {
             />
           </View>
         </View>
-        <View className="px-6">
-          <Text className='mb-1 font-semibold text-xl'>Reason</Text>
+        <View style={{ paddingHorizontal: 24 }}>
+          <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Reason</Text>
           <TextInput
             placeholder="Reason for booking"
+            placeholderTextColor={colors.textSecondary}
             value={reason}
             onChangeText={setReason}
             multiline
             numberOfLines={50}
-            className="p-4 rounded-xl border-2 border-black h-40"
+            style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
             textAlignVertical='top'
           />
         </View>
       </ScrollView>
 
-      <View className="bg-white border-t border-gray-200 px-6 py-4">
-        <View className="flex-row items-center justify-between">
+      <View style={{ backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 24, paddingVertical: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View>
-            <Text className="text-2xl font-bold text-gray-900">₹{space.pph * Object.keys(markedDates).length}</Text>
-            <Text className="text-gray-600">₹{space.pph} per day</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>₹{space.pph * Object.keys(markedDates).length}</Text>
+            <Text style={{ color: colors.textSecondary }}>₹{space.pph} per day</Text>
           </View>
-          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} className="bg-gray-900 rounded-2xl px-8 py-3">
-            <Text className="text-white font-semibold text-lg">Request Booking</Text>
+          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} style={{ backgroundColor: colors.accent, borderRadius: 16, paddingHorizontal: 32, paddingVertical: 12 }}>
+            <Text style={{ color: 'white', fontWeight: '600', fontSize: 18 }}>Request Booking</Text>
           </TouchableOpacity>
         </View>
       </View>

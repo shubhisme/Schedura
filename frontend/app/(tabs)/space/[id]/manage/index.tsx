@@ -1,12 +1,14 @@
 import { ScrollView, Text } from 'react-native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 
 export default function MangeSpaceScreen() {
+  const { colors } = useTheme();
 
   return (
-    <ScrollView className='bg-tertiary px-6'>
-      <Text className='text-black'>Manage Space Screen</Text>
+    <ScrollView style={{ backgroundColor: colors.backgroundSecondary, paddingHorizontal: 24 }}>
+      <Text style={{ color: colors.text }}>Manage Space Screen</Text>
     </ScrollView>
   );
 }

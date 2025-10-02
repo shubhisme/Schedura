@@ -13,11 +13,13 @@ import CSpace from "@/assets/images/illustrations/cspace.png"
 import RolesModal from '@/components/Modals/RolesModal';
 import { createOrganisation, searchOrganisations } from '@/supabase/controllers/organisation.controller';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 export default function JoinOrganisationScreen() {
+  const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
-  const [organisations, setOrganisations] = useState([]);
+  const [organisations, setOrganisations] = useState<any[]>([]);
   
   const search = async (name:string) => {
     setName(name);
@@ -35,42 +37,43 @@ export default function JoinOrganisationScreen() {
 
  
   return (
-    <SafeBoundingView className="flex-1 bg-white">
-      <StatusBar backgroundColor="#E9F0E9" />
-      <ScrollView className=' bg-tertiary'>
-        <View className='p-6 bg-primary rounded-b-3xl pb-12'>
-          <Text className="text-black text-4xl font-bold mt-6">Join Organisation</Text>
-          <Text className='mt-2 text-xl'>Set up your space and let people {'\n'}reserve it with ease</Text>
-          <Image source={CSpace}  className='absolute -right-2 bottom-0'/>
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+      <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
+        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
+          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Join Organisation</Text>
+          <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+          <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
         </View>
 
-        <View className="mb-6 p-6 gap-y-6">
+        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
           
           <View>
-            <Text className='mb-1 font-semibold text-xl'>Search</Text>
-            <View className="px-2 rounded-xl border-2 border-black flex-row items-center space-x-2">
-              <Ionicons name="search" size={20} color="black" className='px-2' />
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Search</Text>
+            <View style={{ paddingHorizontal: 8, borderRadius: 12, borderWidth: 2, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.card }}>
+              <Ionicons name="search" size={20} color={colors.textSecondary} style={{ paddingHorizontal: 8 }} />
               <TextInput
                 placeholder="Convention Center"
+                placeholderTextColor={colors.textSecondary}
                 value={name}
                 onChangeText={search}
-                className="p-4 rounded-xl  border-black flex-1"
+                style={{ padding: 16, borderRadius: 12, flex: 1, color: colors.text }}
               />
             </View>
           </View>
         </View>
-        <View className='px-6'>
+        <View style={{ paddingHorizontal: 24 }}>
           {organisations.map((org:any) => (
-            <TouchableOpacity key={org.id} className='rounded-xl mb-4 flex-row items-center justify-between space-x-4'>
-              <View className='flex-row items-center gap-x-2'>
-                <Image source={{ uri: org.logo }} className=' w-16 h-16 rounded-xl' /> 
+            <TouchableOpacity key={org.id} style={{ borderRadius: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16, backgroundColor: colors.card, padding: 16, borderWidth: 1, borderColor: colors.border }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Image source={{ uri: org.logo }} style={{ width: 64, height: 64, borderRadius: 12, backgroundColor: colors.backgroundSecondary }} /> 
                 <View>
-                  <Text className='text-lg font-semibold'>{org.name}</Text>
-                  <Text className='text-gray-600'>{org.type}</Text>
+                  <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>{org.name}</Text>
+                  <Text style={{ color: colors.textSecondary }}>{org.type}</Text>
                 </View>
               </View>
-              <TouchableOpacity className=' bg-primary py-2 px-4 rounded-xl items-center'>
-                <Text className='text-black font-semibold'>Request</Text>
+              <TouchableOpacity style={{ backgroundColor: colors.accent, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, alignItems: 'center' }}>
+                <Text style={{ color: 'white', fontWeight: '600' }}>Request</Text>
               </TouchableOpacity>
             </TouchableOpacity>
           ))}
