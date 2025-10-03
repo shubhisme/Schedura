@@ -52,8 +52,9 @@ export default function HallBooking() {
     if(data) {
       const blockedDates: any = {};
       data.forEach((booking: any) => {
-        let current = dayjs(booking.start_date);
-        const end = dayjs(booking.end_date);
+        let current = dayjs(booking.start);
+        console.log(booking.start)
+        const end = dayjs(booking.end);
         while (current.isBefore(end) || current.isSame(end)) {
           const dateStr = current.format("YYYY-MM-DD");
           blockedDates[dateStr] = { disabled: true, disableTouchEvent: true, marked: true, dotColor: 'red' };
@@ -67,7 +68,8 @@ export default function HallBooking() {
   
   useEffect(() => {
     fetchSpace();
-  }, []);
+  }, [id]);
+
 
   useEffect(() => {
     fetchBookingsForMonth(dayjs().month() + 1, dayjs().year());

@@ -8,7 +8,7 @@ export const getBookingsForSpaceByMonthYear = async (
     year: number
 ) => {
     // Construct start and end dates for the month
-    const startDate = new Date(year, month - 1, 1).toISOString();
+    const startDate = new Date(year, month-1, 1).toISOString();
     const endDate = new Date(year, month, 1).toISOString();
 
     const { data, error } = await supabase

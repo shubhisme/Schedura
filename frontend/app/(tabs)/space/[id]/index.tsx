@@ -45,7 +45,7 @@ export default function HallDetails() {
 
   useEffect(() => {
     fetchSpace();
-  }, []);
+  }, [id]);
   
   const handleShare = async () => {
     try {
