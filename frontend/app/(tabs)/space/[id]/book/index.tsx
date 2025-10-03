@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {Calendar} from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
 import SafeBoundingView from "@/components/SafeBoundingView";
 import dayjs from "dayjs"; 
 import { sendBookRequest } from "@/supabase/controllers/request.controller";
@@ -25,6 +25,19 @@ export default function HallBooking() {
   const [range, setRange] = useState<{ startDate?: string; endDate?: string }>({});
   const { user } = useUser();
   const [space, setSpace] = useState<any>();
+
+  // 🔹 Disable all past dates
+  const getDisabledPastDates = () => {
+    const today = dayjs().startOf("day");
+    const disabled: any = {};
+    for (let i = 0; i < 365; i++) {
+      const date = today.subtract(i + 1, "day").format("YYYY-MM-DD");
+      disabled[date] = { disabled: true, disableTouchEvent: true };
+    }
+    return disabled;
+  };
+
+  const [pastDisabledDates] = useState(getDisabledPastDates());
 
   const fetchSpace = async () => {
     try {
@@ -53,7 +66,6 @@ export default function HallBooking() {
       const blockedDates: any = {};
       data.forEach((booking: any) => {
         let current = dayjs(booking.start);
-        console.log(booking.start)
         const end = dayjs(booking.end);
         while (current.isBefore(end) || current.isSame(end)) {
           const dateStr = current.format("YYYY-MM-DD");
@@ -70,48 +82,46 @@ export default function HallBooking() {
     fetchSpace();
   }, [id]);
 
-
   useEffect(() => {
-    fetchBookingsForMonth(dayjs().month() + 1, dayjs().year());
+    fetchBookingsForMonth(dayjs().month(), dayjs().year());
   }, [space]);
   
   const markDate = (date: string) => {
-  let { startDate, endDate } = range;
+    let { startDate, endDate } = range;
 
-  if (!startDate || (startDate && endDate)) {
-    setRange({ startDate: date, endDate: undefined });
-    setMarkedDates({
-      [date]: { startingDay: true, endingDay: true, color: "black", textColor: "white" },
-    });
-    return;
-  }
-
-  if (dayjs(date).isAfter(dayjs(startDate))) {
-    endDate = date;
-    setRange({ startDate, endDate });
-
-    const rangeObj: any = {};
-    let current = dayjs(startDate);
-    while (current.isBefore(dayjs(endDate)) || current.isSame(dayjs(endDate))) {
-      const dateStr = current.format("YYYY-MM-DD");
-      if (dateStr === startDate) {
-        rangeObj[dateStr] = { startingDay: true, color: "black", textColor: "white" };
-      } else if (dateStr === endDate) {
-        rangeObj[dateStr] = { endingDay: true, color: "black", textColor: "white" };
-      } else {
-        rangeObj[dateStr] = { color: "black", textColor: "white" };
-      }
-      current = current.add(1, "day");
+    if (!startDate || (startDate && endDate)) {
+      setRange({ startDate: date, endDate: undefined });
+      setMarkedDates({
+        [date]: { startingDay: true, endingDay: true, color: "black", textColor: "white" },
+      });
+      return;
     }
-    setMarkedDates(rangeObj);
-  } else {
-    setRange({ startDate: date, endDate: undefined });
-    setMarkedDates({
-      [date]: { startingDay: true, endingDay: true, color: "black", textColor: "white" },
-    });
-  }
-};
 
+    if (dayjs(date).isAfter(dayjs(startDate))) {
+      endDate = date;
+      setRange({ startDate, endDate });
+
+      const rangeObj: any = {};
+      let current = dayjs(startDate);
+      while (current.isBefore(dayjs(endDate)) || current.isSame(dayjs(endDate))) {
+        const dateStr = current.format("YYYY-MM-DD");
+        if (dateStr === startDate) {
+          rangeObj[dateStr] = { startingDay: true, color: "black", textColor: "white" };
+        } else if (dateStr === endDate) {
+          rangeObj[dateStr] = { endingDay: true, color: "black", textColor: "white" };
+        } else {
+          rangeObj[dateStr] = { color: "black", textColor: "white" };
+        }
+        current = current.add(1, "day");
+      }
+      setMarkedDates(rangeObj);
+    } else {
+      setRange({ startDate: date, endDate: undefined });
+      setMarkedDates({
+        [date]: { startingDay: true, endingDay: true, color: "black", textColor: "white" },
+      });
+    }
+  };
 
   const sendBookingRequest = async() => {
     if (range.startDate && user) {
@@ -152,7 +162,6 @@ export default function HallBooking() {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>{space.name}</Text>
-                
               </View>
               
               <View style={{ backgroundColor: colors.success + '20', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8 }}>
@@ -184,13 +193,12 @@ export default function HallBooking() {
                 onDayPress={day => {
                     markDate(day.dateString);
                 }}
-                onMonthChange={(month) => fetchBookingsForMonth(month.month, month.year)}
+                onMonthChange={(month) => fetchBookingsForMonth(month.month-1, month.year)}
                 markingType={'period'}
-                markedDates={{...markedDates, ...bookedDates}}
+                markedDates={{ ...pastDisabledDates, ...markedDates, ...bookedDates }}
                 enableSwipeMonths={true}
                 displayLoadingIndicator={calendarLoading}
                 disableAllTouchEventsForDisabledDays={true}
-                disabledByDefault={calendarLoading}
             />
           </View>
         </View>

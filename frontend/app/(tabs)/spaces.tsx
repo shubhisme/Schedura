@@ -56,7 +56,7 @@ export default function SpacesScreen() {
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
+        <View  style={{ paddingHorizontal: 24, paddingVertical: 32 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Your Venues</Text>
             <TouchableOpacity

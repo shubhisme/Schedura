@@ -86,7 +86,7 @@ function BookingCard({booking, userId, setActionLoader, actionLoader, getBooking
     }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>
-          <Feather name='home' size={18} color={colors.text}/>  {booking.space.name}
+          <Feather name='home' size={18} color={colors.text}/>  {booking.space.name.slice(0,15)} {booking.space.name.length > 10 && "..."}
         </Text>
         {booking.payment_status === 'pending' ? pendingTag : acceptedTag}
       </View>

@@ -115,7 +115,7 @@ export default function CreateOrganisationScreen() {
     <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
-        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
+        <View style={{ padding: 24, backgroundColor: colors.primary, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
           <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Create Organisation</Text>
           <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
           <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />

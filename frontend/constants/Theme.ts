@@ -5,7 +5,7 @@ export const Colors = {
     primary: '#E9F0E9',
     secondary: '#FFFFFF',
     tertiary: '#F5F5F5',
-    accent: '#6366F1',
+    accent: 'black',
     
     // Text colors
     text: '#000000',
@@ -40,10 +40,10 @@ export const Colors = {
   },
   dark: {
     // Primary colors
-    primary: '#1F2937',
+    primary: 'black',
     secondary: '#111827',
-    tertiary: '#374151',
-    accent: '#6366F1',
+    tertiary: '#151515',
+    accent: '#E9F0E9',
     
     // Text colors
     text: '#F9FAFB',
@@ -52,13 +52,13 @@ export const Colors = {
     
     // Background colors
     background: '#111827',
-    backgroundSecondary: '#1F2937',
+    backgroundSecondary: '#151515',
     backgroundTertiary: '#374151',
     
     // UI colors
     border: '#374151',
     shadow: '#000000',
-    card: '#1F2937',
+    card: 'black',
     
     // Status colors
     success: '#10B981',
@@ -71,7 +71,7 @@ export const Colors = {
     linkHover: '#6366F1',
     
     // Tab bar
-    tabBarBackground: '#1F2937',
+    tabBarBackground: 'black',
     tabBarBorder: '#374151',
     tabIconDefault: '#6B7280',
     tabIconSelected: '#FFFFFF',
