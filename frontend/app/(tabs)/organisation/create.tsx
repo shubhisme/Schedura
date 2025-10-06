@@ -173,7 +173,16 @@ export default function CreateOrganisationScreen() {
             }
                 
           </View>
-
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Roles</Text>
+            <TouchableOpacity
+              onPress={() => setRolesModalVisible(true)}
+              style={{ backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }}
+            >
+              <Ionicons name="add" size={20} color={isDark ? '#000' : '#E9F0E9'} />
+              <Text style={{ color: isDark ? '#000' : '#ffffff', fontWeight: '600', marginLeft: 4 }}>Add Role</Text>
+            </TouchableOpacity>
+          </View>  
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
@@ -205,7 +214,7 @@ export default function CreateOrganisationScreen() {
             </TouchableOpacity>
         </View>
       </ScrollView>
-      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} />
+      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} orgid={"123"} />
     </SafeBoundingView>
   );
 }
