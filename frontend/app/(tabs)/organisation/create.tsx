@@ -20,6 +20,7 @@ export default function CreateOrganisationScreen() {
   const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [orgType, setOrgType] = useState<'Educational' | 'CoWorking'>('Educational');
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const [loading, setLoading] = useState(false)
   const [rolesModalVisible, setRolesModalVisible] = useState(false)
@@ -96,16 +97,28 @@ export default function CreateOrganisationScreen() {
       return;
     }
     try {
-      const { data, error } = await createOrganisation(user?.id!, name, description, "Educational", images);
+      const { data, error } = await createOrganisation(user?.id!, name, description, orgType, images);
       if (error || !data) {
         Alert.alert('Error', error || 'Failed to create organisation.');
+        setLoading(false);
         return;
       }
+      Alert.alert('Success', 'Organisation created successfully!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Clear the form
+            setName('');
+            setDescription('');
+            setImages({filePath:"", fileData:"", fileType:"", fileUri:""});
+            // You could also navigate back or to another screen
+          }
+        }
+      ]);
       console.log('Organisation created:', data);
     }
     catch (error) {
       Alert.alert('Error', 'An unexpected error occurred.');
-      return;
     }
     setLoading(false);
   };
@@ -156,6 +169,21 @@ export default function CreateOrganisationScreen() {
               style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
               textAlignVertical='top'
             />
+          </View>
+          
+          <View>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Organization Type</Text>
+            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 12, backgroundColor: colors.card }}>
+              {(['Educational', 'CoWorking'] as const).map((type) => (
+                <TouchableOpacity 
+                  onPress={() => setOrgType(type)} 
+                  key={type} 
+                  style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: orgType === type ? colors.accent : colors.backgroundSecondary }}
+                >
+                  <Text style={{ fontWeight: '500', color: orgType === type ? 'white' : colors.textSecondary }}>{type}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
           
           

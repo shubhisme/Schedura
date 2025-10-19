@@ -11,6 +11,13 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 //@ts-ignore
 import CSpace from "@/assets/images/illustrations/cspace.png"
 import { useTheme } from '@/contexts/ThemeContext';
+import MapLocationPicker from '@/components/MapLocationPicker';
+
+interface Location {
+  latitude: number;
+  longitude: number;
+  address?: string;
+}
 
 
 export default function AddSpacesScreen() {
@@ -18,6 +25,8 @@ export default function AddSpacesScreen() {
   const [name, setName] = useState('');
   const [capacity, setCapacity] = useState('');
   const [location, setLocation] = useState('');
+  const [selectedMapLocation, setSelectedMapLocation] = useState<Location | null>(null);
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [description, setDescription] = useState('');
   const [pph, setPph] = useState('');
   const [ownerid, setOwnerId] = useState('');
@@ -92,6 +101,7 @@ export default function AddSpacesScreen() {
     setLoading(true);
     if (!name || !capacity || !location || !description || !pph) {
       Alert.alert('Error', 'Please fill all fields');
+      setLoading(false);
       return;
     }
 
@@ -99,6 +109,8 @@ export default function AddSpacesScreen() {
       name,
       capacity: parseInt(capacity),
       location,
+      latitude: selectedMapLocation?.latitude,
+      longitude: selectedMapLocation?.longitude,
       description,
       pph,
       ownerid: user?.id!,
@@ -114,12 +126,13 @@ export default function AddSpacesScreen() {
       setName('');
       setCapacity('');
       setLocation('');
+      setSelectedMapLocation(null);
       setDescription('');
       setPph('');
       setOwnerId('');
       setOrganizationId('');
     }
-    setLoading(true);
+    setLoading(false);
   };
 
   // yet to make the submission functional
@@ -163,13 +176,33 @@ export default function AddSpacesScreen() {
           </View>
           <View>
             <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Location</Text>
-            <TextInput
-              placeholder="Panaji, Goa"
-              placeholderTextColor={colors.textSecondary}
-              value={location}
-              onChangeText={setLocation}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
-            />
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TextInput
+                placeholder="Panaji, Goa"
+                placeholderTextColor={colors.textSecondary}
+                value={location}
+                onChangeText={setLocation}
+                style={{ flex: 1, padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
+              />
+              <TouchableOpacity
+                onPress={() => setShowMapPicker(true)}
+                style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, justifyContent: 'center', alignItems: 'center' }}
+              >
+                <Ionicons name="map" size={24} color={colors.accent} />
+              </TouchableOpacity>
+            </View>
+            {selectedMapLocation && (
+              <View style={{ marginTop: 8, padding: 12, backgroundColor: colors.backgroundSecondary, borderRadius: 8 }}>
+                <Text style={{ color: colors.text, fontSize: 12, fontWeight: '500' }}>
+                  Selected coordinates: {selectedMapLocation.latitude.toFixed(6)}, {selectedMapLocation.longitude.toFixed(6)}
+                </Text>
+                {selectedMapLocation.address && (
+                  <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>
+                    {selectedMapLocation.address}
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
           <View>
             <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Description</Text>
@@ -281,6 +314,19 @@ export default function AddSpacesScreen() {
             </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      <MapLocationPicker
+        visible={showMapPicker}
+        onLocationSelect={(location) => {
+          setSelectedMapLocation(location);
+          if (location.address) {
+            setLocation(location.address);
+          }
+          setShowMapPicker(false);
+        }}
+        onCancel={() => setShowMapPicker(false)}
+        initialLocation={selectedMapLocation || undefined}
+      />
     </SafeBoundingView>
   );
 }

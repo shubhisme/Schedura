@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 import { AppState, View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { updateUserInfo } from '@/supabase/controllers/user.controller';
+import { TailwindThemeProvider } from '@/contexts/TailwindThemeContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 //@ts-ignore
 import { useRouter } from 'expo-router';
@@ -19,9 +20,11 @@ export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
       <ThemeProvider>
-        <SafeAreaProvider>
-            <AuthGate />
-        </SafeAreaProvider>
+        <TailwindThemeProvider>
+          <SafeAreaProvider>
+              <AuthGate />
+          </SafeAreaProvider>
+        </TailwindThemeProvider>
       </ThemeProvider>
     </ClerkProvider>
   );

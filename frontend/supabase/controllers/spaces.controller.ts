@@ -9,6 +9,8 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
         name: spaceData.name,
         capacity: spaceData.capacity,
         location: spaceData.location,
+        latitude: spaceData.latitude,
+        longitude: spaceData.longitude,
         description: spaceData.description,
         pph: spaceData.pph,
         ownerid: spaceData.ownerid,
@@ -131,6 +133,8 @@ export async function updateSpace(spaceId: string, userId: string, filePath: str
       .update({
         name: spaceData.name,
         location: spaceData.location,
+        latitude: spaceData.latitude,
+        longitude: spaceData.longitude,
         capacity: spaceData.capacity,
         description: spaceData.description,
         pph: spaceData.pph,
