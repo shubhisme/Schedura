@@ -61,7 +61,6 @@ export default function MangeSpaceScreen() {
         <ScrollView className='bg-transparent'>
         <Text className='font-semibold text-center text-2xl'>Month On Month Growth</Text>
         <Text className='text-center text-sm mb-2 text-gray-800'>Shows the monthly growth of booked spaces.</Text>
-        <DropdownComponent/>
 
         {dataSet.length > 0 ? (
             <LineChart
