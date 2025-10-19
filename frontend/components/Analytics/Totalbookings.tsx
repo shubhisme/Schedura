@@ -38,8 +38,8 @@ function Totalbookings() {
     }
 
   return (
-    <View className='flex flex-wrap justify-center space-y-3 w-[40%] p-4'>
-        <View className='bg-red-500 border rounded-xl w-[30%] px-3 py-2 mb-2'>
+    <View className='flex flex-col justify-center space-y-3 w-[100%] p-4'>
+        <View className='border rounded-xl w-[100%] px-3 py-2 mb-2'>
             <Text className='text-2xl text-center font-semibold'>Total Bookings</Text>
 
             <Text className='text-xs font-light text-center'>Total bookings for this space.</Text>
@@ -49,7 +49,7 @@ function Totalbookings() {
             </Text>
         </View>
 
-        <View className='bg-red-500 border rounded-xl w-[30%] px-3 py-2'>
+        <View className='border rounded-xl w-[100%] px-3 py-2'>
             <Text className='text-2xl text-center font-semibold'>Pending Bookings</Text>
 
             <Text className='text-xs font-light text-center'>Pending Bookings for this space.</Text>

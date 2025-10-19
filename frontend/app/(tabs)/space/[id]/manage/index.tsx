@@ -1,3 +1,4 @@
+"use client";
 import { Dimensions, Text, ScrollView } from 'react-native';
 import { LineChart } from "react-native-chart-kit";
 import { getBookingOfSpace } from '@/supabase/controllers/analytics';
@@ -5,6 +6,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import Totalbookings from '@/components/Analytics/Totalbookings';
 import Daysofweek from '@/components/Analytics/Daysofweek';
+import DropdownComponent from '@/components/Analytics/Dropdown';
 
 export default function MangeSpaceScreen() {
   const { id } = useLocalSearchParams();
@@ -59,6 +61,7 @@ export default function MangeSpaceScreen() {
         <ScrollView className='bg-transparent'>
         <Text className='font-semibold text-center text-2xl'>Month On Month Growth</Text>
         <Text className='text-center text-sm mb-2 text-gray-800'>Shows the monthly growth of booked spaces.</Text>
+        <DropdownComponent/>
 
         {dataSet.length > 0 ? (
             <LineChart
@@ -82,6 +85,7 @@ export default function MangeSpaceScreen() {
                 stroke: "#ffa726"
                 }
             }}
+            fromZero={true}
             bezier
             style={{
                 marginVertical: 8,
