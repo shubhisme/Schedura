@@ -1,36 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator, Linking, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import Mapbox from '@rnmapbox/maps';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSpaces } from '@/supabase/controllers/spaces.controller';
 
-// Declare global window interface for Leaflet
-declare global {
-  interface Window {
-    L: any;
-  }
-}
+// Set your Mapbox access token
+Mapbox.setAccessToken('pk.eyJ1Ijoic2hyaWRoYXItZGV2IiwiYSI6ImNram12OXIwOTA3cHkydm84NTBwdHMzYmgifQ.L9kE174hVJKMY9b2kEsAQQ');
 
 const { width, height } = Dimensions.get('window');
+
+interface Space {
+  id: string;
+  name: string;
+  location: string;
+  latitude: string | number;
+  longitude: string | number;
+  capacity: number;
+  pph: number;
+  description?: string;
+}
 
 export default function SpacesMapScreen() {
   const { colors, isDark } = useTheme();
   const { back } = useRouter();
-  const [spaces, setSpaces] = useState<any[]>([]);
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapLoaded, setMapLoaded] = useState(false);
+  const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
+  const cameraRef = useRef<Mapbox.Camera>(null);
 
   useEffect(() => {
     fetchSpaces();
   }, []);
-
-  useEffect(() => {
-    if (spaces.length > 0 && !mapLoaded) {
-      loadLeafletAndInitMap();
-    }
-  }, [spaces, mapLoaded]);
 
   const fetchSpaces = async () => {
     try {
@@ -43,7 +46,8 @@ export default function SpacesMapScreen() {
         // Filter spaces that have location coordinates
         const spacesWithCoords = (data || []).filter((space: any) => 
           space.latitude && space.longitude && 
-          !isNaN(parseFloat(space.latitude)) && !isNaN(parseFloat(space.longitude))
+          !isNaN(parseFloat(space.latitude.toString())) && 
+          !isNaN(parseFloat(space.longitude.toString()))
         );
         setSpaces(spacesWithCoords);
       }
@@ -55,101 +59,68 @@ export default function SpacesMapScreen() {
     }
   };
 
-  const loadLeafletAndInitMap = async () => {
-    try {
-      // Load Leaflet CSS
-      const cssLink = document.createElement('link');
-      cssLink.rel = 'stylesheet';
-      cssLink.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
-      document.head.appendChild(cssLink);
-
-      // Load Leaflet JS
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
-      script.onload = () => {
-        initializeMap();
-      };
-      document.body.appendChild(script);
-    } catch (error) {
-      console.error('Error loading Leaflet:', error);
-    }
+  const openInGoogleMaps = (latitude: number, longitude: number) => {
+    const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    Linking.openURL(url).catch(err => 
+      console.error('Error opening Google Maps:', err)
+    );
   };
 
-  const initializeMap = () => {
-    if (!window.L || spaces.length === 0) return;
-
-    const mapContainer = document.getElementById('spaces-map');
-    if (!mapContainer) return;
-
-    // Calculate center point from all spaces
-    const centerLat = spaces.reduce((sum, space) => sum + parseFloat(space.latitude), 0) / spaces.length;
-    const centerLng = spaces.reduce((sum, space) => sum + parseFloat(space.longitude), 0) / spaces.length;
-
-    // Initialize map
-    const map = window.L.map('spaces-map').setView([centerLat, centerLng], 10);
-
-    // Add tile layer
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Add markers for each space
-    spaces.forEach((space: any) => {
-      const marker = window.L.marker([parseFloat(space.latitude), parseFloat(space.longitude)])
-        .addTo(map);
-
-      // Create popup content
-      const popupContent = `
-        <div style="font-family: system-ui; max-width: 250px;">
-          <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #333;">
-            ${space.name}
-          </h3>
-          <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
-            <strong>📍</strong> ${space.location}
-          </p>
-          <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">
-            <strong>👥</strong> Capacity: ${space.capacity}
-          </p>
-          <p style="margin: 0 0 12px 0; font-size: 14px; color: #666;">
-            <strong>💰</strong> ${space.pph}/hour
-          </p>
-          ${space.description ? `
-            <p style="margin: 0 0 12px 0; font-size: 13px; color: #777; line-height: 1.4;">
-              ${space.description.length > 100 ? space.description.substring(0, 100) + '...' : space.description}
-            </p>
-          ` : ''}
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <a href="javascript:void(0)" 
-               onclick="window.open('https://www.google.com/maps?q=${space.latitude},${space.longitude}', '_blank')"
-               style="display: inline-block; background: #007bff; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 500;">
-              📍 View on Google Maps
-            </a>
-          </div>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent);
-    });
-
-    // Fit map to show all markers
-    if (spaces.length > 1) {
-      const group = new window.L.featureGroup(
-        spaces.map(space => 
-          window.L.marker([parseFloat(space.latitude), parseFloat(space.longitude)])
-        )
-      );
-      map.fitBounds(group.getBounds().pad(0.1));
+  const calculateCenterCoordinates = () => {
+    if (spaces.length === 0) {
+      return [73.8278, 15.4909]; // Default to Goa [longitude, latitude]
     }
 
-    setMapLoaded(true);
+    if (spaces.length === 1) {
+      return [
+        parseFloat(spaces[0].longitude.toString()),
+        parseFloat(spaces[0].latitude.toString())
+      ];
+    }
+
+    // Calculate center point
+    const centerLat = spaces.reduce((sum, space) => sum + parseFloat(space.latitude.toString()), 0) / spaces.length;
+    const centerLng = spaces.reduce((sum, space) => sum + parseFloat(space.longitude.toString()), 0) / spaces.length;
+    
+    return [centerLng, centerLat]; // Mapbox uses [longitude, latitude]
   };
+
+  const calculateBounds = () => {
+    if (spaces.length <= 1) return null;
+
+    const latitudes = spaces.map(s => parseFloat(s.latitude.toString()));
+    const longitudes = spaces.map(s => parseFloat(s.longitude.toString()));
+    
+    const minLat = Math.min(...latitudes);
+    const maxLat = Math.max(...latitudes);
+    const minLng = Math.min(...longitudes);
+    const maxLng = Math.max(...longitudes);
+
+    // Add padding
+    const padding = 0.02;
+    
+    return {
+      ne: [maxLng + padding, maxLat + padding],
+      sw: [minLng - padding, minLat - padding],
+    };
+  };
+
+  useEffect(() => {
+    if (spaces.length > 0 && cameraRef.current) {
+      const bounds = calculateBounds();
+      if (bounds) {
+        cameraRef.current.fitBounds(bounds.ne, bounds.sw, 50, 1000);
+      }
+    }
+  }, [spaces]);
 
   if (loading) {
     return (
       <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: colors.text, fontSize: 18 }}>Loading spaces...</Text>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <Text style={{ color: colors.text, fontSize: 18, marginTop: 16 }}>Loading spaces...</Text>
         </View>
       </SafeBoundingView>
     );
@@ -168,7 +139,8 @@ export default function SpacesMapScreen() {
         paddingVertical: 12,
         backgroundColor: colors.card,
         borderBottomWidth: 1,
-        borderBottomColor: colors.border
+        borderBottomColor: colors.border,
+        zIndex: 10,
       }}>
         <TouchableOpacity onPress={back} style={{ padding: 8 }}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -196,23 +168,112 @@ export default function SpacesMapScreen() {
       ) : (
         <>
           {/* Map Container */}
-          <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
-            <div 
-              id="spaces-map" 
-              style={{ 
-                width: '100%', 
-                height: '100%',
-                backgroundColor: colors.backgroundSecondary
-              }}
-            />
+          <View style={{ flex: 1 }}>
+            <Mapbox.MapView
+              style={{ flex: 1 }}
+              styleURL={isDark ? Mapbox.StyleURL.Dark : Mapbox.StyleURL.Street}
+              compassEnabled={true}
+              scaleBarEnabled={false}
+              logoEnabled={false}
+            >
+              <Mapbox.Camera
+                ref={cameraRef}
+                zoomLevel={10}
+                centerCoordinate={calculateCenterCoordinates()}
+                animationMode="flyTo"
+                animationDuration={1000}
+              />
+
+              <Mapbox.UserLocation visible={true} />
+
+              {/* Markers */}
+              {spaces.map((space) => {
+                const coordinates = [
+                  parseFloat(space.longitude.toString()),
+                  parseFloat(space.latitude.toString())
+                ];
+
+                return (
+                  <Mapbox.PointAnnotation
+                    key={space.id}
+                    id={space.id}
+                    coordinate={coordinates}
+                    onSelected={() => setSelectedSpace(space)}
+                  >
+                    <View style={styles.markerContainer}>
+                      <View style={[styles.marker, { backgroundColor: colors.accent }]}>
+                        <Ionicons name="location" size={24} color="white" />
+                      </View>
+                    </View>
+                  </Mapbox.PointAnnotation>
+                );
+              })}
+            </Mapbox.MapView>
           </View>
+
+          {/* Selected Space Details Card */}
+          {selectedSpace && (
+            <View style={[styles.detailsCard, { 
+              backgroundColor: colors.card,
+              shadowColor: isDark ? '#fff' : '#000',
+            }]}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
+                    {selectedSpace.name}
+                  </Text>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4 }}>
+                    📍 {selectedSpace.location}
+                  </Text>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4 }}>
+                    👥 Capacity: {selectedSpace.capacity}
+                  </Text>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 8 }}>
+                    💰 ₹{selectedSpace.pph}/hour
+                  </Text>
+                  {selectedSpace.description && (
+                    <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
+                      {selectedSpace.description.length > 100 
+                        ? selectedSpace.description.substring(0, 100) + '...' 
+                        : selectedSpace.description}
+                    </Text>
+                  )}
+                </View>
+                <TouchableOpacity 
+                  onPress={() => setSelectedSpace(null)}
+                  style={{ padding: 4 }}
+                >
+                  <Ionicons name="close" size={24} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={() => openInGoogleMaps(
+                  parseFloat(selectedSpace.latitude.toString()),
+                  parseFloat(selectedSpace.longitude.toString())
+                )}
+                style={{
+                  backgroundColor: colors.accent,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderRadius: 8,
+                  marginTop: 12,
+                  alignItems: 'center',
+                }}
+              >
+                <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
+                  📍 View on Google Maps
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           {/* Map Info Footer */}
           <View style={{ 
             backgroundColor: colors.card, 
             padding: 16, 
             borderTopWidth: 1, 
-            borderTopColor: colors.border 
+            borderTopColor: colors.border,
+            zIndex: 10,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -241,3 +302,34 @@ export default function SpacesMapScreen() {
     </SafeBoundingView>
   );
 }
+
+const styles = StyleSheet.create({
+  markerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  marker: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  detailsCard: {
+    position: 'absolute',
+    bottom: 80,
+    left: 16,
+    right: 16,
+    borderRadius: 12,
+    padding: 16,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  }
+});

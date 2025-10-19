@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { Button, StyleSheet, View } from 'react-native';
 import LottieView from 'lottie-react-native';
+import PaperPlane from '@/assets/animations/paperplane.json';
 
 export default function RequestSuccessfulPage() {
   const animation = useRef<LottieView>(null);
@@ -20,7 +21,7 @@ export default function RequestSuccessfulPage() {
           backgroundColor: '#eee',
         }}
         // Find more Lottie files at https://lottiefiles.com/featured
-        source={require('./assets/gradientBall.json')}
+        source={PaperPlane}
       />
       <View style={styles.buttonContainer}>
         <Button
