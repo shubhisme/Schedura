@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator, Linking, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator, Linking, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Mapbox from '@rnmapbox/maps';
+import MapView, { Marker, UrlTile } from 'react-native-maps';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSpaces } from '@/supabase/controllers/spaces.controller';
-
-// Set your Mapbox access token
-Mapbox.setAccessToken('pk.eyJ1Ijoic2hyaWRoYXItZGV2IiwiYSI6ImNram12OXIwOTA3cHkydm84NTBwdHMzYmgifQ.L9kE174hVJKMY9b2kEsAQQ');
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,11 +26,27 @@ export default function SpacesMapScreen() {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
-  const cameraRef = useRef<Mapbox.Camera>(null);
+  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     fetchSpaces();
   }, []);
+
+  useEffect(() => {
+    if (spaces.length > 1 && mapRef.current) {
+      const coordinates = spaces.map(space => ({
+        latitude: parseFloat(space.latitude.toString()),
+        longitude: parseFloat(space.longitude.toString()),
+      }));
+      
+      setTimeout(() => {
+        mapRef.current?.fitToCoordinates(coordinates, {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        });
+      }, 500);
+    }
+  }, [spaces]);
 
   const fetchSpaces = async () => {
     try {
@@ -43,7 +56,6 @@ export default function SpacesMapScreen() {
         console.error("Error fetching spaces:", error);
         Alert.alert('Error', 'Failed to load spaces');
       } else {
-        // Filter spaces that have location coordinates
         const spacesWithCoords = (data || []).filter((space: any) => 
           space.latitude && space.longitude && 
           !isNaN(parseFloat(space.latitude.toString())) && 
@@ -59,34 +71,35 @@ export default function SpacesMapScreen() {
     }
   };
 
-  const openInGoogleMaps = (latitude: number, longitude: number) => {
-    const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  const openInMaps = (latitude: number, longitude: number) => {
+    const url = Platform.select({
+      ios: `maps:0,0?q=${latitude},${longitude}`,
+      android: `geo:0,0?q=${latitude},${longitude}`,
+      default: `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}`,
+    });
     Linking.openURL(url).catch(err => 
-      console.error('Error opening Google Maps:', err)
+      console.error('Error opening maps:', err)
     );
   };
 
-  const calculateCenterCoordinates = () => {
+  const calculateRegion = () => {
     if (spaces.length === 0) {
-      return [73.8278, 15.4909]; // Default to Goa [longitude, latitude]
+      return {
+        latitude: 15.4909,
+        longitude: 73.8278,
+        latitudeDelta: 0.5,
+        longitudeDelta: 0.5,
+      };
     }
 
     if (spaces.length === 1) {
-      return [
-        parseFloat(spaces[0].longitude.toString()),
-        parseFloat(spaces[0].latitude.toString())
-      ];
+      return {
+        latitude: parseFloat(spaces[0].latitude.toString()),
+        longitude: parseFloat(spaces[0].longitude.toString()),
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
     }
-
-    // Calculate center point
-    const centerLat = spaces.reduce((sum, space) => sum + parseFloat(space.latitude.toString()), 0) / spaces.length;
-    const centerLng = spaces.reduce((sum, space) => sum + parseFloat(space.longitude.toString()), 0) / spaces.length;
-    
-    return [centerLng, centerLat]; // Mapbox uses [longitude, latitude]
-  };
-
-  const calculateBounds = () => {
-    if (spaces.length <= 1) return null;
 
     const latitudes = spaces.map(s => parseFloat(s.latitude.toString()));
     const longitudes = spaces.map(s => parseFloat(s.longitude.toString()));
@@ -95,24 +108,19 @@ export default function SpacesMapScreen() {
     const maxLat = Math.max(...latitudes);
     const minLng = Math.min(...longitudes);
     const maxLng = Math.max(...longitudes);
-
-    // Add padding
-    const padding = 0.02;
     
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLng = (minLng + maxLng) / 2;
+    const latDelta = (maxLat - minLat) * 1.5;
+    const lngDelta = (maxLng - minLng) * 1.5;
+
     return {
-      ne: [maxLng + padding, maxLat + padding],
-      sw: [minLng - padding, minLat - padding],
+      latitude: centerLat,
+      longitude: centerLng,
+      latitudeDelta: Math.max(latDelta, 0.05),
+      longitudeDelta: Math.max(lngDelta, 0.05),
     };
   };
-
-  useEffect(() => {
-    if (spaces.length > 0 && cameraRef.current) {
-      const bounds = calculateBounds();
-      if (bounds) {
-        cameraRef.current.fitBounds(bounds.ne, bounds.sw, 50, 1000);
-      }
-    }
-  }, [spaces]);
 
   if (loading) {
     return (
@@ -169,46 +177,38 @@ export default function SpacesMapScreen() {
         <>
           {/* Map Container */}
           <View style={{ flex: 1 }}>
-            <Mapbox.MapView
+            <MapView
+              ref={mapRef}
               style={{ flex: 1 }}
-              styleURL={isDark ? Mapbox.StyleURL.Dark : Mapbox.StyleURL.Street}
-              compassEnabled={true}
-              scaleBarEnabled={false}
-              logoEnabled={false}
+              initialRegion={calculateRegion()}
+              showsUserLocation={true}
+              showsMyLocationButton={true}
+              showsCompass={true}
             >
-              <Mapbox.Camera
-                ref={cameraRef}
-                zoomLevel={10}
-                centerCoordinate={calculateCenterCoordinates()}
-                animationMode="flyTo"
-                animationDuration={1000}
+              {/* OpenStreetMap Tiles */}
+              <UrlTile
+                urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                maximumZ={19}
               />
 
-              <Mapbox.UserLocation visible={true} />
-
               {/* Markers */}
-              {spaces.map((space) => {
-                const coordinates = [
-                  parseFloat(space.longitude.toString()),
-                  parseFloat(space.latitude.toString())
-                ];
-
-                return (
-                  <Mapbox.PointAnnotation
-                    key={space.id}
-                    id={space.id}
-                    coordinate={coordinates}
-                    onSelected={() => setSelectedSpace(space)}
-                  >
-                    <View style={styles.markerContainer}>
-                      <View style={[styles.marker, { backgroundColor: colors.accent }]}>
-                        <Ionicons name="location" size={24} color="white" />
-                      </View>
+              {spaces.map((space) => (
+                <Marker
+                  key={space.id}
+                  coordinate={{
+                    latitude: parseFloat(space.latitude.toString()),
+                    longitude: parseFloat(space.longitude.toString()),
+                  }}
+                  onPress={() => setSelectedSpace(space)}
+                >
+                  <View style={styles.markerContainer}>
+                    <View style={[styles.marker, { backgroundColor: colors.accent }]}>
+                      <Ionicons name="location" size={24} color="white" />
                     </View>
-                  </Mapbox.PointAnnotation>
-                );
-              })}
-            </Mapbox.MapView>
+                  </View>
+                </Marker>
+              ))}
+            </MapView>
           </View>
 
           {/* Selected Space Details Card */}
@@ -247,7 +247,7 @@ export default function SpacesMapScreen() {
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
-                onPress={() => openInGoogleMaps(
+                onPress={() => openInMaps(
                   parseFloat(selectedSpace.latitude.toString()),
                   parseFloat(selectedSpace.longitude.toString())
                 )}
@@ -261,7 +261,7 @@ export default function SpacesMapScreen() {
                 }}
               >
                 <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
-                  📍 View on Google Maps
+                  📍 Open in Maps
                 </Text>
               </TouchableOpacity>
             </View>
@@ -314,7 +314,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,

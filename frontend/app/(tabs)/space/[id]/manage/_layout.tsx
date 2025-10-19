@@ -20,18 +20,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { id } = useLocalSearchParams(); // 👈 get space id
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-      <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
-        <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Dashboard</Text>
-        <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>
+
+      <View
+        className="px-6 pt-6 pb-12 rounded-b-[24px]"
+        style={{ backgroundColor: colors.accent }}
+      >
+        <Text className="text-4xl font-bold mt-6" style={{ color: colors.text }}>Dashboard</Text>
+        <Text className="mt-2 text-xl" style={{ color: colors.text }}>
           Manage all your spaces with ease, {'\n'}get powerful insights
         </Text>
-        <Image source={CSpace} style={{ position: 'absolute', right: -20, bottom: 0, display: 'none' }} />
+        <Image source={CSpace} className="absolute right-[-20px] bottom-0 hidden" />
       </View>
 
-      <View style={{ padding: 24 }}>
-        <View style={{ backgroundColor: colors.card, flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 16, padding: 16, paddingVertical: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8, elevation: 4 }}>
+      <View className="p-6">
+        <View
+          className="flex-row items-center px-4 py-3 rounded-[16px] shadow-lg"
+          style={{ backgroundColor: colors.card }}
+        >
           {navOptions.map((option, index) => {
             const href = `/space/${id}${option.suffix}` as any;
             const isActive = pathname === href;
@@ -40,16 +47,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={index}
                 href={href}
-                style={{ flex: 1, borderRadius: 8, alignItems: 'center', textAlign: 'center', backgroundColor: isActive ? colors.accent : colors.card }}
+                className="flex-1 rounded-[8px] items-center text-center"
+                style={{ backgroundColor: isActive ? colors.accent : colors.card }}
               >
-                <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1, padding: 8, paddingHorizontal: 16, borderRadius: 8 }}>
+                <View className="flex-1 items-center justify-center p-2 px-4 rounded-[8px]">
                   <Feather
                     name={option.icon as any}
                     size={15}
                     color={isActive ? "white" : colors.text}
                   />
                   <Text
-                    style={{ fontSize: 12, fontWeight: '600', marginTop: 4, color: isActive ? "white" : colors.text }}
+                    className="text-xs font-semibold mt-1"
+                    style={{ color: isActive ? "white" : colors.text }}
                   >
                     {option.name}
                   </Text>
@@ -59,6 +68,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </View>
       </View>
+
       <Stack screenOptions={{headerShown:false}}/>
     </SafeBoundingView>
   );

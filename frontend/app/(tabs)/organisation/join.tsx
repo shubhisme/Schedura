@@ -97,8 +97,8 @@ export default function JoinOrganisationScreen() {
   // Load user organizations and join requests on component mount
   useFocusEffect(
     useCallback(() => {
-      loadUserOrganisations();
-      loadUserJoinRequests();
+      //loadUserOrganisations();
+      //loadUserJoinRequests();
     }, [user?.id])
   );
 

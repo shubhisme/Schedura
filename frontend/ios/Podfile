@@ -13,10 +13,6 @@ install! 'cocoapods',
 
 prepare_react_native_project!
 
-# @generated begin @rnmapbox/maps-rnmapboxmapsimpl - expo prebuild (DO NOT MODIFY) sync-b8550eb76455f9b7800ebbe6368dd8674cffd238
-$RNMapboxMapsDownloadToken = 'pk.eyJ1Ijoic2hyaWRoYXItZGV2IiwiYSI6ImNram12OXIwOTA3cHkydm84NTBwdHMzYmgifQ.L9kE174hVJKMY9b2kEsAQQ'
-$RNMapboxMapsVersion = '11.0.0'
-# @generated end @rnmapbox/maps-rnmapboxmapsimpl
 target 'Schedura' do
   use_expo_modules!
 
