@@ -6,7 +6,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import Totalbookings from '@/components/Analytics/Totalbookings';
 import Daysofweek from '@/components/Analytics/Daysofweek';
-import DropdownComponent from '@/components/Analytics/Dropdown';
 
 export default function MangeSpaceScreen() {
   const { id } = useLocalSearchParams();
