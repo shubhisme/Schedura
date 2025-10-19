@@ -62,7 +62,7 @@ export default function RequestsSpacesScreen() {
 }
 
 
-function BookingCard({booking, userId, setActionLoader, actionLoader, getBookings, colors, isDark}: {booking: any, userId: string, setActionLoader: any, actionLoader: any, getBookings: any, colors: any, isDark: boolean}) {
+function BookingCard({booking, colors, isDark}: {booking: any, userId: string, setActionLoader: any, actionLoader: any, getBookings: any, colors: any, isDark: boolean}) {
 
 
   let pendingTag = (

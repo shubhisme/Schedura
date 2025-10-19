@@ -5,8 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
 import { getUserInfo } from '@/supabase/controllers/user.controller';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const EditProfileScreen = () => {
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const { user: authUser } = useUser();
   const [loading, setLoading] = useState(false);
@@ -72,148 +74,148 @@ const EditProfileScreen = () => {
 
   if (loading) {
     return (
-      <SafeBoundingView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#000" />
+      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size="large" color={colors.accent} />
       </SafeBoundingView>
     );
   }
 
   return (
-    <SafeBoundingView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       
       {/* Header */}
-      <View className="bg-white px-6 py-4 flex-row items-center justify-between border-b border-gray-200">
-        <TouchableOpacity onPress={() => router.back()} className="p-2">
-          <Ionicons name="arrow-back" size={24} color="#000" />
+      <View style={{ backgroundColor: colors.card, paddingHorizontal: 24, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-gray-900">Edit Profile</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Edit Profile</Text>
         <TouchableOpacity 
           onPress={handleSave}
           disabled={saving}
-          className="p-2"
+          style={{ padding: 8 }}
         >
           {saving ? (
-            <ActivityIndicator size="small" color="#000" />
+            <ActivityIndicator size="small" color={colors.accent} />
           ) : (
-            <Text className="text-base font-semibold text-indigo-600">Save</Text>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: colors.link }}>Save</Text>
           )}
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {/* Avatar Section */}
-        <View className="bg-white py-8 items-center border-b border-gray-200">
-          <TouchableOpacity onPress={pickImage} className="relative">
+        <View style={{ backgroundColor: colors.card, paddingVertical: 32, alignItems: 'center', borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          <TouchableOpacity onPress={pickImage} style={{ position: 'relative' }}>
             {avatarUri ? (
               <Image 
                 source={{ uri: avatarUri }} 
-                className="w-32 h-32 rounded-full bg-gray-200"
+                style={{ width: 128, height: 128, borderRadius: 64, backgroundColor: colors.backgroundSecondary }}
               />
             ) : (
-              <View className="w-32 h-32 rounded-full bg-gray-200 items-center justify-center">
-                <Ionicons name="person" size={48} color="#9ca3af" />
+              <View style={{ width: 128, height: 128, borderRadius: 64, backgroundColor: colors.backgroundSecondary, alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="person" size={48} color={colors.textSecondary} />
               </View>
             )}
-            <View className="absolute bottom-0 right-0 bg-indigo-600 p-2 rounded-full">
+            <View style={{ position: 'absolute', bottom: 0, right: 0, backgroundColor: colors.link, padding: 8, borderRadius: 20 }}>
               <Ionicons name="camera" size={20} color="white" />
             </View>
           </TouchableOpacity>
-          <Text className="text-gray-500 text-sm mt-3">Tap to change photo</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 12 }}>Tap to change photo</Text>
         </View>
 
         {/* Form Section */}
-        <View className="px-6 py-6">
+        <View style={{ paddingHorizontal: 24, paddingVertical: 24 }}>
           {/* Name */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Full Name</Text>
-            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 border border-gray-200">
-              <Ionicons name="person-outline" size={20} color="#6b7280" />
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Full Name</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name="person-outline" size={20} color={colors.textSecondary} />
               <TextInput
                 value={name}
                 onChangeText={setName}
                 placeholder="Enter your name"
-                placeholderTextColor="#9ca3af"
-                className="flex-1 ml-3 text-base text-gray-900"
+                placeholderTextColor={colors.textSecondary}
+                style={{ flex: 1, marginLeft: 12, fontSize: 16, color: colors.text }}
               />
             </View>
           </View>
 
           {/* Email */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Email</Text>
-            <View className="flex-row items-center bg-gray-100 rounded-xl px-4 py-3 border border-gray-200">
-              <Ionicons name="mail-outline" size={20} color="#6b7280" />
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Email</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.backgroundSecondary, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
               <TextInput
                 value={email}
                 editable={false}
                 placeholder="Email"
-                placeholderTextColor="#9ca3af"
-                className="flex-1 ml-3 text-base text-gray-500"
+                placeholderTextColor={colors.textSecondary}
+                style={{ flex: 1, marginLeft: 12, fontSize: 16, color: colors.textSecondary }}
               />
             </View>
-            <Text className="text-xs text-gray-500 mt-1">Email cannot be changed</Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>Email cannot be changed</Text>
           </View>
 
           {/* Phone */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Phone Number</Text>
-            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 border border-gray-200">
-              <Ionicons name="call-outline" size={20} color="#6b7280" />
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Phone Number</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name="call-outline" size={20} color={colors.textSecondary} />
               <TextInput
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="+1 (555) 000-0000"
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textSecondary}
                 keyboardType="phone-pad"
-                className="flex-1 ml-3 text-base text-gray-900"
+                style={{ flex: 1, marginLeft: 12, fontSize: 16, color: colors.text }}
               />
             </View>
           </View>
 
           {/* Location */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Location</Text>
-            <View className="flex-row items-center bg-white rounded-xl px-4 py-3 border border-gray-200">
-              <Ionicons name="location-outline" size={20} color="#6b7280" />
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Location</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: colors.border }}>
+              <Ionicons name="location-outline" size={20} color={colors.textSecondary} />
               <TextInput
                 value={location}
                 onChangeText={setLocation}
                 placeholder="City, Country"
-                placeholderTextColor="#9ca3af"
-                className="flex-1 ml-3 text-base text-gray-900"
+                placeholderTextColor={colors.textSecondary}
+                style={{ flex: 1, marginLeft: 12, fontSize: 16, color: colors.text }}
               />
             </View>
           </View>
 
           {/* Bio */}
-          <View className="mb-6">
-            <Text className="text-sm font-semibold text-gray-700 mb-2">Bio</Text>
-            <View className="bg-white rounded-xl px-4 py-3 border border-gray-200">
+          <View style={{ marginBottom: 24 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 }}>Bio</Text>
+            <View style={{ backgroundColor: colors.card, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: colors.border }}>
               <TextInput
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Tell us about yourself..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textSecondary}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
-                className="text-base text-gray-900"
+                style={{ fontSize: 16, color: colors.text }}
               />
             </View>
-            <Text className="text-xs text-gray-500 mt-1">{bio.length}/150 characters</Text>
+            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 4 }}>{bio.length}/150 characters</Text>
           </View>
 
           {/* Save Button (Mobile) */}
           <TouchableOpacity
             onPress={handleSave}
             disabled={saving}
-            className="bg-black rounded-xl py-4 items-center mt-4"
+            style={{ backgroundColor: colors.accent, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 16 }}
           >
             {saving ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text className="text-white font-semibold text-base">Save Changes</Text>
+              <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>Save Changes</Text>
             )}
           </TouchableOpacity>
         </View>
