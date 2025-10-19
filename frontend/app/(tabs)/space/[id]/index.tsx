@@ -5,6 +5,7 @@ import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import SpaceMapView from '@/components/SpaceMapView';
 
 const { width } = Dimensions.get('window');
 
@@ -14,6 +15,7 @@ export default function HallDetails() {
   const [loading, setLoading] = useState(false) 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showMapView, setShowMapView] = useState(false);
   const { back, push } = useRouter();
 
   
@@ -254,7 +256,10 @@ export default function HallDetails() {
 
           <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Location</Text>
-            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 12 }}>
+            <TouchableOpacity 
+              onPress={() => setShowMapView(true)}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 12 }}
+            >
               <Ionicons name="map" size={20} color={colors.text} />
               <Text style={{ color: colors.text, fontWeight: '600', marginLeft: 8 }}>View on Map</Text>
             </TouchableOpacity>
@@ -318,6 +323,17 @@ export default function HallDetails() {
           </TouchableOpacity>
         </View>
       </View>
+      
+      {space.latitude && space.longitude && (
+        <SpaceMapView
+          visible={showMapView}
+          onClose={() => setShowMapView(false)}
+          latitude={space.latitude}
+          longitude={space.longitude}
+          spaceName={space.name}
+          spaceAddress={space.location}
+        />
+      )}
       
     </SafeAreaView>
   );

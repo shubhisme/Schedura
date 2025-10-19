@@ -47,15 +47,15 @@ const ProfileScreen = () => {
   }, []);
 
   const handleEditProfile = () => {
-    router.push('/profile-edit');
+    router.push('/profile/edit');
   };
 
   const handlePrivacySecurity = () => {
-    router.push('/profile-privacy');
+    router.push('/profile/privacy');
   };
 
   const handleBilling = () => {
-    router.push('/profile-billing');
+    router.push('/profile/billing');
   };
 
   const handleNotificationsChange = (value: boolean) => {

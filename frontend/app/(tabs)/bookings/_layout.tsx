@@ -18,33 +18,27 @@ export default function MyBookingsPage({ children }: { children: React.ReactNode
   const { id } = useLocalSearchParams(); // 👈 get space id
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.tertiary }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.tertiary }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.primary} />
-      <View style={{ padding: 24, backgroundColor: colors.primary, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
-        <Text style={{ color: colors.accent, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>My Bookings</Text>
-        <Text style={{ marginTop: 8, fontSize: 20, color: colors.textSecondary }}>
+      <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.primary }}>
+        <Text className="text-4xl font-bold mt-6" style={{ color: colors.accent }}>My Bookings</Text>
+        <Text className="mt-2 text-lg" style={{ color: colors.textSecondary }}>
           Manage all your bookings and requests with ease, get powerful insights
         </Text>
-        <Image source={CSpace} style={{ position: 'absolute', right: -20, bottom: 0, display: 'none' }} />
+        <Image source={CSpace} className="absolute -right-5 bottom-0 hidden" />
       </View>
 
-      <View style={{ padding: 24 }}>
-        <View style={{ 
-          backgroundColor: colors.card, 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          gap: 8, 
-          borderRadius: 16, 
-          padding: 16, 
-          paddingVertical: 12,
-          shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
-          elevation: 4,
-          borderWidth: 1,
-          borderColor: colors.border
-        }}>
+      <View className="p-6">
+        <View
+          className="flex-row items-center gap-2 rounded-2xl px-4 py-3"
+          style={{
+            backgroundColor: colors.card,
+            shadowColor: colors.shadow,
+            
+            borderWidth: 1,
+            borderColor: colors.border
+          }}
+        >
           {navOptions.map((option, index) => {
             const href = `${option.suffix}`;
             const isActive = pathname === href;
@@ -52,26 +46,19 @@ export default function MyBookingsPage({ children }: { children: React.ReactNode
               <Link
                 key={index}
                 href={href as any}
-                style={{ 
-                  flex: 1, 
-                  borderRadius: 8, 
-                  alignItems: 'center', 
-                  textAlign: 'center',
-                  backgroundColor: isActive ? colors.accent : colors.card
-                }}
+                className="flex-1 rounded-xl items-center text-center"
+                style={{ backgroundColor: isActive ? colors.accent : colors.card }}
               >
-                <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1, padding: 8, paddingHorizontal: 16, borderRadius: 8 }}>
+                <View className="flex-1 items-center justify-center p-2 px-4 rounded-md">
                   <Feather
                     name={option.icon as any}
                     size={15}
                     color={isActive ? (isDark ? '#000' : 'white') : colors.text}
                   />
-                  <Text style={{
-                    fontSize: 12,
-                    fontWeight: '600',
-                    marginTop: 4,
-                    color: isActive ? (isDark ? '#000' : 'white') : colors.text
-                  }}>
+                  <Text
+                    className="text-xs font-semibold mt-1"
+                    style={{ color: isActive ? (isDark ? '#000' : 'white') : colors.text }}
+                  >
                     {option.name}
                   </Text>
                 </View>

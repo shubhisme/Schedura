@@ -35,12 +35,6 @@
           "resizeMode": "cover",
           "backgroundColor": "#E9F0E9"
         }
-      ],
-      [
-        "@rnmapbox/maps",
-        {
-          "RNMapboxMapsVersion": "11.13.4"
-        }
       ]
     ],
     "experiments": {

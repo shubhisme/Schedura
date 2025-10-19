@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, ScrollView, StatusBar, Alert, Switch } fr
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const PrivacySecurityScreen = () => {
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -87,61 +89,93 @@ const PrivacySecurityScreen = () => {
     <TouchableOpacity
       onPress={onPress}
       disabled={hasToggle}
-      className="flex-row items-center p-4 bg-white rounded-2xl mb-3"
       style={{
-        shadowColor: '#000',
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        backgroundColor: colors.card,
+        borderRadius: 16,
+        marginBottom: 12,
+        shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
         elevation: 2,
       }}
     >
-      <View className={`p-3 rounded-xl ${isDestructive ? 'bg-red-50' : 'bg-gray-50'}`}>
+      <View style={{
+        padding: 12,
+        borderRadius: 12,
+        backgroundColor: isDestructive 
+          ? (isDark ? '#7f1d1d' : '#fef2f2')
+          : (isDark ? colors.backgroundTertiary : colors.backgroundSecondary)
+      }}>
         <Ionicons 
           name={icon} 
           size={22} 
-          color={isDestructive ? '#ef4444' : '#6b7280'} 
+          color={isDestructive ? '#ef4444' : colors.textSecondary} 
         />
       </View>
 
-      <View className="flex-1 ml-4">
-        <Text className={`text-base font-semibold ${isDestructive ? 'text-red-600' : 'text-gray-900'}`}>
+      <View style={{ flex: 1, marginLeft: 16 }}>
+        <Text style={{
+          fontSize: 16,
+          fontWeight: '600',
+          color: isDestructive ? '#ef4444' : colors.text
+        }}>
           {title}
         </Text>
         {subtitle && (
-          <Text className="text-gray-500 text-sm mt-1">{subtitle}</Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 4 }}>
+            {subtitle}
+          </Text>
         )}
       </View>
 
       {hasToggle ? (
         <Switch
-          trackColor={{ false: "#e5e7eb", true: "#8b5cf6" }}
+          trackColor={{ false: isDark ? "#374151" : "#e5e7eb", true: "#8b5cf6" }}
           thumbColor="#ffffff"
           onValueChange={onToggleChange}
           value={toggleValue}
         />
       ) : (
-        <Ionicons name="chevron-forward-outline" size={20} color="#9ca3af" />
+        <Ionicons name="chevron-forward-outline" size={20} color={colors.textTertiary} />
       )}
     </TouchableOpacity>
   );
 
   return (
-    <SafeBoundingView className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       
       {/* Header */}
-      <View className="bg-white px-6 py-4 flex-row items-center border-b border-gray-200">
-        <TouchableOpacity onPress={() => router.back()} className="p-2 mr-3">
-          <Ionicons name="arrow-back" size={24} color="#000" />
+      <View style={{ 
+        backgroundColor: colors.card, 
+        paddingHorizontal: 24, 
+        paddingVertical: 16, 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        borderBottomWidth: 1, 
+        borderBottomColor: colors.border 
+      }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginRight: 12 }}>
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text className="text-xl font-bold text-gray-900">Privacy & Security</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Privacy & Security</Text>
       </View>
 
-      <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 24 }} showsVerticalScrollIndicator={false}>
         {/* Security */}
-        <View className="mb-6">
-          <Text className="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            color: colors.textSecondary, 
+            fontSize: 14, 
+            fontWeight: 'bold', 
+            marginBottom: 16, 
+            textTransform: 'uppercase', 
+            letterSpacing: 0.5 
+          }}>
             Security
           </Text>
           
@@ -191,8 +225,15 @@ const PrivacySecurityScreen = () => {
         </View>
 
         {/* Privacy */}
-        <View className="mb-6">
-          <Text className="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            color: colors.textSecondary, 
+            fontSize: 14, 
+            fontWeight: 'bold', 
+            marginBottom: 16, 
+            textTransform: 'uppercase', 
+            letterSpacing: 0.5 
+          }}>
             Privacy
           </Text>
           
@@ -223,8 +264,15 @@ const PrivacySecurityScreen = () => {
         </View>
 
         {/* Data & Privacy */}
-        <View className="mb-6">
-          <Text className="text-gray-500 text-sm font-bold mb-4 uppercase tracking-wide">
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ 
+            color: colors.textSecondary, 
+            fontSize: 14, 
+            fontWeight: 'bold', 
+            marginBottom: 16, 
+            textTransform: 'uppercase', 
+            letterSpacing: 0.5 
+          }}>
             Data & Privacy
           </Text>
           
@@ -244,7 +292,7 @@ const PrivacySecurityScreen = () => {
           />
         </View>
 
-        <View className="h-8" />
+        <View style={{ height: 32 }} />
       </ScrollView>
     </SafeBoundingView>
   );

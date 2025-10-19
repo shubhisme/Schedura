@@ -33,7 +33,9 @@ export default function RequestsSpaceScreen() {
     getRequests();
   },[])
   return (
-    <ScrollView style={{ backgroundColor: colors.backgroundSecondary, paddingHorizontal: 24 }}
+    <ScrollView
+      className="px-6"
+      style={{ backgroundColor: colors.backgroundSecondary }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -44,7 +46,17 @@ export default function RequestsSpaceScreen() {
       }
     >
       {requests.map((request) => {
-        return <RequestCard key={request.id} request={request} getRequests={getRequests} setActionLoader={setRefreshing} actionLoader={refreshing} userId={user?.id!} colors={colors}/>
+        return (
+          <RequestCard
+            key={request.id}
+            request={request}
+            getRequests={getRequests}
+            setActionLoader={setRefreshing}
+            actionLoader={refreshing}
+            userId={user?.id!}
+            colors={colors}
+          />
+        );
       })}
     </ScrollView>
   );
@@ -63,21 +75,37 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
   }
 
   return (
-    <View style={{ padding: 24, borderWidth: 1, borderColor: colors.border, borderRadius: 16, marginBottom: 16, backgroundColor: colors.card }}>
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>{request.space.name}</Text>
-      <Text style={{ fontSize: 20, fontWeight: '500', color: colors.text }}>{request.users.name}</Text>
-      <Text style={{ fontSize: 18, fontWeight: '500', marginBottom: 16, color: colors.textSecondary }}>{new Date(request.start).toLocaleDateString()} - {new Date(request.end).toLocaleDateString()}</Text>
-      <View style={{ width: '100%', height: 1, marginBottom: 16, backgroundColor: colors.border }}></View>
-      <Text style={{ fontSize: 20, fontWeight: '600', color: colors.text }}>Reason</Text>
-      <Text style={{ color: colors.textSecondary }}>
+    <View
+      className="p-6 rounded-2xl mb-4"
+      style={{ borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card }}
+    >
+      <Text className="text-2xl font-bold" style={{ color: colors.text }}>{request.space.name}</Text>
+      <Text className="text-xl font-medium" style={{ color: colors.text }}>{request.users.name}</Text>
+      <Text className="text-lg font-medium mb-4" style={{ color: colors.textSecondary }}>
+        {new Date(request.start).toLocaleDateString()} - {new Date(request.end).toLocaleDateString()}
+      </Text>
+
+      <View className="w-full h-[1px] mb-4" style={{ backgroundColor: colors.border }} />
+
+      <Text className="text-xl font-semibold" style={{ color: colors.text }}>Reason</Text>
+      <Text className="text-base" style={{ color: colors.textSecondary }}>
         {request.reason || "No reason provided"}
       </Text>
-      <View style={{ flexDirection: 'row', gap: 16, marginTop: 16 }}>
-        <TouchableOpacity onPress={handleAccept} style={{ backgroundColor: colors.accent, borderWidth: 1, borderColor: colors.border, flex: 1, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
-          <Text style={{ textAlign: 'center', fontWeight: '600', color: 'white' }}>Accept</Text>
+
+      <View className="flex-row gap-x-4 mt-4">
+        <TouchableOpacity
+          onPress={handleAccept}
+          className="flex-1 px-4 py-2.5  rounded-xl"
+          style={{ backgroundColor: colors.accent, borderWidth: 1, borderColor: colors.border }}
+        >
+          <Text className="text-center font-semibold" style={{ color: 'white' }}>Accept</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ backgroundColor: colors.error, flex: 1, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
-          <Text style={{ color: 'white', fontWeight: '600', textAlign: 'center' }}>Reject</Text>
+
+        <TouchableOpacity
+          className="flex-1 px-4 py-2.5  rounded-xl"
+          style={{ backgroundColor: colors.error }}
+        >
+          <Text className="text-center font-semibold" style={{ color: 'white' }}>Reject</Text>
         </TouchableOpacity>
       </View>
     </View>

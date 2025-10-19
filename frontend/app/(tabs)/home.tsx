@@ -140,8 +140,11 @@ const Home = () => {
             <TouchableOpacity style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}>
               <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             </TouchableOpacity>
-            <TouchableOpacity style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}>
-              <Ionicons name="person-circle-outline" size={26} color={colors.accent} />
+            <TouchableOpacity 
+              onPress={() => navigate('/spaces-map' as any)}
+              style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}
+            >
+              <Ionicons name="map-outline" size={24} color={colors.accent} />
             </TouchableOpacity>
           </View>
         </View>

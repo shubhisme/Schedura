@@ -14,18 +14,19 @@ import RolesModal from '@/components/Modals/RolesModal';
 import { createOrganisation } from '@/supabase/controllers/organisation.controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';
-
+import { useRouter } from 'expo-router';
 
 export default function CreateOrganisationScreen() {
   const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [orgType, setOrgType] = useState<'Educational' | 'CoWorking'>('Educational');
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const [loading, setLoading] = useState(false)
   const [rolesModalVisible, setRolesModalVisible] = useState(false)
-
+  const [roles, setRoles] = useState<any[]>([])
   const { user } = useUser();
-
+  const { push } = useRouter();
   const rotateValue = new Animated.Value(0); 
 
   const rotateAnimation = rotateValue.interpolate({
@@ -96,18 +97,31 @@ export default function CreateOrganisationScreen() {
       return;
     }
     try {
-      const { data, error } = await createOrganisation(user?.id!, name, description, "Educational", images);
+      const { data, error } = await createOrganisation(user?.id!, name, description, orgType, images);
       if (error || !data) {
         Alert.alert('Error', error || 'Failed to create organisation.');
+        setLoading(false);
         return;
       }
+      Alert.alert('Success', 'Organisation created successfully!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Clear the form
+            setName('');
+            setDescription('');
+            setImages({filePath:"", fileData:"", fileType:"", fileUri:""});
+            // You could also navigate back or to another screen
+          }
+        }
+      ]);
       console.log('Organisation created:', data);
     }
     catch (error) {
       Alert.alert('Error', 'An unexpected error occurred.');
-      return;
     }
     setLoading(false);
+    push('/spaces');
   };
 
  
@@ -158,6 +172,21 @@ export default function CreateOrganisationScreen() {
             />
           </View>
           
+          <View>
+            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Organization Type</Text>
+            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 12, backgroundColor: colors.card }}>
+              {(['Educational', 'CoWorking'] as const).map((type) => (
+                <TouchableOpacity 
+                  onPress={() => setOrgType(type)} 
+                  key={type} 
+                  style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: orgType === type ? colors.accent : colors.backgroundSecondary }}
+                >
+                  <Text style={{ fontWeight: '500', color: orgType === type ? 'white' : colors.textSecondary }}>{type}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+          
           
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
             {
@@ -182,7 +211,15 @@ export default function CreateOrganisationScreen() {
               <Ionicons name="add" size={20} color={isDark ? '#000' : '#E9F0E9'} />
               <Text style={{ color: isDark ? '#000' : '#ffffff', fontWeight: '600', marginLeft: 4 }}>Add Role</Text>
             </TouchableOpacity>
-          </View>  
+          </View>
+          <View>
+            {roles.map((role, i) => (
+              <View key={i} style={{ padding: 16, borderRadius: 12, backgroundColor: colors.card, marginBottom: 12, borderWidth: 1, borderColor: colors.border }}>
+                <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>{role.name}</Text>
+                <Text style={{ marginTop: 4, color: colors.textSecondary }}>Privileges: {role.privileges}</Text>
+              </View>
+            ))}
+          </View>
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
@@ -214,7 +251,7 @@ export default function CreateOrganisationScreen() {
             </TouchableOpacity>
         </View>
       </ScrollView>
-      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} orgid={"123"} />
+      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} setRoles={setRoles} orgid={"123"} />
     </SafeBoundingView>
   );
 }

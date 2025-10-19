@@ -3,22 +3,20 @@ import { Modal, Text, View, TouchableOpacity, TextInput, ScrollView } from 'reac
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
 const privileges = [
-  { id: 1, name: 'Create Users', value: 1 },
-  { id: 2, name: 'Edit Users', value: 2 },
-  { id: 4, name: 'Delete Users', value: 4 },
-  { id: 8, name: 'View Reports', value: 8 },
-  { id: 16, name: 'Manage Settings', value: 16 },
-  { id: 32, name: 'Admin Access', value: 32 },
+  { id: 1, name: 'Create Request', value: 1 },
+  { id: 2, name: 'Accept/Deny Request', value: 2 },
 ];
 
 const RolesModal = ({
   visible,
   setVisible,
   orgid,
+  setRoles
 }: {
   visible: boolean;
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
   orgid: string;
+  setRoles: React.Dispatch<React.SetStateAction<any[]>>;
 }) => {
   const [roleName, setRoleName] = useState('');
   const [selectedPrivileges, setSelectedPrivileges] = useState<number[]>([]);
@@ -40,7 +38,10 @@ const RolesModal = ({
     try {
       // Example: await addRole(orgid, roleName, privilegeValue);
       console.log('Submitting role:', { orgid, name: roleName, privileges: privilegeValue });
-      
+      setRoles((prevRoles) => [
+        ...prevRoles,
+        { name: roleName, privileges: privilegeValue },
+      ]);
       // Reset form
       setRoleName('');
       setSelectedPrivileges([]);

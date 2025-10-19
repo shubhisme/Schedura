@@ -36,3 +36,18 @@ export const getUserInfo = async (userId: string) => {
         console.log(error);
     }
 }
+
+export const updateUserUpiId = async (user:any) => {
+    if (user) {
+        const { id, upiId } = user
+        try {
+            const data = await supabase.from("users").update({
+                upiId
+            }).eq('id', id)
+            return data.status
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
+}
