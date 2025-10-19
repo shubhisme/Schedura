@@ -11,7 +11,7 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 //@ts-ignore
 import CSpace from "@/assets/images/illustrations/cspace.png"
 import { useTheme } from '@/contexts/ThemeContext';
-import MapLocationPicker from '@/components/MapLocationPicker';
+//import MapLocationPicker from '@/components/MapLocationPicker';
 
 interface Location {
   latitude: number;
@@ -315,7 +315,7 @@ export default function AddSpacesScreen() {
         </View>
       </ScrollView>
       
-      <MapLocationPicker
+      {/*<MapLocationPicker
         visible={showMapPicker}
         onLocationSelect={(location) => {
           setSelectedMapLocation(location);
@@ -326,7 +326,7 @@ export default function AddSpacesScreen() {
         }}
         onCancel={() => setShowMapPicker(false)}
         initialLocation={selectedMapLocation || undefined}
-      />
+      />*/}
     </SafeBoundingView>
   );
 }
