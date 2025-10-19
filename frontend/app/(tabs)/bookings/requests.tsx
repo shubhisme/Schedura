@@ -7,7 +7,6 @@ import { useUser } from '@clerk/clerk-expo';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 
-
 export default function RequestsSpacesScreen() {
   const { colors, isDark } = useTheme();
   const [bookings, setBookings] = useState<any[]>([]);
@@ -35,7 +34,8 @@ export default function RequestsSpacesScreen() {
   },[])
   return (
     <ScrollView 
-      style={{ backgroundColor: colors.tertiary, paddingHorizontal: 24 }}
+      className="px-6"
+      style={{ backgroundColor: colors.tertiary }}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -47,10 +47,10 @@ export default function RequestsSpacesScreen() {
     >
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       {bookings.length === 0 && !refreshing ? (
-        <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 80 }}>
+        <View className="items-center justify-center py-20">
           <Feather name="inbox" size={64} color={colors.textTertiary} />
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginTop: 16 }}>No requests yet</Text>
-          <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 8 }}>Your booking requests will appear here</Text>
+          <Text className="text-xl font-bold mt-4" style={{ color: colors.text }}>No requests yet</Text>
+          <Text className="text-center mt-2" style={{ color: colors.textSecondary }}>Your booking requests will appear here</Text>
         </View>
       ) : (
         bookings.map((booking) => {
@@ -66,32 +66,26 @@ function BookingCard({booking, userId, setActionLoader, actionLoader, getBooking
 
 
   let pendingTag = (
-    <View style={{ backgroundColor: isDark ? '#713f12' : '#fef3c7', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 }}>
-      <Text style={{ color: isDark ? '#fde047' : '#92400e', fontWeight: '600' }}>Pending</Text>
+    <View className="px-3 py-1 rounded-full" style={{ backgroundColor: isDark ? '#713f12' : '#fef3c7' }}>
+      <Text className="font-semibold" style={{ color: isDark ? '#fde047' : '#92400e' }}>Pending</Text>
     </View>
   )
 
   let acceptedTag = (
-    <View style={{ backgroundColor: isDark ? '#14532d' : '#d1fae5', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 }}>
-      <Text style={{ color: isDark ? '#86efac' : '#065f46', fontWeight: '600' }}>Accepted</Text>
+    <View className="px-3 py-1 rounded-full" style={{ backgroundColor: isDark ? '#14532d' : '#d1fae5' }}>
+      <Text className="font-semibold" style={{ color: isDark ? '#86efac' : '#065f46' }}>Accepted</Text>
     </View>
   )
+  
   return (
-    <View style={{ 
-      padding: 24, 
-      borderWidth: 1, 
-      borderColor: colors.border, 
-      borderRadius: 16, 
-      marginBottom: 16,
-      backgroundColor: colors.card
-    }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>
-          <Feather name='home' size={18} color={colors.text}/>  {booking.space.name}
+    <View className="p-6 border rounded-2xl mb-4" style={{ borderColor: colors.border, backgroundColor: colors.card }}>
+      <View className="flex-row items-center justify-between mb-2">
+        <Text className="text-xl font-bold" style={{ color: colors.text }}>
+          <Feather name='home' size={18} color={colors.text}/>  {booking.space.name.slice(0,15)} {booking.space.name.length > 10 && "..."}
         </Text>
-        {booking.payment_status === 'pending' ? pendingTag : acceptedTag}
+        {booking.approved ? acceptedTag : pendingTag}
       </View>
-      <Text style={{ fontSize: 18, color: colors.textSecondary }}>
+      <Text className="text-lg" style={{ color: colors.textSecondary }}>
         <Feather name='calendar' size={18} color={colors.textSecondary}/>  {new Date(booking.start).toLocaleDateString()} - {new Date(booking.end).toLocaleDateString()}
       </Text>
       

@@ -57,9 +57,21 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .select()
       .single();
     console.log("createOrganisation", { data, error });
+
+    if (!error && data?.id) {
+      const { error: updateError } = await supabase
+      .from("users")
+      .update({ orgid: data.id })
+      .eq("id", userId);
+
+      if (updateError) {
+      return { data: null, error: updateError.message };
+      }
+    }
     if (error) {
       return { data: null, error: error.message };
     }
+
     return { data, error: null };
   }
 
@@ -83,6 +95,19 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .eq("id", organisationId)
       .single();
     console.log("getOrganisationById", { data, error });
+    if (error) {
+      return { data: null, error: error.message };
+    }
+    return { data, error: null };
+  }
+
+  // get Organisation by user id
+  export const getOrganisationByUserId = async (userId: string): Promise<{ data: Organisation[] | null; error: string | null }> => {
+    const { data, error } = await supabase
+      .from("organisations")
+      .select("*")
+      .eq("ownerid", userId);
+    console.log("getOrganisationByUserId", { data, error });
     if (error) {
       return { data: null, error: error.message };
     }

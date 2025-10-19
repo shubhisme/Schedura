@@ -14,7 +14,7 @@ import RolesModal from '@/components/Modals/RolesModal';
 import { createOrganisation } from '@/supabase/controllers/organisation.controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';
-
+import { useRouter } from 'expo-router';
 
 export default function CreateOrganisationScreen() {
   const { colors, isDark } = useTheme();
@@ -24,9 +24,9 @@ export default function CreateOrganisationScreen() {
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const [loading, setLoading] = useState(false)
   const [rolesModalVisible, setRolesModalVisible] = useState(false)
-
+  const [roles, setRoles] = useState<any[]>([])
   const { user } = useUser();
-
+  const { push } = useRouter();
   const rotateValue = new Animated.Value(0); 
 
   const rotateAnimation = rotateValue.interpolate({
@@ -121,6 +121,7 @@ export default function CreateOrganisationScreen() {
       Alert.alert('Error', 'An unexpected error occurred.');
     }
     setLoading(false);
+    push('/spaces');
   };
 
  
@@ -210,7 +211,15 @@ export default function CreateOrganisationScreen() {
               <Ionicons name="add" size={20} color={isDark ? '#000' : '#E9F0E9'} />
               <Text style={{ color: isDark ? '#000' : '#ffffff', fontWeight: '600', marginLeft: 4 }}>Add Role</Text>
             </TouchableOpacity>
-          </View>  
+          </View>
+          <View>
+            {roles.map((role, i) => (
+              <View key={i} style={{ padding: 16, borderRadius: 12, backgroundColor: colors.card, marginBottom: 12, borderWidth: 1, borderColor: colors.border }}>
+                <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>{role.name}</Text>
+                <Text style={{ marginTop: 4, color: colors.textSecondary }}>Privileges: {role.privileges}</Text>
+              </View>
+            ))}
+          </View>
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
@@ -242,7 +251,7 @@ export default function CreateOrganisationScreen() {
             </TouchableOpacity>
         </View>
       </ScrollView>
-      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} orgid={"123"} />
+      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} setRoles={setRoles} orgid={"123"} />
     </SafeBoundingView>
   );
 }
