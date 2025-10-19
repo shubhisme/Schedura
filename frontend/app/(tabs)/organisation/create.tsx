@@ -24,7 +24,7 @@ export default function CreateOrganisationScreen() {
   const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
   const [loading, setLoading] = useState(false)
   const [rolesModalVisible, setRolesModalVisible] = useState(false)
-  const [roles, setRoles] = useState<any[]>([])
+  const [roles, setRoles] = useState<{name:string, priviledges:number}[]>([])
   const { user } = useUser();
   const { push } = useRouter();
   const rotateValue = new Animated.Value(0); 
@@ -97,7 +97,7 @@ export default function CreateOrganisationScreen() {
       return;
     }
     try {
-      const { data, error } = await createOrganisation(user?.id!, name, description, orgType, images);
+      const { data, error } = await createOrganisation(user?.id!, name, description, orgType, images, roles);
       if (error || !data) {
         Alert.alert('Error', error || 'Failed to create organisation.');
         setLoading(false);

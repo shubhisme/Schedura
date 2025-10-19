@@ -3,14 +3,14 @@ import {Modal, Text, View, TouchableOpacity} from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking'
 import { useClerk } from '@clerk/clerk-expo';
-
+import { useRouter } from 'expo-router';
 const SignOutModal = ({visible, setVisible}:{visible:boolean, setVisible:React.Dispatch<React.SetStateAction<boolean>>}) => {
   const { signOut } = useClerk()
-
+  const router = useRouter();
   const handleSignOut = async () => {
     try {
       await signOut()
-      Linking.openURL(Linking.createURL('/'))
+      router.push('/')
       setVisible(false)
     } catch (err) {
       console.error(JSON.stringify(err, null, 2))

@@ -11,6 +11,9 @@ import { sendBookRequest } from "@/supabase/controllers/request.controller";
 import { useUser } from "@clerk/clerk-expo";
 import { getBookingsForSpaceByMonthYear } from "@/supabase/controllers/booking.controller";
 import { useTheme } from '@/contexts/ThemeContext';
+import { getUserRole, isUserInOrganization } from "@/supabase/controllers/user_role.controller";
+import { getRole } from "@/supabase/controllers/roles.controller";
+
 
 export default function HallBooking() {
   const { colors, isDark } = useTheme();
@@ -25,6 +28,9 @@ export default function HallBooking() {
   const [range, setRange] = useState<{ startDate?: string; endDate?: string }>({});
   const { user } = useUser();
   const [space, setSpace] = useState<any>();
+  const [canBook, setCanBook] = useState<boolean>(false);
+  const [privilegeChecked, setPrivilegeChecked] = useState<boolean>(false);
+  const [privilegeMessage, setPrivilegeMessage] = useState<string>("");
 
   // 🔹 Disable all past dates
   const getDisabledPastDates = () => {
@@ -78,6 +84,56 @@ export default function HallBooking() {
     setCalendarLoading(false);
   }
   
+  const checkBookingPrivilege = async (space: any, user: any) => {
+    // If no organization, allow booking
+        
+    if (!space.organizationid) {
+      setCanBook(true);
+      setPrivilegeChecked(true);
+      return;
+    }
+    // If no user, disallow
+    if (!user) {
+      setCanBook(false);
+      setPrivilegeChecked(true);
+      setPrivilegeMessage("You must be logged in to request a booking.");
+      return;
+    }
+    // Check if user is in organization
+    const isMember = await isUserInOrganization(user.id, space.organizationid);
+    if (!isMember) {
+      setCanBook(false);
+      setPrivilegeChecked(true);
+      setPrivilegeMessage("You are not a member of this organization.");
+      return;
+    }
+    // Get user role
+    const userRole = await getUserRole(user.id);
+    if (!userRole || !userRole.role) {
+      setCanBook(false);
+      setPrivilegeChecked(true);
+      setPrivilegeMessage("No role assigned. Contact your organization admin.");
+      return;
+    }
+    // Get role privileges
+    const role = await getRole(userRole.role);
+  
+    if (!role || typeof role.id !== "number") {
+      setCanBook(false);
+      setPrivilegeChecked(true);
+      setPrivilegeMessage("Role not found. Contact your organization admin.");
+      return;
+    }
+    if (role.priviledges >= 2) {
+      setCanBook(true);
+      setPrivilegeChecked(true);
+    } else {
+      setCanBook(false);
+      setPrivilegeChecked(true);
+      setPrivilegeMessage("You don't have enough privileges to request booking.");
+    }
+  };
+
   useEffect(() => {
     fetchSpace();
   }, [id]);
@@ -85,6 +141,15 @@ export default function HallBooking() {
   useEffect(() => {
     fetchBookingsForMonth(dayjs().month(), dayjs().year());
   }, [space]);
+
+  useEffect(() => {
+    if (space && user) {
+      checkBookingPrivilege(space, user);
+    } else if (space && !space.organizationid) {
+      setCanBook(true);
+      setPrivilegeChecked(true);
+    }
+  }, [space, user]);
   
   const markDate = (date: string) => {
     let { startDate, endDate } = range;
@@ -134,7 +199,7 @@ export default function HallBooking() {
     }
   };
 
-  if (loading || !space) {
+  if (loading || !space || !privilegeChecked) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
@@ -144,6 +209,25 @@ export default function HallBooking() {
       </SafeAreaView>
     );
   }
+
+  // Show privilege message if not allowed
+  if (!canBook) {
+    return (
+      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+          <Ionicons name="lock-closed" size={48} color={colors.error} style={{ marginBottom: 24 }} />
+          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12, textAlign: 'center' }}>
+            Booking Not Allowed
+          </Text>
+          <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center' }}>
+            {privilegeMessage || "You do not have permission to request a booking for this space."}
+          </Text>
+        </View>
+      </SafeBoundingView>
+    );
+  }
+
   return (
     <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />

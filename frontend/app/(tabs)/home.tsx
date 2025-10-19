@@ -137,7 +137,7 @@ const Home = () => {
             <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.accent }}>Explore</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <TouchableOpacity style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}>
+            <TouchableOpacity onPress={() => navigate('/(info)/request/successful' as any)} style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}>
               <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity 

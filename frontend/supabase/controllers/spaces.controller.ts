@@ -187,8 +187,7 @@ export const uploadFile = async({filePath, fileData, fileType, table}:{filePath:
 export const getImagefromId = async (spaceId:string)=>
 {
     const {data, error} = await supabase.from("spaces_images").select("link").eq("spaceid", spaceId);
-    console.log("Link fetch data: ",data);
-
+  
     if(error){console.log("Link fetch error: ",error?.message)}
     return {data, error};
 } 

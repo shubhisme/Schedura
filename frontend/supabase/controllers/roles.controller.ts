@@ -140,3 +140,14 @@ export const hasPrivilege = (privileges: number, privilegeValue: number): boolea
  *   }
  * };
  */
+
+export async function getRole(roleid: number): Promise<{ id: number; [key: string]: any } | null> {
+  const { data, error } = await supabase
+    .from("roles")
+    .select("*")
+    .eq("id", roleid)
+    .single();
+
+  if (error || !data) return null;
+  return data;
+}

@@ -7,7 +7,6 @@ import { TextInput, Text, View, Image } from 'react-native';
 import LoginIllustration from '@/assets/images/illustrations/login.png';
 
 export default function HomeScreen() {
-  console.log(LoginIllustration)
   return (
     <SafeBoundingView className="flex-1 overflow-hidden">
       <View className=' w-full flex-[0.75] justify-center items-center px-10'>

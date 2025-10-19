@@ -9,9 +9,10 @@ function LoginButton() {
   
     const onPress = useCallback(async () => {
       try {
+        const redirectUrl = AuthSession.makeRedirectUri();
+        console.log("Redirect URL: ", redirectUrl);
         const { createdSessionId, setActive, signIn, signUp } = await startSSOFlow({
           strategy: 'oauth_google',
-          redirectUrl: AuthSession.makeRedirectUri(),
         })
         console.log("SESSION ID: ",createdSessionId)
   

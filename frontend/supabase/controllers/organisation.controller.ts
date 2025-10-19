@@ -44,9 +44,9 @@ export const checkUserMembership = async (userId: string, organisationId: string
     if (error) throw error;
     return { success: true };
   };
-  
-  export const createOrganisation = async (userId: string, organisationName: string, description: string, type: "Educational" | "CoWorking", file:{filePath:string, fileData:string, fileType:string}): Promise<{ data: Organisation | null; error: string | null }> => {
-    
+
+  export const createOrganisation = async (userId: string, organisationName: string, description: string, type: "Educational" | "CoWorking", file:{filePath:string, fileData:string, fileType:string}, roles: {name:string, priviledges:number}[]): Promise<{ data: Organisation | null; error: string | null }> => {
+
     let fileurl = null;
     if(file.filePath !== "" && file.fileData !== "" && file.fileType !== ""){
       fileurl = await uploadFile({...file, table: "organisations"});
@@ -56,7 +56,6 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .insert([{ ownerid: userId, name: organisationName, description, type, logo: fileurl }])
       .select()
       .single();
-    console.log("createOrganisation", { data, error });
 
     if (!error && data?.id) {
       const { error: updateError } = await supabase
@@ -65,8 +64,11 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .eq("id", userId);
 
       if (updateError) {
-      return { data: null, error: updateError.message };
+        return { data: null, error: updateError.message };
       }
+
+      await supabase.from("roles").insert([...roles.map(role => ({ ...role, orgid: data.id })), { name: 'Owner', priviledges: 7, orgid: data.id }]);
+      
     }
     if (error) {
       return { data: null, error: error.message };
@@ -81,7 +83,6 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .select("*")
       .ilike("name", `%${query}%`)
       .limit(10);
-    console.log("searchOrganisations", { data, error });
     if (error) {
       return { data: null, error: error.message };
     }
@@ -94,7 +95,6 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .select("*")
       .eq("id", organisationId)
       .single();
-    console.log("getOrganisationById", { data, error });
     if (error) {
       return { data: null, error: error.message };
     }
@@ -107,7 +107,6 @@ export const checkUserMembership = async (userId: string, organisationId: string
       .from("organisations")
       .select("*")
       .eq("ownerid", userId);
-    console.log("getOrganisationByUserId", { data, error });
     if (error) {
       return { data: null, error: error.message };
     }

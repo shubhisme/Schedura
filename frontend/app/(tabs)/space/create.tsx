@@ -11,6 +11,8 @@ import { AntDesign, Ionicons } from '@expo/vector-icons';
 //@ts-ignore
 import CSpace from "@/assets/images/illustrations/cspace.png"
 import { useTheme } from '@/contexts/ThemeContext';
+import { getOrganisationByUserId } from '@/supabase/controllers/organisation.controller';
+import MapLocationPicker from '@/components/MapLocationPicker';
 //import MapLocationPicker from '@/components/MapLocationPicker';
 
 interface Location {
@@ -104,7 +106,9 @@ export default function AddSpacesScreen() {
       setLoading(false);
       return;
     }
-
+    // get the id of the organisation the user belongs to
+    const organisation = await getOrganisationByUserId(user?.id!);
+    const orgid = organisation.data ?  organisation?.data[0].id : null;
     const { data, error } = await createSpace({
       name,
       capacity: parseInt(capacity),
@@ -117,6 +121,7 @@ export default function AddSpacesScreen() {
       id: undefined,
       category,
       amenities: amenities.filter(facility=>facility.selected).map(facility=>facility.name),
+      organizationid: parseInt(orgid!) || undefined,
     }, images);
     console.log(error)
     if (error) {
@@ -315,7 +320,7 @@ export default function AddSpacesScreen() {
         </View>
       </ScrollView>
       
-      {/*<MapLocationPicker
+      <MapLocationPicker
         visible={showMapPicker}
         onLocationSelect={(location) => {
           setSelectedMapLocation(location);
@@ -326,7 +331,7 @@ export default function AddSpacesScreen() {
         }}
         onCancel={() => setShowMapPicker(false)}
         initialLocation={selectedMapLocation || undefined}
-      />*/}
+      />
     </SafeBoundingView>
   );
 }

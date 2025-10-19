@@ -5,11 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { updateUserUpiId } from '@/supabase/controllers/user.controller';
+import { useUser } from '@clerk/clerk-expo';
 
 const BillingPaymentsScreen = () => {
   const { colors, isDark } = useTheme();
   const router = useRouter();
-  
+  const { user } = useUser();
   const [currentPlan] = useState('Free');
   const [billingCycle] = useState('Monthly');
   const [upiId, setUpiId] = useState('');
@@ -22,7 +23,7 @@ const BillingPaymentsScreen = () => {
     }
     setSavingUpi(true);
     try {
-      await updateUserUpiId(upiId.trim());
+      await updateUserUpiId({upiId: upiId.trim(), id:user?.id!});
       Alert.alert('Success', 'UPI ID updated successfully');
     }catch (err) {
       Alert.alert('Error', 'Failed to update UPI ID');

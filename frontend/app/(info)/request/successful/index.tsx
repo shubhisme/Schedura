@@ -1,49 +1,38 @@
 import { useRef, useEffect } from 'react';
-import { Button, StyleSheet, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import LottieView from 'lottie-react-native';
 import PaperPlane from '@/assets/animations/paperplane.json';
-
+import { useRouter } from 'expo-router';
 export default function RequestSuccessfulPage() {
   const animation = useRef<LottieView>(null);
+  const router = useRouter();
   useEffect(() => {
-    // You can control the ref programmatically, rather than using autoPlay
-    // animation.current?.play();
+    const timer = setTimeout(() => {
+      router.push('/(tabs)/bookings/requests');
+    }, 5000);
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   return (
-    <View style={styles.animationContainer}>
+    <View className='bg-primary h-full  items-center'>
       <LottieView
         autoPlay
         ref={animation}
         style={{
-          width: 200,
-          height: 200,
-          backgroundColor: '#eee',
+          width: "100%",
+          height: "50%",
+          backgroundColor: '#E9F0E9',
         }}
         // Find more Lottie files at https://lottiefiles.com/featured
         source={PaperPlane}
       />
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Restart Animation"
-          onPress={() => {
-            animation.current?.reset();
-            animation.current?.play();
-          }}
-        />
+      <View className='p-6'>
+        <Text className='text-4xl text-center font-semibold'>Request Sent Successfully!</Text>
+        <Text className='text-center mt-4 text-lg'>Your request has been sent. You will be notified once it is reviewed.</Text>
+        <Text className='text-center mt-2 text-lg'>Redirecting to Requests...</Text>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  animationContainer: {
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-  },
-  buttonContainer: {
-    paddingTop: 20,
-  },
-});

@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator, Linking, StyleSheet, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator, Linking, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSpaces } from '@/supabase/controllers/spaces.controller';
@@ -25,28 +25,10 @@ export default function SpacesMapScreen() {
   const { back } = useRouter();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
-  const mapRef = useRef<MapView>(null);
 
   useEffect(() => {
     fetchSpaces();
   }, []);
-
-  useEffect(() => {
-    if (spaces.length > 1 && mapRef.current) {
-      const coordinates = spaces.map(space => ({
-        latitude: parseFloat(space.latitude.toString()),
-        longitude: parseFloat(space.longitude.toString()),
-      }));
-      
-      setTimeout(() => {
-        mapRef.current?.fitToCoordinates(coordinates, {
-          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true,
-        });
-      }, 500);
-    }
-  }, [spaces]);
 
   const fetchSpaces = async () => {
     try {
@@ -71,55 +53,145 @@ export default function SpacesMapScreen() {
     }
   };
 
-  const openInMaps = (latitude: number, longitude: number) => {
-    const url = Platform.select({
-      ios: `maps:0,0?q=${latitude},${longitude}`,
-      android: `geo:0,0?q=${latitude},${longitude}`,
-      default: `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}`,
-    });
-    Linking.openURL(url).catch(err => 
-      console.error('Error opening maps:', err)
-    );
-  };
-
-  const calculateRegion = () => {
+  const generateMapHTML = () => {
     if (spaces.length === 0) {
-      return {
-        latitude: 15.4909,
-        longitude: 73.8278,
-        latitudeDelta: 0.5,
-        longitudeDelta: 0.5,
-      };
+      return '<html><body><h3 style="text-align:center;margin-top:50px;">No spaces to display</h3></body></html>';
     }
 
-    if (spaces.length === 1) {
-      return {
-        latitude: parseFloat(spaces[0].latitude.toString()),
-        longitude: parseFloat(spaces[0].longitude.toString()),
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-    }
+    // Calculate center point
+    const centerLat = spaces.reduce((sum, space) => sum + parseFloat(space.latitude.toString()), 0) / spaces.length;
+    const centerLng = spaces.reduce((sum, space) => sum + parseFloat(space.longitude.toString()), 0) / spaces.length;
 
-    const latitudes = spaces.map(s => parseFloat(s.latitude.toString()));
-    const longitudes = spaces.map(s => parseFloat(s.longitude.toString()));
-    
-    const minLat = Math.min(...latitudes);
-    const maxLat = Math.max(...latitudes);
-    const minLng = Math.min(...longitudes);
-    const maxLng = Math.max(...longitudes);
-    
-    const centerLat = (minLat + maxLat) / 2;
-    const centerLng = (minLng + maxLng) / 2;
-    const latDelta = (maxLat - minLat) * 1.5;
-    const lngDelta = (maxLng - minLng) * 1.5;
+    // Generate markers data
+    const markersData = spaces.map(space => ({
+      lat: parseFloat(space.latitude.toString()),
+      lng: parseFloat(space.longitude.toString()),
+      name: space.name,
+      location: space.location,
+      capacity: space.capacity,
+      pph: space.pph,
+      description: space.description || ''
+    }));
 
-    return {
-      latitude: centerLat,
-      longitude: centerLng,
-      latitudeDelta: Math.max(latDelta, 0.05),
-      longitudeDelta: Math.max(lngDelta, 0.05),
-    };
+    const backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
+    const textColor = isDark ? '#ffffff' : '#333333';
+    const secondaryTextColor = isDark ? '#cccccc' : '#666666';
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: ${backgroundColor};
+          }
+          #map {
+            width: 100%;
+            height: 100%;
+          }
+          .leaflet-popup-content-wrapper {
+            background-color: ${backgroundColor};
+            color: ${textColor};
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+          }
+          .leaflet-popup-content {
+            margin: 12px 12px;
+            line-height: 1.4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          }
+          .leaflet-popup-tip {
+            background-color: ${backgroundColor};
+          }
+          .popup-title {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: ${textColor};
+          }
+          .popup-detail {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: ${secondaryTextColor};
+          }
+          .popup-description {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            color: ${secondaryTextColor};
+            line-height: 1.4;
+          }
+          .popup-button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 8px;
+          }
+          .leaflet-container {
+            background: ${backgroundColor};
+          }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          // Initialize map
+          var map = L.map('map').setView([${centerLat}, ${centerLng}], 12);
+
+          // Add OpenStreetMap tile layer
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+          }).addTo(map);
+
+          // Markers data
+          var markers = ${JSON.stringify(markersData)};
+
+          // Add markers
+          var markerGroup = [];
+          markers.forEach(function(markerData) {
+            var marker = L.marker([markerData.lat, markerData.lng]).addTo(map);
+            
+            var popupContent = 
+              '<div>' +
+                '<h3 class="popup-title">' + markerData.name + '</h3>' +
+                '<p class="popup-detail"><strong>📍</strong> ' + markerData.location + '</p>' +
+                '<p class="popup-detail"><strong>👥</strong> Capacity: ' + markerData.capacity + '</p>' +
+                '<p class="popup-detail"><strong>💰</strong> ₹' + markerData.pph + '/hour</p>' +
+                (markerData.description ? 
+                  '<p class="popup-description">' + 
+                  (markerData.description.length > 100 ? 
+                    markerData.description.substring(0, 100) + '...' : 
+                    markerData.description) + 
+                  '</p>' : '') +
+                '<a href="geo:' + markerData.lat + ',' + markerData.lng + '" ' +
+                'class="popup-button">📍 Open in Maps</a>' +
+              '</div>';
+            
+            marker.bindPopup(popupContent);
+            markerGroup.push(marker);
+          });
+
+          // Fit bounds to show all markers
+          if (markers.length > 1) {
+            var group = new L.featureGroup(markerGroup);
+            map.fitBounds(group.getBounds().pad(0.1));
+          }
+        </script>
+      </body>
+      </html>
+    `;
   };
 
   if (loading) {
@@ -175,97 +247,32 @@ export default function SpacesMapScreen() {
         </View>
       ) : (
         <>
-          {/* Map Container */}
-          <View style={{ flex: 1 }}>
-            <MapView
-              ref={mapRef}
+          {/* Map Container with WebView */}
+          <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+            <WebView
               style={{ flex: 1 }}
-              initialRegion={calculateRegion()}
-              showsUserLocation={true}
-              showsMyLocationButton={true}
-              showsCompass={true}
-            >
-              {/* OpenStreetMap Tiles */}
-              <UrlTile
-                urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                maximumZ={19}
-              />
-
-              {/* Markers */}
-              {spaces.map((space) => (
-                <Marker
-                  key={space.id}
-                  coordinate={{
-                    latitude: parseFloat(space.latitude.toString()),
-                    longitude: parseFloat(space.longitude.toString()),
-                  }}
-                  onPress={() => setSelectedSpace(space)}
-                >
-                  <View style={styles.markerContainer}>
-                    <View style={[styles.marker, { backgroundColor: colors.accent }]}>
-                      <Ionicons name="location" size={24} color="white" />
-                    </View>
-                  </View>
-                </Marker>
-              ))}
-            </MapView>
-          </View>
-
-          {/* Selected Space Details Card */}
-          {selectedSpace && (
-            <View style={[styles.detailsCard, { 
-              backgroundColor: colors.card,
-              shadowColor: isDark ? '#fff' : '#000',
-            }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 8 }}>
-                    {selectedSpace.name}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4 }}>
-                    📍 {selectedSpace.location}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 4 }}>
-                    👥 Capacity: {selectedSpace.capacity}
-                  </Text>
-                  <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 8 }}>
-                    💰 ₹{selectedSpace.pph}/hour
-                  </Text>
-                  {selectedSpace.description && (
-                    <Text style={{ fontSize: 13, color: colors.textSecondary, lineHeight: 18 }}>
-                      {selectedSpace.description.length > 100 
-                        ? selectedSpace.description.substring(0, 100) + '...' 
-                        : selectedSpace.description}
-                    </Text>
-                  )}
-                </View>
-                <TouchableOpacity 
-                  onPress={() => setSelectedSpace(null)}
-                  style={{ padding: 4 }}
-                >
-                  <Ionicons name="close" size={24} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity
-                onPress={() => openInMaps(
-                  parseFloat(selectedSpace.latitude.toString()),
-                  parseFloat(selectedSpace.longitude.toString())
-                )}
-                style={{
-                  backgroundColor: colors.accent,
-                  paddingVertical: 10,
-                  paddingHorizontal: 16,
-                  borderRadius: 8,
-                  marginTop: 12,
+              originWhitelist={['*']}
+              source={{ html: generateMapHTML() }}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+              scalesPageToFit={true}
+              renderLoading={() => (
+                <View style={{ 
+                  position: 'absolute', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  justifyContent: 'center', 
                   alignItems: 'center',
-                }}
-              >
-                <Text style={{ color: 'white', fontSize: 14, fontWeight: '600' }}>
-                  📍 Open in Maps
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+                  backgroundColor: colors.backgroundSecondary
+                }}>
+                  <ActivityIndicator size="large" color={colors.accent} />
+                </View>
+              )}
+            />
+          </View>
 
           {/* Map Info Footer */}
           <View style={{ 
@@ -302,33 +309,3 @@ export default function SpacesMapScreen() {
     </SafeBoundingView>
   );
 }
-
-const styles = StyleSheet.create({
-  markerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  marker: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  detailsCard: {
-    position: 'absolute',
-    bottom: 80,
-    left: 16,
-    right: 16,
-    borderRadius: 12,
-    padding: 16,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  }
-});
