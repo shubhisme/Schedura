@@ -13,7 +13,8 @@ import CSpace from "@/assets/images/illustrations/cspace.png"
 import { useTheme } from '@/contexts/ThemeContext';
 import { getOrganisationByUserId } from '@/supabase/controllers/organisation.controller';
 import MapLocationPicker from '@/components/MapLocationPicker';
-//import MapLocationPicker from '@/components/MapLocationPicker';
+import { supabase } from '@/supabase/supabase';
+import { getUserUpiId } from '@/supabase/controllers/user.controller';
 
 interface Location {
   latitude: number;
@@ -100,6 +101,29 @@ export default function AddSpacesScreen() {
     }
   }
   const handleSubmit = async () => {
+    // Require signed-in user
+    if (!user) {
+      Alert.alert('Not signed in', 'Please sign in before creating a space.');
+      return;
+    }
+
+    // Read UPI id from users table (source of truth)
+    try {
+      const userUpiId = await getUserUpiId(user?.id)
+      if (!userUpiId) {
+        Alert.alert(
+          'UPI ID Required',
+          'Please add your UPI ID in your profile before creating a space.'
+        );
+        return;
+      }
+      // upi available, continue
+    } catch (err) {
+      console.error('Error fetching user upi:', err);
+      Alert.alert('Error', 'Could not verify UPI. Try again later.');
+      return;
+    }
+
     setLoading(true);
     if (!name || !capacity || !location || !description || !pph) {
       Alert.alert('Error', 'Please fill all fields');

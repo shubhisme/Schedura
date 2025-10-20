@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "supabase": "^2.51.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

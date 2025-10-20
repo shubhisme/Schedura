@@ -1,6 +1,6 @@
 import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, Animated, Easing, RefreshControl } from 'react-native';
 //@ts-ignore
-import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
 import { getBookingsOfUser } from '@/supabase/controllers/booking.controller';
@@ -14,7 +14,6 @@ export default function BookingSpacesScreen() {
   const [actionLoader, setActionLoader] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useUser();
-
   const getMyBookings = async() => {
     setRefreshing(true);
     const {data, error} = await getBookingsOfUser(user?.id!);
@@ -63,7 +62,7 @@ export default function BookingSpacesScreen() {
 
 function BookingCard({booking, userId, setActionLoader, actionLoader, getBookings, colors, isDark}: {booking: any, userId: string, setActionLoader: any, actionLoader: any, getBookings: any, colors: any, isDark: boolean}) {
 
-
+  const { navigate } = useRouter();
   let pendingTag = (
     <View className="px-3 py-1 rounded-full">
       <Text style={{ color: isDark ? '#fde047' : '#92400e', fontWeight: '600', backgroundColor: undefined }}>{'Pending'}</Text>
@@ -76,9 +75,10 @@ function BookingCard({booking, userId, setActionLoader, actionLoader, getBooking
     </View>
   )
   return (
-    <View 
-      className="p-6 border rounded-xl mb-4"
+    <TouchableOpacity 
+      className="p-6 border rounded-2xl mb-4"
       style={{ borderColor: colors.border, backgroundColor: colors.card }}
+      onPress={() => { navigate(`/bookings/${booking.id}`)}}
     >
       <View className="flex-row items-center justify-between mb-2">
         <View className="flex-row items-center">
@@ -104,6 +104,6 @@ function BookingCard({booking, userId, setActionLoader, actionLoader, getBooking
         <Feather name='calendar' size={18} color={colors.textSecondary}/>  {new Date(booking.start).toLocaleDateString()} - {new Date(booking.end).toLocaleDateString()}
       </Text>
       
-    </View>
+    </TouchableOpacity>
   );
 }

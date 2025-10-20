@@ -1,14 +1,14 @@
 import { useRef, useEffect } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import LottieView from 'lottie-react-native';
-import PaperPlane from '@/assets/animations/paperplane.json';
+import Authentication from '@/assets/animations/authentication.json';
 import { useRouter } from 'expo-router';
-export default function RequestSuccessfulPage() {
+export default function BookingSuccessfulPage() {
   const animation = useRef<LottieView>(null);
   const router = useRouter();
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.push('/(tabs)/bookings/requests');
+      router.push('/(tabs)/bookings');
     }, 5000);
     return () => {
       if (timer) clearTimeout(timer);
@@ -16,22 +16,22 @@ export default function RequestSuccessfulPage() {
   }, []);
 
   return (
-    <View className='bg-primary h-full  items-center'>
+    <View className='bg-primary h-full justify-center items-center'>
       <LottieView
         autoPlay
         ref={animation}
         style={{
-          width: "100%",
-          height: "50%",
+          width: "60%",
+          height: "30%",
           backgroundColor: '#E9F0E9',
         }}
         // Find more Lottie files at https://lottiefiles.com/featured
-        source={PaperPlane}
+        source={Authentication}
       />
       <View className='p-6'>
-        <Text className='text-4xl text-center font-bold'>Request Sent Successfully!</Text>
-        <Text className='text-center mt-4 text-xl font-semibold'>Your request has been sent. You will be notified once it is reviewed.</Text>
-        <Text className='text-center mt-2 text-lg'>Redirecting to Requests...</Text>
+        <Text className='text-4xl text-center font-bold'>Payment Successful</Text>
+        <Text className='text-center mt-4 text-2xl font-semibold'>Your payment was successful. Thank you for your purchase!</Text>
+        <Text className='text-center mt-2 text-lg'>Redirecting to Bookings...</Text>
       </View>
     </View>
   );

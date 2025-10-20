@@ -151,3 +151,14 @@ export async function getRole(roleid: number): Promise<{ id: number; [key: strin
   if (error || !data) return null;
   return data;
 }
+
+// get roles belonging to an organisation
+export async function getOrganisationRoles(orgid: string): Promise<Array<{ id: number; [key: string]: any }>> {
+  const { data, error } = await supabase
+    .from("roles")
+    .select("*")
+    .eq("orgid", orgid);
+
+  if (error || !data) return [];
+  return data;
+}

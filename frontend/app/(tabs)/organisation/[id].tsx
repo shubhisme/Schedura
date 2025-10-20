@@ -7,6 +7,7 @@ import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getOrganisationById, getUserOrganisations, checkUserMembership, leaveOrganisation } from '@/supabase/controllers/organisation.controller';
 import { getOrganisationJoinRequests, approveJoinRequest, rejectJoinRequest, createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/join-requests.controller';
+import { getOrganisationRoles } from '@/supabase/controllers/roles.controller';
 
 export default function OrganisationDetailsScreen() {
   const { colors, isDark } = useTheme();
@@ -120,11 +121,11 @@ export default function OrganisationDetailsScreen() {
     }
   };
 
-  const handleApproveRequest = async (requestId: string, requestedRole: string = 'member') => {
+  const handleApproveRequest = async (requestId: string, requestedRole: number) => {
     if (!user?.id) return;
     
     try {
-      await approveJoinRequest(requestId, user.id, requestedRole as 'admin' | 'member');
+      await approveJoinRequest(requestId, user.id, requestedRole);
       Alert.alert('Success', 'Join request approved successfully!');
       await loadJoinRequests(); // Refresh requests
     } catch (error: any) {
@@ -396,12 +397,12 @@ export default function OrganisationDetailsScreen() {
                         </Text>
                       )}
                       
-                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <View className='flex-col items-start justify-center'>
                         <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
                           Requested: {new Date(request.created_at).toLocaleDateString()}
                         </Text>
                         
-                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <View className='mt-2' style={{ flexDirection: 'row', gap: 8 }}>
                           <TouchableOpacity
                             onPress={() => handleRejectRequest(request.id)}
                             style={{
@@ -422,21 +423,52 @@ export default function OrganisationDetailsScreen() {
                           
                           <TouchableOpacity
                             onPress={() => {
-                              Alert.alert(
-                                'Assign Role',
-                                'Choose a role for this member:',
-                                [
-                                  { text: 'Cancel', style: 'cancel' },
-                                  { 
-                                    text: 'Member', 
-                                    onPress: () => handleApproveRequest(request.id, 'member') 
-                                  },
-                                  { 
-                                    text: 'Admin', 
-                                    onPress: () => handleApproveRequest(request.id, 'admin') 
+                              (async () => {
+                                try {
+                                  // Try to fetch roles for this organisation. Assumes a controller function `getOrganisationRoles`
+                                  // exists and returns either an array or an object with a `data` array.
+                                  const res = await getOrganisationRoles(id);
+                                  const roles = Array.isArray(res) ? res :  [];
+
+                                  if (!roles || roles.length === 0) {
+                                    // Fallback: no roles found — ask to approve as 'member'
+                                    Alert.alert(
+                                      'No roles found',
+                                      'No roles configured for this organisation. Approve as Member?',
+                                      [
+                                        { text: 'Cancel', style: 'cancel' },
+                                        { text: 'OK', onPress: () => handleApproveRequest(request.id, 'member') }
+                                      ]
+                                    );
+                                    return;
                                   }
-                                ]
-                              );
+
+                                  // Build buttons from roles. Use a sensible field for the role value (key/slug/name).
+                                  const buttons = roles.map((r: any) => {
+                                    const label = r.name ?? r.label ?? String(r.role ?? 'Role');
+                                    const value = r.id;
+                                    return {
+                                      text: label,
+                                      onPress: () => handleApproveRequest(request.id, value)
+                                    };
+                                  });
+
+                                  // Always include cancel as last option
+                                  buttons.push({ text: 'Cancel', style: 'cancel' });
+
+                                  Alert.alert('Assign Role', 'Choose a role for this member:', buttons);
+                                } catch (error) {
+                                  console.error('Error fetching roles:', error);
+                                  Alert.alert(
+                                    'Error',
+                                    'Failed to load roles. Approve as Member instead?',
+                                    [
+                                      { text: 'Cancel', style: 'cancel' },
+                                      { text: 'OK', onPress: () => handleApproveRequest(request.id, 'member') }
+                                    ]
+                                  );
+                                }
+                              })()
                             }}
                             style={{
                               backgroundColor: colors.accent,

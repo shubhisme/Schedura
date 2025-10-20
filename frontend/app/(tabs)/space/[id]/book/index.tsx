@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, TextInput } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
@@ -13,7 +13,7 @@ import { getBookingsForSpaceByMonthYear } from "@/supabase/controllers/booking.c
 import { useTheme } from '@/contexts/ThemeContext';
 import { getUserRole, isUserInOrganization } from "@/supabase/controllers/user_role.controller";
 import { getRole } from "@/supabase/controllers/roles.controller";
-
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function HallBooking() {
   const { colors, isDark } = useTheme();
@@ -23,7 +23,7 @@ export default function HallBooking() {
   const [functionalLoading, setFunctionalLoading] = useState(false) 
   const [markedDates, setMarkedDates] = useState({});
   const [bookedDates, setBookedDates] = useState({});
-  const { back } = useRouter();
+  const { back, navigate } = useRouter();
   const [reason, setReason] = useState('');
   const [range, setRange] = useState<{ startDate?: string; endDate?: string }>({});
   const { user } = useUser();
@@ -86,7 +86,6 @@ export default function HallBooking() {
   
   const checkBookingPrivilege = async (space: any, user: any) => {
     // If no organization, allow booking
-        
     if (!space.organizationid) {
       setCanBook(true);
       setPrivilegeChecked(true);
@@ -142,14 +141,18 @@ export default function HallBooking() {
     fetchBookingsForMonth(dayjs().month(), dayjs().year());
   }, [space]);
 
-  useEffect(() => {
-    if (space && user) {
-      checkBookingPrivilege(space, user);
-    } else if (space && !space.organizationid) {
-      setCanBook(true);
-      setPrivilegeChecked(true);
-    }
-  }, [space, user]);
+  // use focus effect to re-check privileges when screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      if (space && user) {
+        checkBookingPrivilege(space, user);
+      } else if (space && !space.organizationid) {
+        setCanBook(true);
+        setPrivilegeChecked(true);
+      }
+      // no cleanup needed
+    }, [space, user])
+  );
   
   const markDate = (date: string) => {
     let { startDate, endDate } = range;
@@ -194,7 +197,7 @@ export default function HallBooking() {
       const status = await sendBookRequest(space.id, range.startDate, range.endDate || range.startDate, user.id, reason);
       setFunctionalLoading(false);
       if(status.success){
-        alert("Booking Request Sent Successfully");
+        navigate('/(info)/request/successful' as any);
       }
     }
   };

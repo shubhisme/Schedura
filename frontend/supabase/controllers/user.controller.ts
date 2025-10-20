@@ -51,3 +51,21 @@ export const updateUserUpiId = async (user:any) => {
         }
     }
 }
+
+export const getUserUpiId = async(userId:any) => {
+    if(userId){
+        try{
+            const { data, error: userErr } = await supabase
+            .from('users')
+            .select('upiId')
+            .eq('id', userId)
+            .single();
+            if(data){
+                return data.upiId
+            }
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
+}

@@ -5,7 +5,6 @@ export const createJoinRequest = async (
   userId: string, 
   organisationId: string, 
   message?: string,
-  requestedRole: 'admin' | 'member' = 'member'
 ) => {
   // Check if user already has a pending request
   const { data: existingRequest } = await supabase
@@ -38,7 +37,6 @@ export const createJoinRequest = async (
       user_id: userId, 
       organisation_id: organisationId, 
       message,
-      requested_role: requestedRole,
       status: "pending"
     }])
     .select()
@@ -68,8 +66,7 @@ export const getOrganisationJoinRequests = async (organisationId: string, ownerI
       users (
         id,
         name,
-        email,
-        avatar_url
+        email
       )
     `)
     .eq("organisation_id", organisationId)
@@ -83,7 +80,7 @@ export const getOrganisationJoinRequests = async (organisationId: string, ownerI
 export const approveJoinRequest = async (
   requestId: string, 
   ownerId: string, 
-  assignedRole: 'admin' | 'member' = 'member'
+  assignedRole:number
 ) => {
   // Get the join request details
   const { data: request, error: requestError } = await supabase
@@ -109,10 +106,10 @@ export const approveJoinRequest = async (
 
   // Add user to organization
   const { error: addError } = await supabase
-    .from("user_organisations")
+    .from("user_role")
     .insert([{ 
-      user_id: request.user_id, 
-      organisation_id: request.organisation_id,
+      userid: request.user_id, 
+      orgid: request.organisation_id,
       role: assignedRole
     }]);
 
