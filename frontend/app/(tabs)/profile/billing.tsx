@@ -23,11 +23,11 @@ const BillingPaymentsScreen = () => {
     }
     setSavingUpi(true);
     try {
-      await updateUserUpiId({upiId: upiId.trim(), id:user?.id!});
+      await updateUserUpiId({ upiId: upiId.trim(), id: user?.id! });
       Alert.alert('Success', 'UPI ID updated successfully');
-    }catch (err) {
+    } catch (err) {
       Alert.alert('Error', 'Failed to update UPI ID');
-    }finally {
+    } finally {
       setSavingUpi(false);
     }
   };
@@ -109,8 +109,8 @@ const BillingPaymentsScreen = () => {
       `Upgrade to ${plans.find(p => p.id === planId)?.name} plan?`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Upgrade', 
+        {
+          text: 'Upgrade',
           onPress: () => Alert.alert('Success', 'Plan upgraded successfully!')
         }
       ]
@@ -142,57 +142,47 @@ const BillingPaymentsScreen = () => {
   };
 
   const PlanCard = ({ plan }: any) => (
-    <View 
+    <View
+      className={`rounded-xl p-6 mb-4 ${plan.popular ? 'border-2' : 'border-0'} shadow-lg`}
       style={{
         backgroundColor: colors.card,
-        borderRadius: 16,
-        padding: 24,
-        marginBottom: 16,
-        borderWidth: plan.popular ? 2 : 0,
         borderColor: plan.popular ? colors.link : 'transparent',
         shadowColor: colors.shadow,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
         elevation: 3,
       }}
     >
       {plan.popular && (
-        <View style={{ backgroundColor: colors.link, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, alignSelf: 'flex-start', marginBottom: 12 }}>
-          <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>MOST POPULAR</Text>
+        <View className="px-3 py-1 rounded-full self-start mb-3" style={{ backgroundColor: colors.link }}>
+          <Text className="text-xs font-bold" style={{ color: 'white' }}>MOST POPULAR</Text>
         </View>
       )}
-      
-      <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>{plan.name}</Text>
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', marginTop: 8 }}>
-        <Text style={{ fontSize: 36, fontWeight: 'bold', color: colors.text }}>{plan.price}</Text>
-        <Text style={{ color: colors.textSecondary, marginLeft: 8 }}>/ {plan.period}</Text>
+
+      <Text className="text-2xl font-bold" style={{ color: colors.text }}>{plan.name}</Text>
+      <View className="flex-row items-baseline mt-2">
+        <Text className="text-4xl font-bold" style={{ color: colors.text }}>{plan.price}</Text>
+        <Text className="ml-2" style={{ color: colors.textSecondary }}>/ {plan.period}</Text>
       </View>
-      
-      <View style={{ marginTop: 24, marginBottom: 24 }}>
+
+      <View className="mt-6 mb-6">
         {plan.features.map((feature: string, index: number) => (
-          <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <View key={index} className="flex-row items-center mb-3">
             <Ionicons name="checkmark-circle" size={20} color={colors.success} />
-            <Text style={{ color: colors.textSecondary, marginLeft: 12 }}>{feature}</Text>
+            <Text className="ml-3" style={{ color: colors.textSecondary }}>{feature}</Text>
           </View>
         ))}
       </View>
-      
+
       {plan.current ? (
-        <View style={{ backgroundColor: colors.backgroundSecondary, paddingVertical: 12, borderRadius: 12, alignItems: 'center' }}>
-          <Text style={{ color: colors.textSecondary, fontWeight: '600' }}>Current Plan</Text>
+        <View className="py-3 rounded-xl items-center" style={{ backgroundColor: colors.backgroundSecondary }}>
+          <Text className="font-semibold" style={{ color: colors.textSecondary }}>Current Plan</Text>
         </View>
       ) : (
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => handleUpgrade(plan.id)}
-          style={{ 
-            paddingVertical: 12, 
-            borderRadius: 12, 
-            alignItems: 'center',
-            backgroundColor: plan.popular ? colors.link : colors.accent
-          }}
+          className="py-3 rounded-xl items-center"
+          style={{ backgroundColor: plan.popular ? colors.link : colors.accent }}
         >
-          <Text style={{ color: plan.popular ? 'white' : (isDark ? '#000' : 'white'), fontWeight: '600' }}>
+          <Text className="font-semibold" style={{ color: plan.popular ? 'white' : (isDark ? '#000' : 'white') }}>
             Upgrade to {plan.name}
           </Text>
         </TouchableOpacity>
@@ -201,28 +191,23 @@ const BillingPaymentsScreen = () => {
   );
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-      
+
       {/* Header */}
-      <View style={{ 
-        backgroundColor: colors.card, 
-        paddingHorizontal: 24, 
-        paddingVertical: 16, 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        borderBottomWidth: 1, 
-        borderBottomColor: colors.border 
-      }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginRight: 12 }}>
+      <View
+        className="px-6 py-4 flex-row items-center border-b"
+        style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}
+      >
+        <TouchableOpacity onPress={() => router.back()} className="p-2 mr-3">
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Billing & Payments</Text>
+        <Text className="text-xl font-bold" style={{ color: colors.text }}>Billing & Payments</Text>
       </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Current Plan Overview */}
-       <View className="px-6 py-4 ">
+        <View className="px-6 py-4 ">
           <Text className="text-sm text-gray-700 mb-2">UPI ID</Text>
           <TextInput
             value={upiId}
@@ -241,59 +226,52 @@ const BillingPaymentsScreen = () => {
             <Text className="text-black font-semibold">{savingUpi ? 'Saving...' : 'Save UPI'}</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ 
-          padding: 24, 
-          marginHorizontal: 24, 
-          marginTop: 24, 
-          borderRadius: 16,
-          backgroundColor: colors.link
-        }}>
-          <Text style={{ color: 'white', fontSize: 18, fontWeight: '600' }}>Current Plan</Text>
-          <Text style={{ color: 'white', fontSize: 30, fontWeight: 'bold', marginTop: 8 }}>{currentPlan}</Text>
-          <Text style={{ color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>{billingCycle} billing</Text>
+
+        <View className="p-6 mx-6 mt-6 rounded-xl" style={{ backgroundColor: colors.link }}>
+          <Text className="font-semibold text-lg" style={{ color: 'white' }}>Current Plan</Text>
+          <Text className="text-3xl font-bold mt-2" style={{ color: 'white' }}>{currentPlan}</Text>
+          <Text className="mt-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{billingCycle} billing</Text>
         </View>
 
         {/* Plans */}
-        <View style={{ paddingHorizontal: 24, paddingVertical: 24 }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Available Plans</Text>
+        <View className="px-6 py-6">
+          <Text className="text-xl font-bold mb-4" style={{ color: colors.text }}>Available Plans</Text>
           {plans.map(plan => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
         </View>
 
         {/* Payment Methods */}
-        <View style={{ 
-          paddingHorizontal: 24, 
-          paddingVertical: 24, 
-          backgroundColor: colors.card, 
-          borderTopWidth: 1, 
-          borderTopColor: colors.border 
-        }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Payment Methods</Text>
+        <View
+          className="px-6 py-6 border-t"
+          style={{ backgroundColor: colors.card, borderTopColor: colors.border }}
+        >
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-bold" style={{ color: colors.text }}>Payment Methods</Text>
             <TouchableOpacity onPress={handleAddPaymentMethod}>
               <Ionicons name="add-circle" size={28} color={colors.link} />
             </TouchableOpacity>
           </View>
-          
+
           {paymentMethods.map(method => (
             <TouchableOpacity
               key={method.id}
               onPress={() => handleManagePaymentMethod(method.id)}
-              style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 16, padding: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center' }}
+              className="rounded-xl p-4 mb-3 flex-row items-center"
+              style={{ backgroundColor: colors.backgroundSecondary }}
             >
-              <View style={{ backgroundColor: colors.card, padding: 12, borderRadius: 12 }}>
+              <View className="p-3 rounded-xl" style={{ backgroundColor: colors.card }}>
                 <Ionicons name="card-outline" size={24} color={colors.textSecondary} />
               </View>
-              <View style={{ flex: 1, marginLeft: 16 }}>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>
+              <View className="flex-1 ml-4">
+                <Text className="font-semibold" style={{ color: colors.text }}>
                   {method.brand} •••• {method.last4}
                 </Text>
-                <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 4 }}>Expires {method.expiry}</Text>
+                <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>Expires {method.expiry}</Text>
               </View>
               {method.isDefault && (
-                <View style={{ backgroundColor: isDark ? '#14532d' : '#d1fae5', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20 }}>
-                  <Text style={{ color: isDark ? '#86efac' : '#065f46', fontSize: 12, fontWeight: '600' }}>Default</Text>
+                <View className="px-3 py-1 rounded-full" style={{ backgroundColor: isDark ? '#14532d' : '#d1fae5' }}>
+                  <Text className="text-xs font-semibold" style={{ color: isDark ? '#86efac' : '#065f46' }}>Default</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -301,47 +279,40 @@ const BillingPaymentsScreen = () => {
         </View>
 
         {/* Transaction History */}
-        <View style={{ paddingHorizontal: 24, paddingVertical: 24 }}>
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Transaction History</Text>
-          
+        <View className="px-6 py-6">
+          <Text className="text-xl font-bold mb-4" style={{ color: colors.text }}>Transaction History</Text>
+
           {transactions.map(transaction => (
             <View
               key={transaction.id}
+              className="rounded-xl p-4 mb-3 flex-row items-center"
               style={{
                 backgroundColor: colors.card,
-                borderRadius: 16,
-                padding: 16,
-                marginBottom: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
                 shadowColor: colors.shadow,
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.05,
-                shadowRadius: 4,
                 elevation: 2,
               }}
             >
-              <View style={{ backgroundColor: isDark ? '#14532d' : '#d1fae5', padding: 12, borderRadius: 12 }}>
+              <View className="p-3 rounded-xl" style={{ backgroundColor: isDark ? '#14532d' : '#d1fae5' }}>
                 <Ionicons name="checkmark-circle" size={24} color={colors.success} />
               </View>
-              <View style={{ flex: 1, marginLeft: 16 }}>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>{transaction.description}</Text>
-                <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 4 }}>{transaction.date}</Text>
+              <View className="flex-1 ml-4">
+                <Text className="font-semibold" style={{ color: colors.text }}>{transaction.description}</Text>
+                <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>{transaction.date}</Text>
               </View>
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={{ color: colors.text, fontWeight: 'bold' }}>{transaction.amount}</Text>
-                <TouchableOpacity 
+              <View className="items-end">
+                <Text className="font-bold" style={{ color: colors.text }}>{transaction.amount}</Text>
+                <TouchableOpacity
                   onPress={() => handleDownloadInvoice(transaction.id)}
-                  style={{ marginTop: 4 }}
+                  className="mt-1"
                 >
-                  <Text style={{ color: colors.link, fontSize: 14 }}>Invoice</Text>
+                  <Text className="text-sm" style={{ color: colors.link }}>Invoice</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ))}
         </View>
 
-        <View style={{ height: 32 }} />
+        <View className="h-8" />
       </ScrollView>
     </SafeBoundingView>
   );

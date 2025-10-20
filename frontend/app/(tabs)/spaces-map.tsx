@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator, Linking, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StatusBar, Alert, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
@@ -129,8 +129,8 @@ export default function SpacesMapScreen() {
           }
           .popup-button {
             display: inline-block;
-            background: #007bff;
-            color: white;
+            background: #E9F0E9;
+            color: black;
             padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
@@ -155,13 +155,24 @@ export default function SpacesMapScreen() {
             maxZoom: 19
           }).addTo(map);
 
+          // Schedura logo is a JPG.
+          // Replace the URL below with your actual schedura JPG location or a base64 data URL.
+          var scheduraIconUrl = 'https://zcpesqgzeeiewddphdwg.supabase.co/storage/v1/object/public/organisations/logo.jpg';
+
+          var scheduraIcon = L.icon({
+            iconUrl: scheduraIconUrl,
+            iconSize: [33, 33],    // size of the icon
+            iconAnchor: [16.5, 16.5],  // point of the icon which will correspond to marker's location
+            popupAnchor: [0, -40]  // point from which the popup should open relative to the iconAnchor
+          });
+
           // Markers data
           var markers = ${JSON.stringify(markersData)};
 
-          // Add markers
+          // Add markers using custom schedura icon
           var markerGroup = [];
           markers.forEach(function(markerData) {
-            var marker = L.marker([markerData.lat, markerData.lng]).addTo(map);
+            var marker = L.marker([markerData.lat, markerData.lng], { icon: scheduraIcon }).addTo(map);
             
             var popupContent = 
               '<div>' +

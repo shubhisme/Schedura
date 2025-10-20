@@ -147,10 +147,10 @@ export default function OrganisationDetailsScreen() {
 
   if (loading) {
     return (
-      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: colors.text, fontSize: 18 }}>Loading...</Text>
+        <View className="flex-1 justify-center items-center">
+          <Text style={{ color: colors.text }} className="text-lg">Loading...</Text>
         </View>
       </SafeBoundingView>
     );
@@ -158,91 +158,62 @@ export default function OrganisationDetailsScreen() {
 
   if (!organisation) {
     return (
-      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: colors.text, fontSize: 18 }}>Organisation not found</Text>
+        <View className="flex-1 justify-center items-center">
+          <Text style={{ color: colors.text }} className="text-lg">Organisation not found</Text>
         </View>
       </SafeBoundingView>
     );
   }
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       
       {/* Header */}
-      <View style={{ 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        paddingHorizontal: 16, 
-        paddingVertical: 12,
-        backgroundColor: colors.card,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border
-      }}>
-        <TouchableOpacity onPress={back} style={{ padding: 8 }}>
+      <View
+        className="flex-row items-center justify-between px-4 py-3 border-b"
+        style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}
+      >
+        <TouchableOpacity onPress={back} className="p-2">
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>
+        <Text className="text-lg font-semibold" style={{ color: colors.text }}>
           Organisation Details
         </Text>
-        <View style={{ width: 40 }} />
+        <View className="w-10" />
       </View>
 
-      <ScrollView style={{ flex: 1 }}>
+      <ScrollView className="flex-1">
         {/* Organisation Header */}
-        <View style={{ 
-          padding: 24, 
-          backgroundColor: colors.card, 
-          alignItems: 'center',
-          borderBottomLeftRadius: 24,
-          borderBottomRightRadius: 24,
-          marginBottom: 16
-        }}>
+        <View
+          className="p-6 items-center mb-4 rounded-b-3xl"
+          style={{ backgroundColor: colors.card }}
+        >
           {organisation.logo ? (
             <Image 
               source={{ uri: organisation.logo }} 
-              style={{ 
-                width: 120, 
-                height: 120, 
-                borderRadius: 60, 
-                backgroundColor: colors.backgroundSecondary,
-                marginBottom: 16
-              }} 
+              className="w-[120px] h-[120px] rounded-full mb-4"
+              style={{ backgroundColor: colors.backgroundSecondary }}
             />
           ) : (
-            <View style={{ 
-              width: 120, 
-              height: 120, 
-              borderRadius: 60, 
-              backgroundColor: colors.backgroundSecondary, 
-              justifyContent: 'center', 
-              alignItems: 'center',
-              marginBottom: 16
-            }}>
+            <View
+              className="w-[120px] h-[120px] rounded-full items-center justify-center mb-4"
+              style={{ backgroundColor: colors.backgroundSecondary }}
+            >
               <Ionicons name="business" size={48} color={colors.textSecondary} />
             </View>
           )}
           
-          <Text style={{ 
-            fontSize: 28, 
-            fontWeight: 'bold', 
-            color: colors.text, 
-            textAlign: 'center',
-            marginBottom: 8
-          }}>
+          <Text className="text-2xl font-bold text-center mb-2" style={{ color: colors.text }}>
             {organisation.name}
           </Text>
           
-          <View style={{ 
-            backgroundColor: colors.backgroundSecondary, 
-            paddingHorizontal: 12, 
-            paddingVertical: 6, 
-            borderRadius: 16,
-            marginBottom: 16
-          }}>
+          <View
+            className="px-3 py-1.5 rounded-full mb-4"
+            style={{ backgroundColor: colors.backgroundSecondary }}
+          >
             <Text style={{ color: colors.text, fontWeight: '600' }}>
               {organisation.type}
             </Text>
@@ -253,21 +224,14 @@ export default function OrganisationDetailsScreen() {
             <TouchableOpacity
               onPress={handleJoinLeave}
               disabled={actionLoading || (userJoinRequest && userJoinRequest.status === 'pending')}
+              className={`px-8 py-3 rounded-xl flex-row items-center ${actionLoading ? 'opacity-70' : ''} ${isMember ? 'border' : ''}`}
               style={{
                 backgroundColor: isMember 
                   ? colors.backgroundSecondary 
                   : userJoinRequest && userJoinRequest.status === 'pending'
                     ? '#FFA500'
                     : colors.accent,
-                paddingHorizontal: 32,
-                paddingVertical: 12,
-                borderRadius: 20,
-                borderWidth: isMember ? 1 : 0,
-                borderColor: colors.border,
-                opacity: actionLoading ? 0.7 : 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8
+                borderColor: colors.border
               }}
             >
               <Ionicons 
@@ -287,11 +251,7 @@ export default function OrganisationDetailsScreen() {
                       : "white"
                 } 
               />
-              <Text style={{
-                color: isMember ? colors.text : "white",
-                fontWeight: '600',
-                fontSize: 16
-              }}>
+              <Text className="text-base font-semibold ml-2" style={{ color: isMember ? colors.text : 'white' }}>
                 {actionLoading 
                   ? 'Processing...' 
                   : isMember 
@@ -306,39 +266,21 @@ export default function OrganisationDetailsScreen() {
         </View>
 
         {/* Organisation Details */}
-        <View style={{ paddingHorizontal: 24, gap: 24 }}>
+        <View className="px-6 space-y-6">
           
           {/* Join Requests Section - Only for Owners */}
           {isOwner && (
-            <View style={{ 
-              backgroundColor: colors.card, 
-              padding: 20, 
-              borderRadius: 16,
-              borderWidth: 1,
-              borderColor: colors.border
-            }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <View className="flex-row items-center justify-between mb-4">
+                <View className="flex-row items-center">
                   <Ionicons name="people-outline" size={24} color={colors.accent} />
-                  <Text style={{ 
-                    fontSize: 18, 
-                    fontWeight: '600', 
-                    color: colors.text, 
-                    marginLeft: 12 
-                  }}>
+                  <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
                     Join Requests
                   </Text>
                 </View>
                 {joinRequests.length > 0 && (
-                  <View style={{ 
-                    backgroundColor: colors.accent, 
-                    borderRadius: 12, 
-                    minWidth: 24, 
-                    height: 24, 
-                    justifyContent: 'center', 
-                    alignItems: 'center' 
-                  }}>
-                    <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+                  <View className="rounded-full min-w-[24px] h-6 justify-center items-center" style={{ backgroundColor: colors.accent }}>
+                    <Text className="text-xs font-semibold" style={{ color: 'white' }}>
                       {joinRequests.length}
                     </Text>
                   </View>
@@ -346,77 +288,52 @@ export default function OrganisationDetailsScreen() {
               </View>
               
               {requestsLoading ? (
-                <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center' }}>
+                <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
                   Loading requests...
                 </Text>
               ) : joinRequests.length === 0 ? (
-                <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center' }}>
+                <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
                   No pending join requests
                 </Text>
               ) : (
-                <View style={{ gap: 12 }}>
+                <View className="space-y-3">
                   {joinRequests.map((request: any) => (
-                    <View key={request.id} style={{ 
-                      backgroundColor: colors.backgroundSecondary, 
-                      padding: 16, 
-                      borderRadius: 12,
-                      borderWidth: 1,
-                      borderColor: colors.border
-                    }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                        <View style={{ 
-                          width: 40, 
-                          height: 40, 
-                          borderRadius: 20, 
-                          backgroundColor: colors.accent, 
-                          justifyContent: 'center', 
-                          alignItems: 'center' 
-                        }}>
-                          <Text style={{ color: 'white', fontWeight: '600', fontSize: 16 }}>
+                    <View key={request.id} className="p-4 rounded-lg border" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
+                      <View className="flex-row items-center mb-3">
+                        <View className="w-10 h-10 rounded-full justify-center items-center" style={{ backgroundColor: colors.accent }}>
+                          <Text className="text-white font-semibold text-base">
                             {request.users?.name?.charAt(0).toUpperCase() || 'U'}
                           </Text>
                         </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ color: colors.text, fontWeight: '600', fontSize: 16 }}>
+                        <View className="flex-1 ml-3">
+                          <Text className="font-semibold" style={{ color: colors.text }}>
                             {request.users?.name || 'Unknown User'}
                           </Text>
-                          <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
+                          <Text className="text-sm" style={{ color: colors.textSecondary }}>
                             {request.users?.email}
                           </Text>
                         </View>
                       </View>
                       
                       {request.message && (
-                        <Text style={{ 
-                          color: colors.textSecondary, 
-                          fontSize: 14, 
-                          marginBottom: 12,
-                          fontStyle: 'italic'
-                        }}>
+                        <Text className="text-sm italic mb-3" style={{ color: colors.textSecondary }}>
                           "{request.message}"
                         </Text>
                       )}
                       
-                      <View className='flex-col items-start justify-center'>
-                        <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+                      <View className="flex-col items-start justify-center">
+                        <Text className="text-xs" style={{ color: colors.textSecondary }}>
                           Requested: {new Date(request.created_at).toLocaleDateString()}
                         </Text>
                         
-                        <View className='mt-2' style={{ flexDirection: 'row', gap: 8 }}>
+                        <View className="mt-2 flex-row gap-x-2">
                           <TouchableOpacity
                             onPress={() => handleRejectRequest(request.id)}
-                            style={{
-                              backgroundColor: '#FF6B6B',
-                              paddingHorizontal: 12,
-                              paddingVertical: 6,
-                              borderRadius: 8,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 4
-                            }}
+                            className="px-3 py-1.5 rounded-md flex-row items-center"
+                            style={{ backgroundColor: '#FF6B6B' }}
                           >
                             <Ionicons name="close" size={16} color="white" />
-                            <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+                            <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
                               Reject
                             </Text>
                           </TouchableOpacity>
@@ -427,7 +344,7 @@ export default function OrganisationDetailsScreen() {
                                 try {
                                   // Try to fetch roles for this organisation. Assumes a controller function `getOrganisationRoles`
                                   // exists and returns either an array or an object with a `data` array.
-                                  const res = await getOrganisationRoles(id);
+                                  const res = await getOrganisationRoles(id as string);
                                   const roles = Array.isArray(res) ? res :  [];
 
                                   if (!roles || roles.length === 0) {
@@ -464,24 +381,16 @@ export default function OrganisationDetailsScreen() {
                                     'Failed to load roles. Approve as Member instead?',
                                     [
                                       { text: 'Cancel', style: 'cancel' },
-                                      { text: 'OK', onPress: () => handleApproveRequest(request.id, 'member') }
                                     ]
                                   );
                                 }
                               })()
                             }}
-                            style={{
-                              backgroundColor: colors.accent,
-                              paddingHorizontal: 12,
-                              paddingVertical: 6,
-                              borderRadius: 8,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                              gap: 4
-                            }}
+                            className="px-3 py-1.5 rounded-md flex-row items-center"
+                            style={{ backgroundColor: colors.accent }}
                           >
                             <Ionicons name="checkmark" size={16} color="white" />
-                            <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+                            <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
                               Approve
                             </Text>
                           </TouchableOpacity>
@@ -495,81 +404,46 @@ export default function OrganisationDetailsScreen() {
           )}
 
           {/* Description */}
-          <View style={{ 
-            backgroundColor: colors.card, 
-            padding: 20, 
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+          <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <View className="flex-row items-center mb-3">
               <Ionicons name="document-text-outline" size={24} color={colors.accent} />
-              <Text style={{ 
-                fontSize: 18, 
-                fontWeight: '600', 
-                color: colors.text, 
-                marginLeft: 12 
-              }}>
+              <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
                 About
               </Text>
             </View>
-            <Text style={{ 
-              color: colors.textSecondary, 
-              fontSize: 16, 
-              lineHeight: 24 
-            }}>
+            <Text className="text-base" style={{ color: colors.textSecondary, lineHeight: 24 }}>
               {organisation.description || 'No description available.'}
             </Text>
           </View>
 
           {/* Organisation Info */}
-          <View style={{ 
-            backgroundColor: colors.card, 
-            padding: 20, 
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: colors.border
-          }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+          <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <View className="flex-row items-center mb-4">
               <Ionicons name="information-circle-outline" size={24} color={colors.accent} />
-              <Text style={{ 
-                fontSize: 18, 
-                fontWeight: '600', 
-                color: colors.text, 
-                marginLeft: 12 
-              }}>
+              <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
                 Information
               </Text>
             </View>
             
-            <View style={{ gap: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: colors.textSecondary, fontSize: 16 }}>Type:</Text>
-                <Text style={{ color: colors.text, fontSize: 16, fontWeight: '500' }}>
+            <View className="space-y-3">
+              <View className="flex-row justify-between">
+                <Text className="text-base" style={{ color: colors.textSecondary }}>Type:</Text>
+                <Text className="text-base font-medium" style={{ color: colors.text }}>
                   {organisation.type}
                 </Text>
               </View>
               
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: colors.textSecondary, fontSize: 16 }}>Created:</Text>
-                <Text style={{ color: colors.text, fontSize: 16, fontWeight: '500' }}>
+              <View className="flex-row justify-between">
+                <Text className="text-base" style={{ color: colors.textSecondary }}>Created:</Text>
+                <Text className="text-base font-medium" style={{ color: colors.text }}>
                   {new Date(organisation.created_at).toLocaleDateString()}
                 </Text>
               </View>
               
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: colors.textSecondary, fontSize: 16 }}>Membership Status:</Text>
-                <View style={{ 
-                  backgroundColor: isMember ? colors.accent : colors.backgroundSecondary, 
-                  paddingHorizontal: 8, 
-                  paddingVertical: 4, 
-                  borderRadius: 8 
-                }}>
-                  <Text style={{ 
-                    color: isMember ? 'white' : colors.textSecondary, 
-                    fontSize: 14, 
-                    fontWeight: '600' 
-                  }}>
+              <View className="flex-row justify-between">
+                <Text className="text-base" style={{ color: colors.textSecondary }}>Membership Status:</Text>
+                <View className="px-2 py-1 rounded-md" style={{ backgroundColor: isMember ? colors.accent : colors.backgroundSecondary }}>
+                  <Text className="text-sm font-semibold" style={{ color: isMember ? 'white' : colors.textSecondary }}>
                     {isMember ? 'Member' : 'Not a member'}
                   </Text>
                 </View>
@@ -579,7 +453,7 @@ export default function OrganisationDetailsScreen() {
         </View>
 
         {/* Bottom spacing */}
-        <View style={{ height: 32 }} />
+        <View className="h-8" />
       </ScrollView>
     </SafeBoundingView>
   );

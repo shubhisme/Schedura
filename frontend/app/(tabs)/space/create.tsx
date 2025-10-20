@@ -171,62 +171,66 @@ export default function AddSpacesScreen() {
     setAmenities(amenitiesCopy) 
   }
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
-        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
-          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Create new Space</Text>
-          <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
-          <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
+        <View className="p-6 pb-12 rounded-b-2xl" style={{ backgroundColor: colors.accent }}>
+          <Text className="text-4xl font-bold mt-6" style={{ color: colors.text }}>Create new Space</Text>
+          <Text className="mt-2 text-lg" style={{ color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+          <Image source={CSpace} className="absolute right-2 bottom-0" />
         </View>
 
-        <Text style={{ fontSize: 24, fontWeight: 'bold', marginHorizontal: 20, marginTop: 24, color: colors.text }}>Basic Details</Text>
-        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
+        <Text className="text-2xl font-bold mx-5 mt-6" style={{ color: colors.text }}>Basic Details</Text>
+        <View className="mb-6 p-6 space-y-6">
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Name</Text>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Name</Text>
             <TextInput
               placeholder="Convention Center"
               placeholderTextColor={colors.textSecondary}
               value={name}
               onChangeText={setName}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
+              className="p-4 rounded-xl border-2"
+              style={{ borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Capacity</Text>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Capacity</Text>
             <TextInput
               placeholder="200"
               placeholderTextColor={colors.textSecondary}
               keyboardType="numeric"
               value={capacity}
               onChangeText={setCapacity}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
+              className="p-4 rounded-xl border-2"
+              style={{ borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Location</Text>
-            <View style={{ flexDirection: 'row', gap: 12 }}>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Location</Text>
+            <View className="flex-row space-x-3">
               <TextInput
                 placeholder="Panaji, Goa"
                 placeholderTextColor={colors.textSecondary}
                 value={location}
                 onChangeText={setLocation}
-                style={{ flex: 1, padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
+                className="flex-1 p-4 rounded-xl border-2"
+                style={{ borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
               />
               <TouchableOpacity
                 onPress={() => setShowMapPicker(true)}
-                style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, justifyContent: 'center', alignItems: 'center' }}
+                className="p-4 rounded-xl border-2 items-center justify-center"
+                style={{ borderColor: colors.border, backgroundColor: colors.card }}
               >
                 <Ionicons name="map" size={24} color={colors.accent} />
               </TouchableOpacity>
             </View>
             {selectedMapLocation && (
-              <View style={{ marginTop: 8, padding: 12, backgroundColor: colors.backgroundSecondary, borderRadius: 8 }}>
-                <Text style={{ color: colors.text, fontSize: 12, fontWeight: '500' }}>
+              <View className="mt-2 p-3 rounded-md" style={{ backgroundColor: colors.backgroundSecondary }}>
+                <Text className="text-xs font-medium" style={{ color: colors.text }}>
                   Selected coordinates: {selectedMapLocation.latitude.toFixed(6)}, {selectedMapLocation.longitude.toFixed(6)}
                 </Text>
                 {selectedMapLocation.address && (
-                  <Text style={{ color: colors.textSecondary, fontSize: 12, marginTop: 2 }}>
+                  <Text className="text-xs mt-0.5" style={{ color: colors.textSecondary }}>
                     {selectedMapLocation.address}
                   </Text>
                 )}
@@ -234,7 +238,7 @@ export default function AddSpacesScreen() {
             )}
           </View>
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Description</Text>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Description</Text>
             <TextInput
               placeholder="A very spacious and elegant hall with..."
               placeholderTextColor={colors.textSecondary}
@@ -242,57 +246,60 @@ export default function AddSpacesScreen() {
               onChangeText={setDescription}
               multiline
               numberOfLines={50}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
+              className="p-4 rounded-xl border-2 h-40"
+              style={{ borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
               textAlignVertical='top'
             />
           </View>
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Price per Day {"($)"}</Text>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Price per Day {"($)"}</Text>
             <TextInput
               placeholder="20000"
               placeholderTextColor={colors.textSecondary}
               value={pph}
               onChangeText={setPph}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
+              className="p-4 rounded-xl border-2"
+              style={{ borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             />
           </View>
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Category</Text>
-            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 12, backgroundColor: colors.card }}>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Category</Text>
+            <View className="border-2 p-5 rounded-xl flex-row flex-wrap gap-3" style={{ borderColor: colors.border, backgroundColor: colors.card }}>
               {
                 categories.map((cat)=>(
                   <TouchableOpacity 
                     onPress={()=>setCategory(cat)} 
                     key={cat} 
-                    style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: category === cat ? colors.accent : colors.backgroundSecondary }}
+                    className="px-4 py-2 rounded-full"
+                    style={{ backgroundColor: category === cat ? colors.accent : colors.backgroundSecondary }}
                   >
-                    <Text style={{ fontWeight: '500', color: category === cat ? 'white' : colors.textSecondary }}>{cat}</Text>
+                    <Text className="font-medium" style={{ color: category === cat ? 'white' : colors.textSecondary }}>{cat}</Text>
                   </TouchableOpacity>
                 ))
               }
             </View>
           </View>
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Facilities and Amenities</Text>
-            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 20, columnGap: 32, backgroundColor: colors.card }}>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Facilities and Amenities</Text>
+            <View className="border-2 p-5 rounded-xl flex-row flex-wrap" style={{ borderColor: colors.border, backgroundColor: colors.card }}>
               {
                 amenities.map((facility, i)=>(
-                  <TouchableOpacity onPress={()=>handleAmenities(i)} key={facility.id} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-                    <View style={{ padding: 10, borderRadius: 12, backgroundColor: facility.selected ? (isDark ? '#065f46' : '#dcfce7') : colors.backgroundSecondary }}>
+                  <TouchableOpacity onPress={()=>handleAmenities(i)} key={facility.id} className="flex-row items-center space-x-2 mb-3 mr-4">
+                    <View className="p-2 rounded-lg" style={{ backgroundColor: facility.selected ? (isDark ? '#065f46' : '#dcfce7') : colors.backgroundSecondary }}>
                       <Ionicons name={facility.icon as any} size={15} color={facility.selected ? '#10B981' : colors.textSecondary}/>
                     </View>
-                    <Text style={{ fontWeight: '500', color: facility.selected ? colors.text : colors.textSecondary }}>{facility.name}</Text>
+                    <Text className="font-medium" style={{ color: facility.selected ? colors.text : colors.textSecondary }}>{facility.name}</Text>
                   </TouchableOpacity>
                 ))
               }
             </View>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          <View className="flex-row items-center space-x-4">
             {
               images.fileUri ?
-              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
+              <View className="rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
                   <Image 
-                      style={{ height: 80, width: 80 }}
+                      className="h-20 w-20"
                       source={{uri:images.fileUri}}
                   />
               </View>
@@ -306,7 +313,8 @@ export default function AddSpacesScreen() {
                         console.log("Uploaded file URL:", url);
                       }
                   }}
-                  style={{ borderWidth: 2, borderStyle: 'dashed', padding: 16, borderRadius: 12, height: 80, width: 80, justifyContent: 'center', alignItems: 'center', borderColor: colors.border, backgroundColor: colors.card }}
+                  className="border-2 border-dashed p-4 rounded-xl h-20 w-20 items-center justify-center"
+                  style={{ borderColor: colors.border, backgroundColor: colors.card }}
                 >
                   <Ionicons name="add" size={24} color={colors.text} />
             </TouchableOpacity>      
@@ -315,9 +323,10 @@ export default function AddSpacesScreen() {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            style={{ backgroundColor: colors.accent, padding: 16, borderRadius: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 }}
+            className="px-4 py-4 rounded-lg mt-4 flex-row items-center justify-center space-x-5"
+            style={{ backgroundColor: colors.accent }}
           >
-            <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
+            <Text className="text-lg font-semibold" style={{ color: 'white' }}>
               Add Space
             </Text>
             {

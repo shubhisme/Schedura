@@ -204,9 +204,9 @@ export default function HallBooking() {
 
   if (loading || !space || !privilegeChecked) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeAreaView className="flex-1">
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
           <Text style={{ color: colors.textSecondary }}>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -216,14 +216,14 @@ export default function HallBooking() {
   // Show privilege message if not allowed
   if (!canBook) {
     return (
-      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
         <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+        <View className="flex-1 items-center justify-center p-8">
           <Ionicons name="lock-closed" size={48} color={colors.error} style={{ marginBottom: 24 }} />
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold', marginBottom: 12, textAlign: 'center' }}>
+          <Text className="text-xl font-bold mb-3 text-center" style={{ color: colors.text }}>
             Booking Not Allowed
           </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 16, textAlign: 'center' }}>
+          <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
             {privilegeMessage || "You do not have permission to request a booking for this space."}
           </Text>
         </View>
@@ -232,65 +232,77 @@ export default function HallBooking() {
   }
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
       
-      <ScrollView style={{ flex: 1, position: 'relative' }} showsVerticalScrollIndicator={false}>
-          <View style={{ backgroundColor: colors.backgroundSecondary, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, zIndex: 10, height: 56 }}>
-            <TouchableOpacity 
-                onPress={() => back()}
-                style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12 }}>
-              <Ionicons name="arrow-back" size={15} color="white" />
-            </TouchableOpacity>
-          </View>
-        <View style={{ backgroundColor: colors.backgroundSecondary, borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -24, position: 'relative' }}>
+      <ScrollView className="flex-1 relative" showsVerticalScrollIndicator={false}>
+        <View
+          className="flex-row justify-between items-center px-6 z-10 h-14"
+          style={{ backgroundColor: colors.backgroundSecondary }}
+        >
+          <TouchableOpacity 
+              onPress={() => back()}
+              className="rounded-full p-3"
+              style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+          >
+            <Ionicons name="arrow-back" size={15} color="white" />
+          </TouchableOpacity>
+        </View>
 
-          <View style={{ padding: 24, paddingBottom: 16 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>{space.name}</Text>
+        <View
+          className="rounded-t-2xl -mt-6 relative"
+          style={{ backgroundColor: colors.backgroundSecondary }}
+        >
+          <View className="p-6 pb-4">
+            <View className="flex-row justify-between items-start mb-4">
+              <View className="flex-1">
+                <Text className="text-3xl font-bold mb-2" style={{ color: colors.text }}>{space.name}</Text>
               </View>
               
-              <View style={{ backgroundColor: colors.success + '20', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 8 }}>
-                <Text style={{ color: colors.success, fontWeight: '600' }}>Available</Text>
+              <View className="rounded-lg px-4 py-2" style={{ backgroundColor: colors.success + '20' }}>
+                <Text className="font-semibold" style={{ color: colors.success }}>Available</Text>
               </View>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginRight: 12 }}>
+
+            <View className="flex-row items-center mb-4">
+              <View className="flex-row items-center rounded-full px-3 py-1 mr-3" style={{ backgroundColor: '#FEF3C7' }}>
                 <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text style={{ color: '#92400E', fontWeight: '600', marginLeft: 4 }}>4.8</Text>
+                <Text className="font-semibold ml-1" style={{ color: '#92400E' }}>4.8</Text>
               </View>
               <Text style={{ color: colors.textSecondary }}>Based on 124 reviews</Text>
             </View>
-            <Calendar
-                style={{ borderRadius: 16, overflow: 'hidden' }}
-                theme={{
-                  backgroundColor: colors.card,
-                  calendarBackground: colors.card,
-                  textSectionTitleColor: colors.textSecondary,
-                  selectedDayBackgroundColor: colors.accent,
-                  selectedDayTextColor: '#ffffff',
-                  todayTextColor: colors.link,
-                  dayTextColor: colors.text,
-                  textDisabledColor: colors.textSecondary,
-                  monthTextColor: colors.text,
-                  textMonthFontWeight: 'bold',
-                  arrowColor: colors.accent,
-                }}
-                onDayPress={day => {
-                    markDate(day.dateString);
-                }}
-                onMonthChange={(month) => fetchBookingsForMonth(month.month-1, month.year)}
-                markingType={'period'}
-                markedDates={{ ...pastDisabledDates, ...markedDates, ...bookedDates }}
-                enableSwipeMonths={true}
-                displayLoadingIndicator={calendarLoading}
-                disableAllTouchEventsForDisabledDays={true}
-            />
+
+            <View className="rounded-lg overflow-hidden">
+              <Calendar
+                  theme={{
+                    backgroundColor: colors.card,
+                    calendarBackground: colors.card,
+                    textSectionTitleColor: colors.textSecondary,
+                    selectedDayBackgroundColor: colors.accent,
+                    selectedDayTextColor: '#ffffff',
+                    todayTextColor: colors.link,
+                    dayTextColor: colors.text,
+                    textDisabledColor: colors.textSecondary,
+                    monthTextColor: colors.text,
+                    textMonthFontWeight: 'bold',
+                    arrowColor: colors.accent,
+                  }}
+                  onDayPress={day => {
+                      markDate(day.dateString);
+                  }}
+                  onMonthChange={(month) => fetchBookingsForMonth(month.month-1, month.year)}
+                  markingType={'period'}
+                  markedDates={{ ...pastDisabledDates, ...markedDates, ...bookedDates }}
+                  enableSwipeMonths={true}
+                  displayLoadingIndicator={calendarLoading}
+                  disableAllTouchEventsForDisabledDays={true}
+              />
+            </View>
           </View>
         </View>
-        <View style={{ paddingHorizontal: 24 }}>
-          <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Reason</Text>
+
+        <View className="px-6">
+          <Text className="mb-1 font-semibold text-lg" style={{ color: colors.text }}>Reason</Text>
           <TextInput
             placeholder="Reason for booking"
             placeholderTextColor={colors.textSecondary}
@@ -298,20 +310,21 @@ export default function HallBooking() {
             onChangeText={setReason}
             multiline
             numberOfLines={50}
-            style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
+            className="p-4 rounded-xl border-2 h-40"
+            style={{ borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
             textAlignVertical='top'
           />
         </View>
       </ScrollView>
 
-      <View style={{ backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 24, paddingVertical: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View className="border-t p-4 px-6" style={{ backgroundColor: colors.card, borderTopColor: colors.border }}>
+        <View className="flex-row items-center justify-between">
           <View>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>₹{space.pph * Object.keys(markedDates).length}</Text>
+            <Text className="text-2xl font-bold" style={{ color: colors.text }}>₹{space.pph * Object.keys(markedDates).length}</Text>
             <Text style={{ color: colors.textSecondary }}>₹{space.pph} per day</Text>
           </View>
-          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} style={{ backgroundColor: colors.accent, borderRadius: 16, paddingHorizontal: 32, paddingVertical: 12 }}>
-            <Text style={{ color: 'white', fontWeight: '600', fontSize: 18 }}>Request Booking</Text>
+          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} className="rounded-lg px-8 py-3" style={{ backgroundColor: colors.accent }}>
+            <Text className="text-base font-semibold" style={{ color: 'white' }}>Request Booking</Text>
           </TouchableOpacity>
         </View>
       </View>

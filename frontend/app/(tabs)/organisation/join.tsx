@@ -1,6 +1,6 @@
-import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, Animated, Easing } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { createSpace } from '@/supabase/controllers/spaces.controller';
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
@@ -104,76 +104,59 @@ export default function JoinOrganisationScreen() {
 
  
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-      <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
-        <View style={{ padding: 24, backgroundColor: colors.accent, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
-          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Join Organisation</Text>
-          <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
-          <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
+      <ScrollView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
+        <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.accent }}>
+          <Text className="text-3xl font-bold mt-6" style={{ color: colors.text }}>Join Organisation</Text>
+          <Text className="mt-2 text-xl" style={{ color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+          <Image source={CSpace} className="absolute -right-2 bottom-0" />
         </View>
 
-        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
+        <View className="mb-6 p-6 space-y-6">
           
           <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Search</Text>
-            <View style={{ paddingHorizontal: 8, borderRadius: 12, borderWidth: 2, borderColor: colors.border, flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.card }}>
+            <Text className="mb-1 font-semibold text-xl" style={{ color: colors.text }}>Search</Text>
+            <View className="px-2 rounded-[12px] border-2 flex-row items-center gap-x-2" style={{ borderColor: colors.border, backgroundColor: colors.card }}>
               <Ionicons name="search" size={20} color={colors.textSecondary} style={{ paddingHorizontal: 8 }} />
               <TextInput
                 placeholder="Convention Center"
                 placeholderTextColor={colors.textSecondary}
                 value={name}
                 onChangeText={search}
-                style={{ padding: 16, borderRadius: 12, flex: 1, color: colors.text }}
+                className="p-4 rounded-[12px] flex-1"
+                style={{ color: colors.text }}
               />
             </View>
           </View>
         </View>
-        <View style={{ paddingHorizontal: 24 }}>
+
+        <View className="px-6">
           {organisations.map((org:any) => {
             const isMember = isAlreadyMember(org.id);
             const pendingRequest = hasPendingRequest(org.id);
             const requestStatus = getRequestStatus(org.id);
             
             return (
-              <View key={org.id} style={{ 
-                borderRadius: 16, 
-                marginBottom: 16, 
-                backgroundColor: colors.card, 
-                padding: 20, 
-                borderWidth: 1, 
-                borderColor: colors.border,
-                shadowColor: colors.shadow,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-                elevation: 4
-              }}>
+              <View key={org.id} className="rounded-[16px] mb-4 p-5 border shadow-sm elevation-4" style={{ backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.shadow }}>
                 <TouchableOpacity 
                   onPress={() => push(`/organisation/${org.id}` as any)}
-                  style={{ marginBottom: 16 }}
+                  className="mb-4"
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                  <View className="flex-row items-center gap-x-4">
                     {org.logo ? (
-                      <Image source={{ uri: org.logo }} style={{ width: 80, height: 80, borderRadius: 16, backgroundColor: colors.backgroundSecondary }} />
+                      <Image source={{ uri: org.logo }} className="w-20 h-20 rounded-[16px]" style={{ backgroundColor: colors.backgroundSecondary }} />
                     ) : (
-                      <View style={{ width: 80, height: 80, borderRadius: 16, backgroundColor: colors.backgroundSecondary, justifyContent: 'center', alignItems: 'center' }}>
+                      <View className="w-20 h-20 rounded-[16px] justify-center items-center" style={{ backgroundColor: colors.backgroundSecondary }}>
                         <Ionicons name="business" size={36} color={colors.textSecondary} />
                       </View>
                     )}
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 20, fontWeight: '700', color: colors.text, marginBottom: 4 }}>{org.name}</Text>
-                      <View style={{ 
-                        backgroundColor: colors.backgroundSecondary, 
-                        paddingHorizontal: 10, 
-                        paddingVertical: 4, 
-                        borderRadius: 12, 
-                        alignSelf: 'flex-start',
-                        marginBottom: 8
-                      }}>
-                        <Text style={{ color: colors.text, fontSize: 12, fontWeight: '600' }}>{org.type}</Text>
+                    <View className="flex-1">
+                      <Text className="text-xl font-extrabold mb-1" style={{ color: colors.text }}>{org.name}</Text>
+                      <View className="px-2 py-1 rounded-[12px] self-start mb-2" style={{ backgroundColor: colors.backgroundSecondary }}>
+                        <Text className="text-sm font-semibold" style={{ color: colors.text }}>{org.type}</Text>
                       </View>
-                      <Text style={{ color: colors.textSecondary, fontSize: 14, lineHeight: 20 }} numberOfLines={2}>
+                      <Text className="text-sm" style={{ color: colors.textSecondary, lineHeight: 20 }} numberOfLines={2}>
                         {org.description || 'No description available'}
                       </Text>
                     </View>
@@ -182,20 +165,11 @@ export default function JoinOrganisationScreen() {
                 </TouchableOpacity>
                 
                 {/* Action Buttons */}
-                <View style={{ flexDirection: 'row', gap: 12 }}>
+                <View className="flex-row gap-x-3">
                   <TouchableOpacity
                     onPress={() => push(`/organisation/${org.id}` as any)}
-                    style={{
-                      flex: 1,
-                      backgroundColor: colors.backgroundSecondary,
-                      paddingVertical: 12,
-                      paddingHorizontal: 16,
-                      borderRadius: 12,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8
-                    }}
+                    className="flex-1 py-3 px-4 rounded-[12px] flex-row items-center justify-center gap-x-2"
+                    style={{ backgroundColor: colors.backgroundSecondary }}
                   >
                     <Ionicons name="information-circle-outline" size={18} color={colors.text} />
                     <Text style={{ color: colors.text, fontWeight: '600' }}>View Details</Text>
@@ -204,23 +178,15 @@ export default function JoinOrganisationScreen() {
                   <TouchableOpacity 
                     onPress={() => handleJoinOrganisation(org.id, org.name)}
                     disabled={isMember || pendingRequest || requestStatus === 'rejected' || loading}
-                    style={{ 
-                      flex: 1,
+                    className={`flex-1 py-3 px-4 rounded-[12px] flex-row items-center justify-center gap-x-2 ${isMember ? 'border' : ''}`}
+                    style={{
                       backgroundColor: isMember 
                         ? colors.backgroundSecondary 
                         : pendingRequest 
                           ? '#FFA500' 
                           : requestStatus === 'rejected' 
                             ? '#FF6B6B' 
-                            : colors.accent, 
-                      paddingVertical: 12, 
-                      paddingHorizontal: 16, 
-                      borderRadius: 12, 
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      borderWidth: isMember ? 1 : 0,
+                            : colors.accent,
                       borderColor: colors.border,
                       opacity: loading ? 0.7 : 1
                     }}
@@ -263,15 +229,15 @@ export default function JoinOrganisationScreen() {
           })}
           
           {organisations.length === 0 && name.trim() !== '' && (
-            <View style={{ alignItems: 'center', marginTop: 32 }}>
-              <Text style={{ color: colors.textSecondary, fontSize: 16 }}>No organisations found</Text>
+            <View className="items-center mt-8">
+              <Text className="text-base" style={{ color: colors.textSecondary }}>No organisations found</Text>
             </View>
           )}
           
           {name.trim() === '' && (
-            <View style={{ alignItems: 'center', marginTop: 32 }}>
+            <View className="items-center mt-8">
               <Ionicons name="search" size={48} color={colors.textSecondary} />
-              <Text style={{ color: colors.textSecondary, fontSize: 16, marginTop: 8 }}>Search for organisations to join</Text>
+              <Text className="text-base mt-2" style={{ color: colors.textSecondary }}>Search for organisations to join</Text>
             </View>
           )}
         </View>

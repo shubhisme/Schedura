@@ -89,13 +89,9 @@ const PrivacySecurityScreen = () => {
     <TouchableOpacity
       onPress={onPress}
       disabled={hasToggle}
+      className="flex-row items-center p-4 rounded-xl mb-3"
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
         backgroundColor: colors.card,
-        borderRadius: 16,
-        marginBottom: 12,
         shadowColor: colors.shadow,
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
@@ -103,13 +99,14 @@ const PrivacySecurityScreen = () => {
         elevation: 2,
       }}
     >
-      <View style={{
-        padding: 12,
-        borderRadius: 12,
-        backgroundColor: isDestructive 
-          ? (isDark ? '#7f1d1d' : '#fef2f2')
-          : (isDark ? colors.backgroundTertiary : colors.backgroundSecondary)
-      }}>
+      <View
+        className="p-3 rounded-lg"
+        style={{
+          backgroundColor: isDestructive
+            ? (isDark ? '#7f1d1d' : '#fef2f2')
+            : (isDark ? colors.backgroundTertiary : colors.backgroundSecondary)
+        }}
+      >
         <Ionicons 
           name={icon} 
           size={22} 
@@ -117,16 +114,15 @@ const PrivacySecurityScreen = () => {
         />
       </View>
 
-      <View style={{ flex: 1, marginLeft: 16 }}>
-        <Text style={{
-          fontSize: 16,
-          fontWeight: '600',
-          color: isDestructive ? '#ef4444' : colors.text
-        }}>
+      <View className="flex-1 ml-4">
+        <Text
+          className="text-base font-semibold"
+          style={{ color: isDestructive ? '#ef4444' : colors.text }}
+        >
           {title}
         </Text>
         {subtitle && (
-          <Text style={{ color: colors.textSecondary, fontSize: 14, marginTop: 4 }}>
+          <Text className="text-sm mt-1" style={{ color: colors.textSecondary }}>
             {subtitle}
           </Text>
         )}
@@ -146,36 +142,27 @@ const PrivacySecurityScreen = () => {
   );
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       
       {/* Header */}
-      <View style={{ 
-        backgroundColor: colors.card, 
-        paddingHorizontal: 24, 
-        paddingVertical: 16, 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        borderBottomWidth: 1, 
-        borderBottomColor: colors.border 
-      }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginRight: 12 }}>
+      <View
+        className="flex-row items-center px-6 py-4 border-b"
+        style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}
+      >
+        <TouchableOpacity onPress={() => router.back()} className="p-2 mr-3">
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Privacy & Security</Text>
+        <Text className="text-xl font-bold" style={{ color: colors.text }}>Privacy & Security</Text>
       </View>
 
-      <ScrollView style={{ flex: 1, paddingHorizontal: 24, paddingVertical: 24 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-6 py-6" showsVerticalScrollIndicator={false}>
         {/* Security */}
-        <View style={{ marginBottom: 24 }}>
-          <Text style={{ 
-            color: colors.textSecondary, 
-            fontSize: 14, 
-            fontWeight: 'bold', 
-            marginBottom: 16, 
-            textTransform: 'uppercase', 
-            letterSpacing: 0.5 
-          }}>
+        <View className="mb-6">
+          <Text
+            className="text-sm font-bold mb-4 uppercase tracking-wide"
+            style={{ color: colors.textSecondary }}
+          >
             Security
           </Text>
           
@@ -225,15 +212,11 @@ const PrivacySecurityScreen = () => {
         </View>
 
         {/* Privacy */}
-        <View style={{ marginBottom: 24 }}>
-          <Text style={{ 
-            color: colors.textSecondary, 
-            fontSize: 14, 
-            fontWeight: 'bold', 
-            marginBottom: 16, 
-            textTransform: 'uppercase', 
-            letterSpacing: 0.5 
-          }}>
+        <View className="mb-6">
+          <Text
+            className="text-sm font-bold mb-4 uppercase tracking-wide"
+            style={{ color: colors.textSecondary }}
+          >
             Privacy
           </Text>
           
@@ -264,15 +247,11 @@ const PrivacySecurityScreen = () => {
         </View>
 
         {/* Data & Privacy */}
-        <View style={{ marginBottom: 24 }}>
-          <Text style={{ 
-            color: colors.textSecondary, 
-            fontSize: 14, 
-            fontWeight: 'bold', 
-            marginBottom: 16, 
-            textTransform: 'uppercase', 
-            letterSpacing: 0.5 
-          }}>
+        <View className="mb-6">
+          <Text
+            className="text-sm font-bold mb-4 uppercase tracking-wide"
+            style={{ color: colors.textSecondary }}
+          >
             Data & Privacy
           </Text>
           
@@ -292,7 +271,7 @@ const PrivacySecurityScreen = () => {
           />
         </View>
 
-        <View style={{ height: 32 }} />
+        <View className="h-8" />
       </ScrollView>
     </SafeBoundingView>
   );

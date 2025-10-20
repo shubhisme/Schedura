@@ -129,78 +129,60 @@ const Home = () => {
   
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.tertiary }}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.tertiary }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.primary} />
-      <View style={{ backgroundColor: colors.primary, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingTop: 48, paddingBottom: 24 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 8 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 30, fontWeight: 'bold', color: colors.accent }}>Explore</Text>
+      <View className="rounded-b-3xl pt-12 pb-6" style={{ backgroundColor: colors.primary }}>
+        <View className="flex-row items-center justify-between px-6 mb-2">
+          <View className="flex-1">
+            <Text className="text-3xl font-bold" style={{ color: colors.accent }}>Explore</Text>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <TouchableOpacity onPress={() => navigate('/(info)/successful' as any)} style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}>
+          <View className="flex-row items-center gap-x-3">
+            <TouchableOpacity onPress={() => navigate('/organisation/join' as any)} className="p-2 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)' }}>
               <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity 
               onPress={() => navigate('/(tabs)/spaces-map' as any)}
-              style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)', padding: 8, borderRadius: 20 }}
+              className="p-2 rounded-full"
+              style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)' }}
             >
               <Ionicons name="map-outline" size={24} color={colors.accent} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 24, paddingTop: 8 }}>
-          <View style={{ 
-            flex: 1, 
-            flexDirection: 'row', 
-            alignItems: 'center', 
-            backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', 
-            borderRadius: 16, 
-            paddingHorizontal: 16,
-            borderWidth: 1,
-            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)'
-          }}>
+        <View className="flex-row items-center gap-x-3 px-6 pt-2">
+          <View className="flex-1 flex-row items-center rounded-xl px-4 border" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)' }}>
             <Ionicons name="search" size={20} color={colors.textSecondary} />
             <TextInput
               placeholder="Search venues, locations..."
               placeholderTextColor={colors.textSecondary}
-              style={{ flex: 1, paddingVertical: 12, marginLeft: 12, fontSize: 16, color: colors.text }}
+              className="py-3 ml-3 text-base"
+              style={{ color: colors.text }}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={handleClearSearch} style={{ padding: 4 }}>
+              <TouchableOpacity onPress={handleClearSearch} className="p-1">
                 <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity style={{ 
-            backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', 
-            padding: 12, 
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)'
-          }}>
+          <TouchableOpacity className="p-3 rounded-xl border" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.8)', borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)' }}>
             <Ionicons name="options-outline" size={20} color={colors.accent} />
           </TouchableOpacity>
         </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ paddingHorizontal: 24, marginTop: 24 }}
-          contentContainerStyle={{ columnGap: 12 }}
+          className="px-6 mt-6"
+          contentContainerStyle={{ gap: 12 }}
         >
           {categories.map((category: Category, index: number) => (
             <TouchableOpacity
               key={category.id}
               onPress={() => setActiveCategory(index)}
+              className="flex-row items-center px-4 py-2 rounded-full"
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                borderRadius: 20,
                 backgroundColor: index === activeCategory ? colors.accent : (isDark ? 'rgba(255,255,255,0.15)' : '#FFFFFF')
               }}
             >
@@ -209,9 +191,7 @@ const Home = () => {
                 size={16}
                 color={index === activeCategory ? (isDark ? '#000' : '#fff') : colors.accent}
               />
-              <Text style={{
-                fontSize: 12,
-                fontWeight: '500',
+              <Text className="text-xs font-medium ml-2" style={{
                 color: index === activeCategory ? (isDark ? '#000' : '#fff') : colors.accent
               }}>
                 {category.name}
@@ -229,22 +209,24 @@ const Home = () => {
           tintColor={colors.text}
         />} 
         showsVerticalScrollIndicator={false} 
-        style={{ flex: 1, height: '100%', backgroundColor: colors.tertiary }}>
+        className="flex-1 h-full"
+        style={{ backgroundColor: colors.tertiary }}>
 
         {/* No Results Message */}
         {filteredSpaces.length === 0 && !loading && (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 80 }}>
+          <View className="flex-1 items-center justify-center px-6 py-20">
             <Ionicons name="search-outline" size={64} color={colors.textTertiary} />
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginTop: 16 }}>No spaces found</Text>
-            <Text style={{ color: colors.textSecondary, textAlign: 'center', marginTop: 8 }}>
+            <Text className="text-2xl font-bold mt-4" style={{ color: colors.text }}>No spaces found</Text>
+            <Text className="text-center mt-2" style={{ color: colors.textSecondary }}>
               {searchQuery ? `No results for "${searchQuery}"` : 'No spaces available in this category'}
             </Text>
             {searchQuery && (
               <TouchableOpacity 
                 onPress={handleClearSearch}
-                style={{ backgroundColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 20, marginTop: 24 }}
+                className="px-6 py-3 rounded-full mt-6"
+                style={{ backgroundColor: colors.accent }}
               >
-                <Text style={{ color: isDark ? '#000' : '#fff', fontWeight: '600' }}>Clear Search</Text>
+                <Text className="font-semibold" style={{ color: isDark ? '#000' : '#fff' }}>Clear Search</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -252,11 +234,11 @@ const Home = () => {
 
         {/* Featured Venues */}
         {filteredSpaces.length > 0 && (
-          <View style={{ marginTop: 32 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 16 }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Featured Venues</Text>
+          <View className="mt-8">
+            <View className="flex-row justify-between items-center px-6 mb-4">
+              <Text className="text-xl font-bold" style={{ color: colors.text }}>Featured Venues</Text>
               <TouchableOpacity>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>View All</Text>
+                <Text className="font-semibold" style={{ color: colors.text }}>View All</Text>
               </TouchableOpacity>
             </View>
 
@@ -293,11 +275,11 @@ const Home = () => {
 
         {/* Recommended */}
         {filteredSpaces.length > 0 && (
-        <View style={{ marginTop: 40 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 16 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Recommended for You</Text>
+        <View className="mt-10">
+          <View className="flex-row justify-between items-center px-6 mb-4">
+            <Text className="text-xl font-bold" style={{ color: colors.text }}>Recommended for You</Text>
             <TouchableOpacity>
-              <Text style={{ color: colors.link, fontWeight: '600' }}>View All</Text>
+              <Text className="font-semibold" style={{ color: colors.link }}>View All</Text>
             </TouchableOpacity>
           </View>
 
@@ -324,11 +306,11 @@ const Home = () => {
 
         {/* Special Promotions */}
         {filteredSpaces.length > 0 && (
-        <View style={{ marginTop: 40, marginBottom: 24 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 24, marginBottom: 16 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Special Promotions</Text>
+        <View className="mt-10 mb-6">
+          <View className="flex-row justify-between items-center px-6 mb-4">
+            <Text className="text-xl font-bold" style={{ color: colors.text }}>Special Promotions</Text>
             <TouchableOpacity>
-              <Text style={{ color: colors.link, fontWeight: '600' }}>View All</Text>
+              <Text className="font-semibold" style={{ color: colors.link }}>View All</Text>
             </TouchableOpacity>
           </View>
 

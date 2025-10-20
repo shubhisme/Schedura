@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator, Image, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 //@ts-ignore
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -140,11 +140,11 @@ export default function BookingDetailsScreen() {
 
   if (loading) {
     return (
-      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color={colors.accent} />
-          <Text style={{ color: colors.text, fontSize: 18, marginTop: 16 }}>Loading booking details...</Text>
+          <Text className="text-lg mt-4" style={{ color: colors.text }}>Loading booking details...</Text>
         </View>
       </SafeBoundingView>
     );
@@ -152,18 +152,18 @@ export default function BookingDetailsScreen() {
 
   if (!booking) {
     return (
-      <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
+        <View className="flex-1 justify-center items-center px-6">
           <Ionicons name="alert-circle-outline" size={64} color={colors.textSecondary} />
-          <Text style={{ color: colors.text, fontSize: 20, fontWeight: '600', marginTop: 16, textAlign: 'center' }}>
+          <Text className="text-xl font-semibold mt-4 text-center" style={{ color: colors.text }}>
             Booking Not Found
           </Text>
-          <Text style={{ color: colors.textSecondary, fontSize: 16, marginTop: 8, textAlign: 'center' }}>
+          <Text className="text-base mt-2 text-center" style={{ color: colors.textSecondary }}>
             The booking you're looking for doesn't exist or has been removed.
           </Text>
-          <TouchableOpacity onPress={back} style={{ marginTop: 24, backgroundColor: colors.accent, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}>
-            <Text style={{ color: isDark ? '#000' : '#fff', fontWeight: '600' }}>Go Back</Text>
+          <TouchableOpacity onPress={back} className="mt-6 px-6 py-3 rounded-xl" style={{ backgroundColor: colors.accent }}>
+            <Text className="font-semibold" style={{ color: isDark ? '#000' : '#fff' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeBoundingView>
@@ -173,23 +173,23 @@ export default function BookingDetailsScreen() {
   const days = calculateDays();
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeAreaView className="flex-1 h-full" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
      
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
       
 
-        <View style={{ paddingHorizontal: 24, paddingVertical: 24 }}>
+        <View className="px-6 py-6">
           {/* Space Name & Status */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold', marginBottom: 8 }}>
+          <View className="flex-row justify-between items-start mb-4">
+            <View className="flex-1">
+              <Text className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
                 {booking.spaces?.name || 'Unknown Space'}
               </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View className="flex-row items-center">
                 <Ionicons name="location" size={16} color={colors.textSecondary} />
-                <Text style={{ color: colors.textSecondary, marginLeft: 4 }}>
+                <Text className="ml-1" style={{ color: colors.textSecondary }}>
                   {booking.spaces?.location || 'Location not available'}
                 </Text>
               </View>
@@ -198,46 +198,46 @@ export default function BookingDetailsScreen() {
           </View>
 
           {/* Booking Info Card */}
-          <View style={{ backgroundColor: colors.card, borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>
-            <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Booking Information</Text>
+          <View className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Booking Information</Text>
             
-            <View style={{ gap: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View className="gap-3">
+              <View className="flex-row justify-between items-center py-2">
+                <View className="flex-row items-center">
                   <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
-                  <Text style={{ color: colors.textSecondary, marginLeft: 8 }}>Check-in</Text>
+                  <Text className="ml-2" style={{ color: colors.textSecondary }}>Check-in</Text>
                 </View>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>
+                <Text className="font-semibold" style={{ color: colors.text }}>
                   {dayjs(booking.start).format('MMM DD, YYYY')}
                 </Text>
               </View>
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View className="flex-row justify-between items-center py-2">
+                <View className="flex-row items-center">
                   <Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />
-                  <Text style={{ color: colors.textSecondary, marginLeft: 8 }}>Check-out</Text>
+                  <Text className="ml-2" style={{ color: colors.textSecondary }}>Check-out</Text>
                 </View>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>
+                <Text className="font-semibold" style={{ color: colors.text }}>
                   {dayjs(booking.end).format('MMM DD, YYYY')}
                 </Text>
               </View>
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View className="flex-row justify-between items-center py-2">
+                <View className="flex-row items-center">
                   <Ionicons name="time-outline" size={20} color={colors.textSecondary} />
-                  <Text style={{ color: colors.textSecondary, marginLeft: 8 }}>Duration</Text>
+                  <Text className="ml-2" style={{ color: colors.textSecondary }}>Duration</Text>
                 </View>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>
+                <Text className="font-semibold" style={{ color: colors.text }}>
                   {days} {days === 1 ? 'Day' : 'Days'}
                 </Text>
               </View>
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 8 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View className="flex-row justify-between items-center py-2">
+                <View className="flex-row items-center">
                   <Ionicons name="people-outline" size={20} color={colors.textSecondary} />
-                  <Text style={{ color: colors.textSecondary, marginLeft: 8 }}>Capacity</Text>
+                  <Text className="ml-2" style={{ color: colors.textSecondary }}>Capacity</Text>
                 </View>
-                <Text style={{ color: colors.text, fontWeight: '600' }}>
+                <Text className="font-semibold" style={{ color: colors.text }}>
                   Up to {booking.spaces?.capacity || 0} guests
                 </Text>
               </View>
@@ -246,27 +246,27 @@ export default function BookingDetailsScreen() {
 
           {/* Reason */}
           {booking.reason && (
-            <View style={{ backgroundColor: colors.card, borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>
-              <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Booking Reason</Text>
-              <Text style={{ color: colors.textSecondary, lineHeight: 24 }}>{booking.reason}</Text>
+            <View className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <Text className="text-lg font-semibold mb-2" style={{ color: colors.text }}>Booking Reason</Text>
+              <Text className="text-base leading-6" style={{ color: colors.textSecondary }}>{booking.reason}</Text>
             </View>
           )}
 
           {/* User Details */}
-          <View style={{ backgroundColor: colors.card, borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>
-            <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Contact Information</Text>
+          <View className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Contact Information</Text>
             
-            <View style={{ gap: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View className="gap-3">
+              <View className="flex-row items-center">
                 <Ionicons name="person-outline" size={20} color={colors.textSecondary} />
-                <Text style={{ color: colors.text, marginLeft: 12 }}>
+                <Text className="ml-3" style={{ color: colors.text }}>
                   {booking.users?.name}
                 </Text>
               </View>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View className="flex-row items-center">
                 <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
-                <Text style={{ color: colors.text, marginLeft: 12 }}>
+                <Text className="ml-3" style={{ color: colors.text }}>
                   {booking.users?.email || 'No email provided'}
                 </Text>
               </View>
@@ -274,19 +274,19 @@ export default function BookingDetailsScreen() {
           </View>
 
           {/* Price Breakdown */}
-          <View style={{ backgroundColor: colors.card, borderRadius: 16, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>
-            <Text style={{ color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 16 }}>Price Breakdown</Text>
+          <View className="rounded-xl p-5 mb-4 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <Text className="text-lg font-semibold mb-4" style={{ color: colors.text }}>Price Breakdown</Text>
             
-            <View style={{ gap: 12 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={{ color: colors.textSecondary }}>₹{booking.spaces?.pph || 0} × {days} days</Text>
-                <Text style={{ color: colors.text }}>₹{(booking.spaces?.pph || 0) * days}</Text>
+            <View className="gap-3">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-base" style={{ color: colors.textSecondary }}>₹{booking.spaces?.pph || 0} × {days} days</Text>
+                <Text className="text-base" style={{ color: colors.text }}>₹{(booking.spaces?.pph || 0) * days}</Text>
               </View>
 
-              <View style={{ borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12, marginTop: 8 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ color: colors.text, fontSize: 18, fontWeight: 'bold' }}>Total Amount</Text>
-                  <Text style={{ color: colors.text, fontSize: 24, fontWeight: 'bold' }}>
+              <View className="border-t pt-3 mt-2" style={{ borderTopColor: colors.border }}>
+                <View className="flex-row justify-between items-center">
+                  <Text className="text-lg font-bold" style={{ color: colors.text }}>Total Amount</Text>
+                  <Text className="text-2xl font-bold" style={{ color: colors.text }}>
                     ₹{booking.total_amount || (booking.spaces?.pph || 0) * days}
                   </Text>
                 </View>
@@ -295,9 +295,9 @@ export default function BookingDetailsScreen() {
           </View>
 
           {/* Booking Metadata */}
-          <View style={{ backgroundColor: colors.card, borderRadius: 16, padding: 20, marginBottom: 24, borderWidth: 1, borderColor: colors.border }}>
-            <Text style={{ color: colors.textSecondary, fontSize: 12, marginBottom: 4 }}>Booking ID: {booking.id}</Text>
-            <Text style={{ color: colors.textSecondary, fontSize: 12 }}>
+          <View className="rounded-xl p-5 mb-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <Text className="text-xs mb-1" style={{ color: colors.textSecondary }}>Booking ID: {booking.id}</Text>
+            <Text className="text-xs" style={{ color: colors.textSecondary }}>
               Created: {dayjs(booking.created_at).format('MMM DD, YYYY HH:mm')}
             </Text>
           </View>
@@ -306,19 +306,18 @@ export default function BookingDetailsScreen() {
 
       {/* Payment Button */}
       {booking.payment_status === 'pending' && (
-        <View style={{ backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 24, paddingVertical: 16 }}>
+        <View className="border-t px-6 py-4" style={{ backgroundColor: colors.card, borderTopColor: colors.border }}>
           <TouchableOpacity
             onPress={handleProceedToPayment}
-            className="bg-primary"
-            style={{  borderRadius: 16, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}
+            className="rounded-xl py-4 flex-row items-center justify-center bg-primary"
           >
             <Ionicons name="card-outline" size={24} color="#000" />
-            <Text className="text-black" style={{  fontSize: 18, fontWeight: '600', marginLeft: 8 }}>
+            <Text className="text-base font-semibold ml-2" style={{ color: '#000' }}>
               Proceed to Payment
             </Text>
           </TouchableOpacity>
         </View>
       )}
-    </SafeBoundingView>
+    </SafeAreaView>
   );
 }

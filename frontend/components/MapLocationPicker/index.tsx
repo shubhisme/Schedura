@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, Modal, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -137,22 +137,31 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
       animationType="slide"
       onRequestClose={onCancel}
     >
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View className="flex-1" style={{ backgroundColor: colors.background }}>
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-          <TouchableOpacity onPress={onCancel} style={styles.headerButton}>
+        <View
+          className="flex-row items-center justify-between px-4 pt-12 pb-3 border-b"
+          style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}
+        >
+          <TouchableOpacity onPress={onCancel} className="p-2 min-w-[60px]">
             <Ionicons name="close" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text }]}>Select Location</Text>
-          <TouchableOpacity onPress={handleConfirmLocation} style={styles.headerButton}>
-            <Text style={[styles.confirmText, { color: colors.accent }]}>Confirm</Text>
+
+          <Text className="text-lg font-semibold" style={{ color: colors.text }}>
+            Select Location
+          </Text>
+
+          <TouchableOpacity onPress={handleConfirmLocation} className="p-2 min-w-[60px] items-end">
+            <Text className="text-base font-semibold" style={{ color: colors.accent }}>
+              Confirm
+            </Text>
           </TouchableOpacity>
         </View>
 
         {/* Map */}
-        <View style={styles.mapContainer}>
+        <View className="flex-1">
           <WebView
-            style={styles.webview}
+            className="flex-1"
             originWhitelist={['*']}
             source={{ html: generateMapHTML() }}
             javaScriptEnabled={true}
@@ -163,17 +172,22 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
 
         {/* Location Info */}
         {selectedLocation && (
-          <View style={[styles.infoContainer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-            <View style={styles.infoHeader}>
+          <View
+            className="p-4 border-t"
+            style={{ backgroundColor: colors.card, borderTopColor: colors.border }}
+          >
+            <View className="flex-row items-center space-x-2">
               <Ionicons name="location" size={20} color={colors.accent} />
-              <Text style={[styles.infoTitle, { color: colors.text }]}>
+              <Text className="text-base font-semibold" style={{ color: colors.text }}>
                 Selected Location
               </Text>
             </View>
-            <Text style={[styles.coordinates, { color: colors.textSecondary }]}>
+
+            <Text className="text-sm font-mono" style={{ color: colors.textSecondary }}>
               {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
             </Text>
-            <Text style={[styles.hint, { color: colors.textSecondary }]}>
+
+            <Text className="text-xs mt-1" style={{ color: colors.textSecondary }}>
               💡 Tap anywhere on the map or drag the marker to change location
             </Text>
           </View>
@@ -182,60 +196,5 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingTop: 48,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-  },
-  headerButton: {
-    padding: 8,
-    minWidth: 60,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  confirmText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  mapContainer: {
-    flex: 1,
-  },
-  webview: {
-    flex: 1,
-  },
-  infoContainer: {
-    padding: 16,
-    borderTopWidth: 1,
-    gap: 8,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  coordinates: {
-    fontSize: 14,
-    fontFamily: Platform.select({ ios: 'Courier', android: 'monospace' }),
-  },
-  hint: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-});
 
 export default MapLocationPicker;

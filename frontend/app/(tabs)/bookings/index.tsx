@@ -65,13 +65,13 @@ function BookingCard({booking, userId, setActionLoader, actionLoader, getBooking
   const { navigate } = useRouter();
   let pendingTag = (
     <View className="px-3 py-1 rounded-full">
-      <Text style={{ color: isDark ? '#fde047' : '#92400e', fontWeight: '600', backgroundColor: undefined }}>{'Pending'}</Text>
+      <Text className="font-semibold" style={{ color: isDark ? '#fde047' : '#92400e' }}>{'Pending'}</Text>
     </View>
   )
 
   let acceptedTag = (
     <View className="px-3 py-1 rounded-full">
-      <Text style={{ color: isDark ? '#86efac' : '#065f46', fontWeight: '600', backgroundColor: undefined }}>{'Accepted'}</Text>
+      <Text className="font-semibold" style={{ color: isDark ? '#86efac' : '#065f46' }}>{'Accepted'}</Text>
     </View>
   )
   return (
@@ -87,15 +87,15 @@ function BookingCard({booking, userId, setActionLoader, actionLoader, getBooking
             {booking.space.name.slice(0,15)} {booking.space.name.length > 10 && "..."}
           </Text>
         </View>
-        <View style={{
-          backgroundColor: booking.payment_status === 'pending'
-            ? (isDark ? '#713f12' : '#fef3c7')
-            : (isDark ? '#14532d' : '#d1fae5'),
-          paddingHorizontal: 12,
-          paddingVertical: 4,
-          borderRadius: 20
-        }}>
-          <Text style={{ color: booking.payment_status === 'pending' ? (isDark ? '#fde047' : '#92400e') : (isDark ? '#86efac' : '#065f46'), fontWeight: '600' }}>
+        <View
+          className="px-3 py-1 rounded-full"
+          style={{
+            backgroundColor: booking.payment_status === 'pending'
+              ? (isDark ? '#713f12' : '#fef3c7')
+              : (isDark ? '#14532d' : '#d1fae5'),
+          }}
+        >
+          <Text className="font-semibold" style={{ color: booking.payment_status === 'pending' ? (isDark ? '#fde047' : '#92400e') : (isDark ? '#86efac' : '#065f46') }}>
             {booking.payment_status === 'pending' ? 'Pending' : 'Accepted'}
           </Text>
         </View>

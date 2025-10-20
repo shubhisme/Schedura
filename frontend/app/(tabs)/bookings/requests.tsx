@@ -62,9 +62,23 @@ export default function RequestsSpacesScreen() {
 }
 
 
-function BookingCard({booking, colors, isDark}: {booking: any, userId: string, setActionLoader: any, actionLoader: any, getBookings: any, colors: any, isDark: boolean}) {
-
-
+function BookingCard({
+  booking,
+  userId,
+  setActionLoader,
+  actionLoader,
+  getBookings,
+  colors,
+  isDark
+}: {
+  booking: any,
+  userId: string,
+  setActionLoader: any,
+  actionLoader: any,
+  getBookings: any,
+  colors: any,
+  isDark: boolean
+}) {
   let pendingTag = (
     <View className="px-3 py-1 rounded-full" style={{ backgroundColor: isDark ? '#713f12' : '#fef3c7' }}>
       <Text className="font-semibold" style={{ color: isDark ? '#fde047' : '#92400e' }}>Pending</Text>
@@ -80,12 +94,12 @@ function BookingCard({booking, colors, isDark}: {booking: any, userId: string, s
   return (
     <View className="p-6 border rounded-2xl mb-4" style={{ borderColor: colors.border, backgroundColor: colors.card }}>
       <View className="flex-row items-center justify-between mb-2">
-        <Text className="text-xl font-bold" style={{ color: colors.text }}>
+        <Text className="text-xl font-bold flex-row items-center" style={{ color: colors.text }}>
           <Feather name='home' size={18} color={colors.text}/>  {booking.space.name.slice(0,15)} {booking.space.name.length > 10 && "..."}
         </Text>
         {booking.approved ? acceptedTag : pendingTag}
       </View>
-      <Text className="text-lg" style={{ color: colors.textSecondary }}>
+      <Text className="text-lg flex-row items-center" style={{ color: colors.textSecondary }}>
         <Feather name='calendar' size={18} color={colors.textSecondary}/>  {new Date(booking.start).toLocaleDateString()} - {new Date(booking.end).toLocaleDateString()}
       </Text>
       

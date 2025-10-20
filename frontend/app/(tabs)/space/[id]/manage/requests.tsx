@@ -76,8 +76,8 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
 
   return (
     <View
-      className="p-6 rounded-2xl mb-4"
-      style={{ borderWidth: 1, borderColor: colors.border, backgroundColor: colors.card }}
+      className="p-6 rounded-2xl mb-4 border"
+      style={{ borderColor: colors.border, backgroundColor: colors.card }}
     >
       <Text className="text-2xl font-bold" style={{ color: colors.text }}>{request.space.name}</Text>
       <Text className="text-xl font-medium" style={{ color: colors.text }}>{request.users.name}</Text>
@@ -95,14 +95,14 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
       <View className="flex-row gap-x-4 mt-4">
         <TouchableOpacity
           onPress={handleAccept}
-          className="flex-1 px-4 py-2.5  rounded-xl"
-          style={{ backgroundColor: colors.accent, borderWidth: 1, borderColor: colors.border }}
+          className="flex-1 px-4 py-2.5 rounded-xl border"
+          style={{ backgroundColor: colors.accent, borderColor: colors.border }}
         >
           <Text className="text-center font-semibold" style={{ color: 'white' }}>Accept</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="flex-1 px-4 py-2.5  rounded-xl"
+          className="flex-1 px-4 py-2.5 rounded-xl"
           style={{ backgroundColor: colors.error }}
         >
           <Text className="text-center font-semibold" style={{ color: 'white' }}>Reject</Text>
