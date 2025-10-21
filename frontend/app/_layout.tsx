@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router';
 import { ToastProvider } from '@/components/Toast';
 
 
-//SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   return (

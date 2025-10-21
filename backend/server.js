@@ -4,27 +4,29 @@ import axios from "axios";
 import dotenv from "dotenv";
 import cors from "cors";
 import dayjs from "dayjs";
-import { createClient } from "@supabase/supabase-js";
-
+import { createClient } from '@supabase/supabase-js'
 dotenv.config();
+
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Supabase client
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-
-// Google OAuth credentials
+// Replace these with your environment variables
 const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = process.env.REDIRECT_URI; // e.g. https://api.example.com/integrations/google/callback
 
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+
 // Step 1 - Generate Google OAuth URL
 app.get("/integrations/google/connect", (req, res) => {
-  const { user_id } = req.query;
-  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
-
+  const { userid } = req.query;
+  if (!userid) return res.status(400).send("Please provide user id");
   const scopes = [
     "https://www.googleapis.com/auth/calendar.events",
     "https://www.googleapis.com/auth/calendar",
@@ -34,15 +36,16 @@ app.get("/integrations/google/connect", (req, res) => {
     REDIRECT_URI
   )}&response_type=code&scope=${encodeURIComponent(
     scopes
-  )}&access_type=offline&prompt=consent&state=${user_id}`;
+  )}&access_type=offline&prompt=consent&state=${userid}`;
 
   res.json({ url: authUrl });
 });
 
 // Step 2 - Handle Google redirect
 app.get("/integrations/google/callback", async (req, res) => {
-  const { code, state: user_id } = req.query;
-  if (!code || !user_id) return res.status(400).send("Missing authorization code or user_id.");
+  const { code, state } = req.query;
+  const userid = state; // state param is user id
+  if (!code || !userid) return res.status(400).send("Missing authorization code or user id.");
 
   try {
     const tokenRes = await axios.post("https://oauth2.googleapis.com/token", {
@@ -55,22 +58,20 @@ app.get("/integrations/google/callback", async (req, res) => {
 
     const { refresh_token } = tokenRes.data;
 
-    // Save to Supabase
-    const { error: upsertError } = await supabase
-      .from("user_integrations")
-      .upsert(
-        {
-          user_id,
-          provider: "google",
-          connected: true,
-          refresh_token,
-        },
-        { onConflict: "user_id,provider" }
-      );
+    // Save refresh_token securely (DB)
+    await supabase.from("user_integrations").upsert([
+      {
+        user_id: userid,
+        provider: "google",
+        connected: true,
+        refresh_token,
+      }
+    ], { onConflict: ['user_id', 'provider'] });
 
-    if (upsertError) throw upsertError;
-
-    res.send("<h2>✅ Google Calendar connected successfully! You can close this window now.</h2>");
+    // Redirect user to success page
+    return res.send(
+      "<h2>✅ Google Calendar connected successfully! You can close this window now.</h2>"
+    );
   } catch (err) {
     console.error(err.response?.data || err.message);
     res.status(500).send("Failed to exchange token.");
@@ -79,36 +80,31 @@ app.get("/integrations/google/callback", async (req, res) => {
 
 // Step 3 - Disconnect Google
 app.post("/integrations/google/disconnect", async (req, res) => {
-  const { user_id } = req.body;
-  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
-
-  const { error } = await supabase
-    .from("user_integrations")
-    .update({ connected: false, refresh_token: null })
-    .eq("user_id", user_id)
-    .eq("provider", "google");
-
-  if (error) return res.status(500).json({ error: error.message });
+  const { userid } = req.query;
+  if (!userid) return res.status(400).json({ error: "Missing user id" });
+  await supabase.from("user_integrations").update({
+    connected: false,
+    refresh_token: null
+  }).eq("user_id", userid).eq("provider", "google");
   res.json({ success: true });
 });
 
 // Step 4 - Check integration status
 app.get("/integrations/status", async (req, res) => {
-  const { user_id } = req.query;
-  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
-
+  const { userid } = req.query;
+  if (!userid) return res.status(400).json({ error: "Missing user id" });
   const { data, error } = await supabase
     .from("user_integrations")
     .select("connected")
-    .eq("user_id", user_id)
+    .eq("user_id", userid)
     .eq("provider", "google")
     .single();
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ google: data?.connected || false });
+  res.json({
+    google: !!data?.connected,
+  });
 });
 
-// Step 5 - Refresh access token
+// Step 5 - Refresh access token using stored refresh_token
 async function getAccessToken(refresh_token) {
   const tokenRes = await axios.post("https://oauth2.googleapis.com/token", {
     client_id: CLIENT_ID,
@@ -119,33 +115,42 @@ async function getAccessToken(refresh_token) {
   return tokenRes.data.access_token;
 }
 
-// Step 6 - Add calendar event
+// Step 6 - Create Google Calendar Event
 app.post("/calendar/add", async (req, res) => {
   try {
-    const { user_id, title, description, startTime, endTime } = req.body;
-    if (!user_id) return res.status(400).json({ error: "Missing user_id" });
+    const { userid, title, description, startTime, endTime } = req.body;
+    if (!userid) return res.status(400).json({ error: "Missing user id" });
 
-    // Fetch user's refresh token
-    const { data: integration, error } = await supabase
+    // Get user's integration info
+    const { data: integration } = await supabase
       .from("user_integrations")
-      .select("refresh_token, connected")
-      .eq("user_id", user_id)
+      .select("*")
+      .eq("user_id", userid)
       .eq("provider", "google")
       .single();
 
-    if (error || !integration?.connected || !integration?.refresh_token) {
+    if (!integration || !integration.connected || !integration.refresh_token) {
       return res.status(400).json({ error: "Google Calendar not connected" });
     }
 
+    // Refresh access token
     const accessToken = await getAccessToken(integration.refresh_token);
 
+    // Create event body
     const event = {
       summary: title,
       description,
-      start: { dateTime: dayjs(startTime).toISOString(), timeZone: "Asia/Kolkata" },
-      end: { dateTime: dayjs(endTime).toISOString(), timeZone: "Asia/Kolkata" },
+      start: {
+        dateTime: dayjs(startTime).toISOString(),
+        timeZone: "Asia/Kolkata",
+      },
+      end: {
+        dateTime: dayjs(endTime).toISOString(),
+        timeZone: "Asia/Kolkata",
+      },
     };
 
+    // Send to Google Calendar
     const googleRes = await axios.post(
       "https://www.googleapis.com/calendar/v3/calendars/primary/events",
       event,
@@ -164,4 +169,6 @@ app.post("/calendar/add", async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log("✅ Backend running on http://localhost:5000"));
+app.listen(5000, () =>
+  console.log("✅ Backend running on http://localhost:5000")
+);

@@ -11,6 +11,7 @@ import {
 import { useToast } from "@/components/Toast";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useUser } from "@clerk/clerk-expo";
 
 const BACKEND_URL = "https://schedura.onrender.com";
 
@@ -20,10 +21,12 @@ export default function IntegrationsPage() {
   const { showToast } = useToast();
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
   const { colors } = useTheme();
+  const { user } = useUser();
   const fetchStatus = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/integrations/status`);
+      const res = await fetch(`${BACKEND_URL}/integrations/status?user_id=${user?.id}`);
       const data = await res.json();
+      console.log(data)
       setGoogleEnabled(Boolean(data.google));
       setLastChecked(new Date());
     } catch (err) {
@@ -44,7 +47,7 @@ export default function IntegrationsPage() {
     setLoading(true);
     try {
       if (value) {
-        const res = await fetch(`${BACKEND_URL}/integrations/google/connect`);
+        const res = await fetch(`${BACKEND_URL}/integrations/google/connect?user_id=${user?.id}`);
         const data = await res.json();
 
         await Linking.openURL(data.url);
@@ -80,7 +83,7 @@ export default function IntegrationsPage() {
   };
 
   return (
-    <View className="flex-1 py-5 bg-tertiary">
+    <View className="flex-1 pb-5 bg-tertiary">
       {/* Header */}
       <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.primary }}>
         <Text className="text-4xl font-bold mt-6" style={{ color: colors.accent }}>Integrations</Text>
