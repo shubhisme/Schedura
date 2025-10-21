@@ -78,7 +78,7 @@ const CustomTabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigat
             }
           };
           
-          const isHidden = ['add-space', 'manage-space','edit-space', 'create-org', 'join-org', 'space/create', 'space/[id]/edit', 'space/[id]/manage', 'space/[id]/index', 'space/[id]/bookings', 'space/[id]/requests', 'space/[id]/book/index', 'organisation/create', 'organisation/join','organisation/[id]', 'profile/edit', 'profile/privacy','spaces-map', 'profile/billing'].includes(route.name);
+          const isHidden = ['add-space', 'manage-space','edit-space', 'create-org', 'join-org', 'space/create', 'space/[id]/edit', 'space/[id]/manage', 'space/[id]/index', 'space/[id]/bookings', 'space/[id]/requests', 'space/[id]/book/index', 'organisation/create', 'organisation/join','organisation/[id]', 'profile/edit', 'profile/privacy','spaces-map', 'profile/billing', 'profile/integrations'].includes(route.name);
           
           return (
             <TouchableOpacity

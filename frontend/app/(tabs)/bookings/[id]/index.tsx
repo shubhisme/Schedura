@@ -26,6 +26,7 @@ interface Booking {
     location: string;
     pph: number;
     capacity: number;
+    ownerid: string;
     'spaces-images'?: Array<{ link: string }>;
   };
   users?: {
@@ -114,7 +115,7 @@ export default function BookingDetailsScreen() {
       if(!booking) return;
       await acceptBooking(booking.id);
       // check if connected to google calendar and add event
-      const res = await fetch(`https://schedura.onrender.com/integrations/status`);
+      const res = await fetch(`https://schedura.onrender.com/integrations/status?user_id=${booking.spaces?.ownerid}`);
       const connected = await res.json();
       if(connected){
         try {
@@ -122,10 +123,11 @@ export default function BookingDetailsScreen() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              title: "Client Meeting",
-              description: "Discuss project milestones",
-              startTime: "2025-10-22T10:00:00+05:30",
-              endTime: "2025-10-22T11:00:00+05:30",
+              title: "Hall Booking: " + booking.spaces?.name,
+              description: "Customer: " + booking.users?.name + ", Email: " + booking.users?.email,
+              startTime: booking.start,
+              endTime: booking.end,
+              user_id: booking.spaces?.ownerid,
             }),
           });
         } catch (error) {
