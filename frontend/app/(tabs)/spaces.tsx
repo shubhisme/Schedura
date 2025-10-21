@@ -28,7 +28,7 @@ export default function SpacesScreen() {
 
   const fetchOrganization = async () => {
       const orgData = await getOrganisationByUserId(user?.id!);
-      setOrganization(orgData.data[0]);
+      setOrganization(orgData.data);
   };
   useEffect(() => {
     fetchOrganization();
@@ -107,7 +107,7 @@ export default function SpacesScreen() {
                     </View>
                     <View className="p-5">
                       <Text className="text-xl font-bold mb-2" style={{ color: colors.text }}>{space.name}</Text>
-                      <View className="space-y-2">
+                      <View className="gap-y-2">
                         <View className="flex-row items-center">
                           <View className="rounded-full p-1 mr-3" style={{ backgroundColor: colors.backgroundSecondary }}>
                             <Ionicons name="location" size={14} color={colors.textSecondary} />
@@ -169,7 +169,7 @@ export default function SpacesScreen() {
           </View>
           {organization ? (
             <View className="rounded-2xl p-6 border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
-              <View className="flex-row items-center mb-6">
+              <View className="flex-row items-center">
                 {(() => {
                   const orgImage =
                   organization?.logo ||
@@ -179,7 +179,7 @@ export default function SpacesScreen() {
                   organization?.images?.[0]?.link;
 
                   return (
-                  <View className="w-16 h-16 rounded-lg overflow-hidden mr-4 items-center justify-center" style={{ backgroundColor: colors.primary }}>
+                  <View className="w-16 h-16 rounded-lg overflow-hidden mr-4 items-center justify-center" style={{ backgroundColor: colors.tertiary }}>
                     {orgImage ? (
                     <Image
                       source={{ uri: orgImage }}
@@ -187,26 +187,31 @@ export default function SpacesScreen() {
                       resizeMode="cover"
                     />
                     ) : (
-                    <MaterialCommunityIcons name="office-building" size={32} color={colors.accent} />
+                    <MaterialCommunityIcons name="office-building" size={32} color={colors.accent}  />
                     )}
                   </View>
                   );
                 })()}
                 <View className="flex-1">
                   <Text className="text-lg font-semibold mb-1" style={{ color: colors.text }}>{organization.name}</Text>
-                  <Text style={{ color: colors.textSecondary }}>Details about the organization</Text>
+                  <View className='flex-row items-center'>
+                    <Text style={{backgroundColor:colors.tertiary, color:colors.text}} className='p-0.5 mt-0.5 px-2 text-center rounded-md text-xs'>{organization.roles[0].name}</Text>
+                  </View>
                 </View>
               </View>
-              <View className="flex-row items-center gap-x-2">
-                <TouchableOpacity
-                  onPress={() => navigate(`/organisation/${organization.id}`)}
-                  className="py-2 px-4 rounded-xl flex-1"
-                  style={{ backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.accent }}
-                >
-                  <Text className="text-base font-semibold text-center" style={{ color: isDark ? '#000' : '#ffffff' }}>Manage</Text>
-                </TouchableOpacity>
-                
-              </View>
+              {
+                organization.roles[0].priviledges >= 2 &&
+                <View className="flex-row items-center gap-x-2 mt-6">
+                  <TouchableOpacity
+                    onPress={() => navigate(`/organisation/${organization.id}`)}
+                    className="py-2 px-4 rounded-xl flex-1"
+                    style={{ backgroundColor: colors.accent, borderWidth: 2, borderColor: colors.accent }}
+                  >
+                    <Text className="text-base font-semibold text-center" style={{ color: isDark ? '#000' : '#ffffff' }}>Manage</Text>
+                  </TouchableOpacity>
+                  
+                </View>
+              }
             </View>
           ) : (
             <View className="rounded-2xl border-2 border-dashed p-8 items-center justify-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>

@@ -216,7 +216,7 @@ export default function MangeSpaceScreen() {
                   <Text className='text-gray-600 text-sm'>bookings</Text>
                 </View>
 
-                <View className='border-t border-gray-200 pt-4 space-y-3'>
+                <View className='border-t border-gray-200 pt-4 gap-y-3'>
                   {/* Growth Rate */}
                   {selectedPoint.index > 0 && (
                     <View className='flex-row justify-between items-center'>

@@ -222,7 +222,7 @@ const EditProfileScreen = () => {
             {saving ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text className="text-base font-semibold" style={{ color: 'white' }}>Save Changes</Text>
+              <Text className="text-base font-semibold" style={{ color: colors.primary }}>Save Changes</Text>
             )}
           </TouchableOpacity>
         </View>

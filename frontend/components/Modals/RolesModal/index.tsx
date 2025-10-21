@@ -1,3 +1,4 @@
+import { useTheme } from '@/contexts/ThemeContext';
 import React, { useState } from 'react';
 import { Modal, Text, View, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,7 +21,7 @@ const RolesModal = ({
 }) => {
   const [roleName, setRoleName] = useState('');
   const [selectedPriviledges, setSelectedPriviledges] = useState<number[]>([]);
-
+  const { colors } = useTheme();
   const togglePrivilege = (value: number) => {
     setSelectedPriviledges((prev) =>
       prev.includes(value) ? prev.filter((p) => p !== value) : [...prev, value]
@@ -62,15 +63,15 @@ const RolesModal = ({
       <SafeAreaView className="flex-1 justify-center items-center">
         <Modal animationType="fade" transparent={true} visible={visible}>
           <View className="flex-1 justify-center items-center bg-black/40">
-            <View className="rounded-2xl bg-white w-3/4 overflow-hidden max-h-[80%]">
+            <View style={{backgroundColor: colors.background}} className="rounded-2xl  w-3/4 overflow-hidden max-h-[80%]">
               <View className="pt-5 px-5">
-                <Text className="text-xl text-center font-semibold mb-4">Add Role</Text>
+                <Text style={{color: colors.accent}} className="text-xl text-center font-semibold mb-4">Add Role</Text>
               </View>
 
               <ScrollView className="px-5">
                 {/* Role Name Input */}
                 <View className="mb-4">
-                  <Text className="text-sm font-medium mb-2">Role Name</Text>
+                  <Text style={{color: colors.accent}} className="text-sm font-medium mb-2">Role Name</Text>
                   <TextInput
                     className="border border-gray-300 rounded-lg px-3 py-2"
                     placeholder="Enter role name"
@@ -81,7 +82,7 @@ const RolesModal = ({
 
                 {/* Priviledges Checkboxes */}
                 <View className="mb-4">
-                  <Text className="text-sm font-medium mb-2">Priviledges</Text>
+                  <Text style={{color: colors.accent}} className="text-sm font-medium mb-2">Priviledges</Text>
                   {priviledges.map((privilege) => (
                     <TouchableOpacity
                       key={privilege.id}
@@ -96,10 +97,10 @@ const RolesModal = ({
                         }`}
                       >
                         {selectedPriviledges.includes(privilege.value) && (
-                          <Text className="text-white text-xs">✓</Text>
+                          <Text style={{color: colors.textTertiary}} className="text-xs">✓</Text>
                         )}
                       </View>
-                      <Text className="text-sm">{privilege.name}</Text>
+                      <Text style={{color: colors.text}} className="text-sm">{privilege.name}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -111,7 +112,7 @@ const RolesModal = ({
                   className="flex-1 py-4 items-center border-r border-gray-200"
                   onPress={handleCancel}
                 >
-                  <Text className="text-gray-600 font-medium">Cancel</Text>
+                  <Text style={{color: colors.textTertiary}} className="font-medium">Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   className="flex-1 py-4 items-center"
@@ -119,9 +120,8 @@ const RolesModal = ({
                   disabled={!roleName.trim()}
                 >
                   <Text
-                    className={`font-medium ${
-                      roleName.trim() ? 'text-blue-500' : 'text-gray-300'
-                    }`}
+                    style={{color: roleName.trim() ? colors.primary : colors.textTertiary}}
+                    className={`font-medium`}
                   >
                     Submit
                   </Text>

@@ -1,92 +1,89 @@
 // backend/server.js
-const express = require('express');
-const crypto = require('crypto');
-const app = express();
+import express from "express";
+import axios from "axios";
+import dotenv from "dotenv";
+import cors from "cors";
 
+dotenv.config();
+
+const app = express();
+app.use(cors());
 app.use(express.json());
 
-// In-memory storage (use database in production)
-const payments = new Map();
+// Replace these with your environment variables
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI; // e.g. https://api.example.com/integrations/google/callback
 
-// Create payment intent
-app.post('/api/create-payment', async (req, res) => {
-  const { amount, userId, description } = req.body;
-  
-  const transactionId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`;
-  
-  // Store payment intent
-  payments.set(transactionId, {
-    transactionId,
-    amount,
-    userId,
-    description,
-    status: 'pending',
-    createdAt: new Date(),
-    upiId: 'yourmerchant@upi' // Your UPI ID
-  });
-  
-  res.json({
-    success: true,
-    transactionId,
-    upiId: 'yourmerchant@upi',
-    amount,
-    description
-  });
+// Mock DB
+let userIntegration = {
+  google: {
+    connected: false,
+    refresh_token: null,
+  },
+};
+
+// Step 1 - Generate Google OAuth URL
+app.get("/integrations/google/connect", (req, res) => {
+  const scopes = [
+    "https://www.googleapis.com/auth/calendar.events",
+    "https://www.googleapis.com/auth/calendar",
+  ].join(" ");
+
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(
+    REDIRECT_URI
+  )}&response_type=code&scope=${encodeURIComponent(
+    scopes
+  )}&access_type=offline&prompt=consent`;
+
+  res.json({ url: authUrl });
 });
 
-// Webhook endpoint (called by payment gateway)
-app.post('/api/webhook/payment', (req, res) => {
-  // Verify webhook signature (important for security)
-  const signature = req.headers['x-webhook-signature'];
-  const payload = JSON.stringify(req.body);
-  
-  // Verify signature (example with Razorpay)
-  const expectedSignature = crypto
-    .createHmac('sha256', process.env.WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
-  
-  if (signature !== expectedSignature) {
-    return res.status(400).json({ error: 'Invalid signature' });
+// Step 2 - Handle Google redirect
+app.get("/integrations/google/callback", async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).send("Missing authorization code.");
+
+  try {
+    const tokenRes = await axios.post("https://oauth2.googleapis.com/token", {
+      code,
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      redirect_uri: REDIRECT_URI,
+      grant_type: "authorization_code",
+    });
+
+    const { refresh_token, access_token } = tokenRes.data;
+
+    // Save refresh_token securely (DB)
+    userIntegration.google = {
+      connected: true,
+      refresh_token,
+    };
+
+    // Redirect user to success page
+    return res.send(
+      "<h2>✅ Google Calendar connected successfully! You can close this window now.</h2>"
+    );
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).send("Failed to exchange token.");
   }
-  
-  const { transactionId, status, utr, amount } = req.body;
-  
-  // Update payment status
-  const payment = payments.get(transactionId);
-  if (payment) {
-    payment.status = status; // 'success', 'failed', 'pending'
-    payment.utr = utr; // Bank reference number
-    payment.updatedAt = new Date();
-    payments.set(transactionId, payment);
-    
-    console.log(`Payment ${transactionId} updated to ${status}`);
-    
-    // Send notification to user (FCM, email, etc.)
-    // notifyUser(payment.userId, payment);
-  }
-  
+});
+
+// Step 3 - Disconnect Google
+app.post("/integrations/google/disconnect", (req, res) => {
+  userIntegration.google = { connected: false, refresh_token: null };
   res.json({ success: true });
 });
 
-// Check payment status (polled by app)
-app.get('/api/payment-status/:transactionId', (req, res) => {
-  const { transactionId } = req.params;
-  const payment = payments.get(transactionId);
-  
-  if (!payment) {
-    return res.status(404).json({ error: 'Transaction not found' });
-  }
-  
+// Step 4 - Check integration status
+app.get("/integrations/status", (req, res) => {
   res.json({
-    success: true,
-    status: payment.status,
-    amount: payment.amount,
-    utr: payment.utr,
-    transactionId: payment.transactionId
+    google: userIntegration.google.connected,
   });
 });
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
+app.listen(5000, () =>
+  console.log("✅ Backend running on http://localhost:5000")
+);

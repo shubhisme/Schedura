@@ -199,8 +199,8 @@ export default function AddSpacesScreen() {
     <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
-        <View className="p-6 pb-12 rounded-b-2xl" style={{ backgroundColor: colors.accent }}>
-          <Text className="text-4xl font-bold mt-6" style={{ color: colors.text }}>Create new Space</Text>
+        <View className="p-6 pb-12 rounded-b-2xl" style={{ backgroundColor: colors.primary }}>
+          <Text className="text-4xl font-bold mt-6" style={{ color: colors.accent }}>Create new Space</Text>
           <Text className="mt-2 text-lg" style={{ color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
           <Image source={CSpace} className="absolute right-2 bottom-0" />
         </View>
@@ -298,7 +298,7 @@ export default function AddSpacesScreen() {
                     className="px-4 py-2 rounded-full"
                     style={{ backgroundColor: category === cat ? colors.accent : colors.backgroundSecondary }}
                   >
-                    <Text className="font-medium" style={{ color: category === cat ? 'white' : colors.textSecondary }}>{cat}</Text>
+                    <Text className="font-medium" style={{ color: category === cat ? colors.backgroundTertiary : colors.textSecondary }}>{cat}</Text>
                   </TouchableOpacity>
                 ))
               }
@@ -348,10 +348,10 @@ export default function AddSpacesScreen() {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className="px-4 py-4 rounded-lg mt-4 flex-row items-center justify-center gap-x-5"
+            className="px-4 py-4 rounded-2xl mt-4 flex-row items-center justify-center gap-x-5"
             style={{ backgroundColor: colors.accent }}
           >
-            <Text className="text-lg font-semibold" style={{ color: 'white' }}>
+            <Text className="text-lg font-semibold" style={{ color: colors.primary }}>
               Add Space
             </Text>
             {

@@ -90,6 +90,7 @@ export const ProfileHeader: FC<{
             gap: 24, 
             marginTop: 8 
           }}>
+            {/*
             <View style={{ alignItems: 'center' }}>
               <Text style={{ 
                 color: colors.accent, 
@@ -122,7 +123,7 @@ export const ProfileHeader: FC<{
                 color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)', 
                 fontSize: 12 
               }}>Completed</Text>
-            </View>
+            </View>*/}
           </View>
         </View>
       </View>

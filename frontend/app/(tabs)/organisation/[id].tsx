@@ -131,8 +131,8 @@ export default function OrganisationDetailsScreen() {
         await createJoinRequest(user.id, organisation.id, `I would like to join ${organisation.name}`);
         showToast({
           type: 'success',
-          title: 'Success',
-          description: `Join request sent to ${organisation.name}! You'll be notified when it's approved.`,
+          title: 'Join request sent!',
+          description: `You'll be notified when it's approved.`,
         });
         await checkUserJoinRequest(); // Refresh request status
       }
@@ -308,7 +308,7 @@ export default function OrganisationDetailsScreen() {
         </View>
 
         {/* Organisation Details */}
-        <View className="px-6 space-y-6">
+        <View className="px-6 gap-y-6">
           
           {/* Join Requests Section - Only for Owners */}
           {isOwner && (
@@ -338,7 +338,7 @@ export default function OrganisationDetailsScreen() {
                   No pending join requests
                 </Text>
               ) : (
-                <View className="space-y-3">
+                <View className="gap-y-3">
                   {joinRequests.map((request: any) => (
                     <View key={request.id} className="p-4 rounded-lg border" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
                       <View className="flex-row items-center mb-3">
@@ -467,7 +467,7 @@ export default function OrganisationDetailsScreen() {
               </Text>
             </View>
             
-            <View className="space-y-3">
+            <View className="gap-y-3">
               <View className="flex-row justify-between">
                 <Text className="text-base" style={{ color: colors.textSecondary }}>Type:</Text>
                 <Text className="text-base font-medium" style={{ color: colors.text }}>

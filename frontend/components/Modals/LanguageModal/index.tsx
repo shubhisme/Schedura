@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface Language {
   code: string;
@@ -37,6 +38,7 @@ const LanguageModal: FC<LanguageModalProps> = ({
   selectedLanguage = 'en',
   onSelectLanguage 
 }) => {
+  const { colors } = useTheme();
   const handleSelectLanguage = (code: string) => {
     onSelectLanguage(code);
     setVisible(false);
@@ -50,12 +52,12 @@ const LanguageModal: FC<LanguageModalProps> = ({
       onRequestClose={() => setVisible(false)}
     >
       <View className="flex-1 justify-end bg-black/50">
-        <View className="bg-white rounded-t-3xl" style={{ maxHeight: '80%' }}>
+        <View className=" rounded-t-3xl" style={{ maxHeight: '80%', backgroundColor: colors.background }}>
           {/* Header */}
-          <View className="flex-row items-center justify-between px-6 py-4 border-b border-gray-200">
-            <Text className="text-xl font-bold text-gray-900">Select Language</Text>
+          <View className="flex-row items-center justify-between px-6 py-4 border-b " style={{ borderColor: colors.border }}>
+            <Text style={{color: colors.text}} className="text-xl font-bold">Select Language</Text>
             <TouchableOpacity onPress={() => setVisible(false)} className="p-2">
-              <Ionicons name="close" size={24} color="#6b7280" />
+              <Ionicons name="close" size={24} color={colors.textTertiary} />
             </TouchableOpacity>
           </View>
 
@@ -65,14 +67,15 @@ const LanguageModal: FC<LanguageModalProps> = ({
               <TouchableOpacity
                 key={language.code}
                 onPress={() => handleSelectLanguage(language.code)}
-                className="flex-row items-center py-4 border-b border-gray-100"
+                className="flex-row items-center py-4 border-b "
+                style={{ borderColor: colors.border }}
               >
                 <Text className="text-3xl mr-4">{language.flag}</Text>
                 <View className="flex-1">
-                  <Text className="text-base font-semibold text-gray-900">
+                  <Text style={{color: colors.text}} className="text-base font-semibold">
                     {language.name}
                   </Text>
-                  <Text className="text-sm text-gray-500 mt-1">
+                  <Text style={{color: colors.textTertiary}} className="text-sm mt-1">
                     {language.nativeName}
                   </Text>
                 </View>

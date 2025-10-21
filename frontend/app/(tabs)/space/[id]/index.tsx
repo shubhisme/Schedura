@@ -275,7 +275,7 @@ export default function HallDetails() {
           <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <TouchableOpacity onPress={()=>push(`/space/${id}/book` as any)} style={{ backgroundColor: colors.accent, borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, flex: 1 }}>
-                <Text style={{ color: 'white', textAlign: 'center', fontWeight: '600', fontSize: 18, marginVertical: 'auto' }}>Book Now</Text>
+                <Text style={{ color: colors.primary, textAlign: 'center', fontWeight: '600', fontSize: 18, marginVertical: 'auto' }}>Book Now</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{ borderWidth: 2, borderColor: colors.border, borderRadius: 16, paddingHorizontal: 24, paddingVertical: 12, flex: 1, backgroundColor: colors.card }}>
                 <Text style={{ color: colors.text, textAlign: 'center', fontWeight: '600', fontSize: 18 }}>Check Avail</Text>
@@ -287,7 +287,7 @@ export default function HallDetails() {
           <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>About This Venue</Text>
             <Text style={{ color: colors.textSecondary, lineHeight: 24, fontSize: 16 }}>
-              Experience luxury and elegance at {space.name}. Our premium venue offers the perfect setting for your special events, from intimate gatherings to grand celebrations. With state-of-the-art facilities and exceptional service, we ensure your event will be unforgettable.
+              {space.description}
             </Text>
           </View>
 
@@ -333,14 +333,14 @@ export default function HallDetails() {
           </View>
 
 
-          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+          <View className="px-6 py-6" style={{ borderTopWidth: 1, borderTopColor: colors.border }}>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Pricing</Text>
-            <View style={{ backgroundColor: colors.accent + '10', borderRadius: 16, padding: 24 }}>
+            <View className="py-6" style={{ backgroundColor: colors.accent + '10', borderRadius: 16 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>₹{space.pph}</Text>
                 <Text style={{ color: colors.textSecondary }}>per day</Text>
               </View>
-              <Text style={{ color: colors.textSecondary, marginBottom: 16 }}>Base price includes venue rental for 8 hours</Text>
+              {/*<Text style={{ color: colors.textSecondary, marginBottom: 16 }}>Base price includes venue rental for 8 hours</Text>
               <View style={{ gap: 8 }}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={{ color: colors.textSecondary }}>Security deposit</Text>
@@ -350,7 +350,7 @@ export default function HallDetails() {
                   <Text style={{ color: colors.textSecondary }}>Cleaning fee</Text>
                   <Text style={{ color: colors.text, fontWeight: '600' }}>₹{space.pph}</Text>
                 </View>
-              </View>
+              </View>*/}
             </View>
           </View>
 
@@ -436,7 +436,7 @@ export default function HallDetails() {
                   }}
                 >
                   {submittingReview && <ActivityIndicator size="small" color="#fff" />}
-                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>
+                  <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 16 }}>
                     {submittingReview ? 'Submitting...' : 'Submit Review'}
                   </Text>
                 </TouchableOpacity>
@@ -511,7 +511,7 @@ export default function HallDetails() {
             <Text style={{ color: colors.textSecondary }}>per day</Text>
           </View>
           <TouchableOpacity onPress={()=>push(`/space/${id}/book` as any)} style={{ backgroundColor: colors.accent, borderRadius: 16, paddingHorizontal: 32, paddingVertical: 12 }}>
-            <Text style={{ color: 'white', fontWeight: '600', fontSize: 18 }}>Book Now</Text>
+            <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 18 }}>Book Now</Text>
           </TouchableOpacity>
         </View>
       </View>

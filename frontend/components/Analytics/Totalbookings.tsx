@@ -38,7 +38,7 @@ function Totalbookings() {
     }
 
   return (
-    <View className='flex flex-col justify-center space-y-3 w-[100%] p-4'>
+    <View className='flex flex-col justify-center gap-y-3 w-[100%] p-4'>
         <View className='border rounded-xl w-[100%] px-3 py-2 mb-2'>
             <Text className='text-2xl text-center font-semibold'>Total Bookings</Text>
 

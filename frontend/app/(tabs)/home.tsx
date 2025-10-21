@@ -281,7 +281,7 @@ const Home = () => {
           <View className="flex-row justify-between items-center px-6 mb-4">
             <Text className="text-xl font-bold" style={{ color: colors.text }}>Recommended for You</Text>
             <TouchableOpacity>
-              <Text className="font-semibold" style={{ color: colors.link }}>View All</Text>
+              <Text className="font-semibold" style={{ color: colors.text }}>View All</Text>
             </TouchableOpacity>
           </View>
 
@@ -312,7 +312,7 @@ const Home = () => {
           <View className="flex-row justify-between items-center px-6 mb-4">
             <Text className="text-xl font-bold" style={{ color: colors.text }}>Special Promotions</Text>
             <TouchableOpacity>
-              <Text className="font-semibold" style={{ color: colors.link }}>View All</Text>
+              <Text className="font-semibold" style={{ color: colors.text }}>View All</Text>
             </TouchableOpacity>
           </View>
 

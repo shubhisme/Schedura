@@ -130,7 +130,7 @@ export default function JoinOrganisationScreen() {
           <Image source={CSpace} className="absolute -right-2 bottom-0" />
         </View>
 
-        <View className="mb-6 p-6 space-y-6">
+        <View className="mb-6 p-6 gap-y-6">
           
           <View>
             <Text className="mb-1 font-semibold text-xl" style={{ color: colors.text }}>Search</Text>

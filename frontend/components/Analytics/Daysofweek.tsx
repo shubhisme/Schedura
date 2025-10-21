@@ -3,6 +3,8 @@ import { useLocalSearchParams } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { Text, View, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
+import { useToast } from '@/components/Toast';
+
 
 interface DayStats {
   day: string;
@@ -17,6 +19,9 @@ function Daysofweek() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [totalBookings, setTotalBookings] = useState(0);
+  const { showToast } = useToast();
+  const [geminiInsight, setGeminiInsight] = useState<string | null>(null);
+  const [geminiLoading, setGeminiLoading] = useState(false);
   
   const Xdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const fullDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -113,6 +118,45 @@ function Daysofweek() {
     }
   };
   
+  // Call Gemini API for insight generation
+  const fetchGeminiInsight = async (split: any, dayscount: number[], totalBookings: number) => {
+    setGeminiLoading(true);
+    setGeminiInsight(null);
+    try {
+      // Prepare prompt for Gemini
+      const prompt = `
+        Given the following booking data for a venue:
+        - Total bookings: ${totalBookings}
+        - Bookings per day (Mon-Sun): ${dayscount.join(', ')}
+        - Weekday bookings: ${split.weekday} (${split.weekdayPercent.toFixed(1)}%)
+        - Weekend bookings: ${split.weekend} (${split.weekendPercent.toFixed(1)}%)
+        Please provide a short actionable insight or recommendation for the venue owner to improve bookings or optimize pricing. Respond in 1-2 sentences, no greeting, no closing.
+      `;
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + process.env.EXPO_PUBLIC_GOOGLE_GEMINI_API_KEY,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        }
+      );
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      setGeminiInsight(text || "No insight generated.");
+    } catch (err: any) {
+      setGeminiInsight(null);
+      showToast({
+        type: 'error',
+        title: 'Gemini API Error',
+        description: err?.message || 'Failed to fetch insight.'
+      });
+    } finally {
+      setGeminiLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!id) {
       console.log("No space found in params");
@@ -121,6 +165,14 @@ function Daysofweek() {
     }
     handleData();
   }, [id]);
+
+  // Fetch Gemini insight after bookings data is loaded
+  useEffect(() => {
+    if (totalBookings > 0) {
+      fetchGeminiInsight(split, dayscount, totalBookings);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalBookings]);
   
   const getDayStats = (index: number): DayStats => {
     const count = dayscount[index];
@@ -274,7 +326,7 @@ function Daysofweek() {
       <View className='bg-gray-500/20 rounded-xl p-4 mb-4'>
         <Text className='font-semibold text-gray-900 mb-3 text-xl'>📊 Key Insights</Text>
         
-        <View className='space-y-2'>
+        <View className='gap-y-2'>
           {mostPopular && (
             <View className='flex-row justify-between items-center py-2 border-b border-gray-200'>
               <Text className='text-gray-700 text-sm'>Most Popular Day</Text>
@@ -386,25 +438,19 @@ function Daysofweek() {
       </View>
       
       {/* Recommendations */}
-      {split.weekendPercent > 60 && (
-        <View className='bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4'>
-          <Text className='font-semibold text-yellow-900 mb-1'>💡 Insight</Text>
+      <View className='bg-yellow-50 border border-yellow-300 rounded-lg p-4 mb-4'>
+        <Text className='font-semibold text-yellow-900 mb-1'>💡 Gemini Insight</Text>
+        {geminiLoading ? (
+          <View className="flex-row items-center">
+            <ActivityIndicator size="small" color="#f59e0b" />
+            <Text className="ml-2 text-yellow-800">Generating insight...</Text>
+          </View>
+        ) : (
           <Text className='text-sm text-yellow-800'>
-            Your space is more popular on weekends ({split.weekendPercent.toFixed(0)}%). 
-            Consider special weekday promotions to balance bookings.
+            {geminiInsight || "No insight available."}
           </Text>
-        </View>
-      )}
-      
-      {split.weekdayPercent > 70 && (
-        <View className='bg-green-50 border border-green-300 rounded-lg p-4 mb-4'>
-          <Text className='font-semibold text-green-900 mb-1'>💡 Insight</Text>
-          <Text className='text-sm text-green-800'>
-            Your space is highly popular on weekdays ({split.weekdayPercent.toFixed(0)}%). 
-            Great for business travelers and professionals!
-          </Text>
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 }

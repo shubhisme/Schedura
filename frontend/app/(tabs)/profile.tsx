@@ -58,6 +58,9 @@ const ProfileScreen = () => {
   const handleBilling = () => {
     router.push('/profile/billing');
   };
+  const handleIntegrations = () => {
+    router.push('/profile/integrations');
+  }
 
   const handleNotificationsChange = (value: boolean) => {
     setNotificationsEnabled(value);
@@ -225,6 +228,13 @@ const ProfileScreen = () => {
               label="Billing & Payments"
               subtitle="Manage subscription and payments"
               onPress={handleBilling}
+              disabled={loading}
+            />
+            <MenuItem
+              icon="cube-outline"
+              label="Integrations"
+              subtitle="Manage third-party integrations"
+              onPress={handleIntegrations}
               disabled={loading}
             />
           </MenuSection>

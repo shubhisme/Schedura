@@ -45,7 +45,7 @@ export default function BookingSpacesScreen() {
     >
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
       {bookings.length === 0 && !refreshing ? (
-        <View className="items-center justify-center py-20">
+        <View className="items-center justify-center py-20" style={{ backgroundColor: colors.tertiary }}>
           <Feather name="calendar" size={64} color={colors.textTertiary} />
           <Text className="text-[20px] font-bold mt-4" style={{ color: colors.text }}>No bookings yet</Text>
           <Text className="text-center mt-2" style={{ color: colors.textSecondary }}>Your bookings will appear here</Text>
