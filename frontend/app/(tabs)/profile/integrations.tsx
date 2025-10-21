@@ -24,7 +24,7 @@ export default function IntegrationsPage() {
   const { user } = useUser();
   const fetchStatus = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/integrations/status?user_id=${user?.id}`);
+      const res = await fetch(`${BACKEND_URL}/integrations/status?userid=${user?.id}`);
       const data = await res.json();
       console.log(data)
       setGoogleEnabled(Boolean(data.google));
@@ -47,7 +47,7 @@ export default function IntegrationsPage() {
     setLoading(true);
     try {
       if (value) {
-        const res = await fetch(`${BACKEND_URL}/integrations/google/connect?user_id=${user?.id}`);
+        const res = await fetch(`${BACKEND_URL}/integrations/google/connect?userid=${user?.id}`);
         const data = await res.json();
 
         await Linking.openURL(data.url);

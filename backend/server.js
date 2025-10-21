@@ -59,14 +59,30 @@ app.get("/integrations/google/callback", async (req, res) => {
     const { refresh_token } = tokenRes.data;
 
     // Save refresh_token securely (DB)
-    await supabase.from("user_integrations").upsert([
-      {
-        user_id: userid,
-        provider: "google",
-        connected: true,
-        refresh_token,
-      }
-    ], { onConflict: ['user_id', 'provider'] });
+    // Check if a record exists for this user+provider
+    const { data: existing } = await supabase
+      .from("user_integrations")
+      .select("*")
+      .eq("user_id", userid)
+      .eq("provider", "google")
+      .single();
+
+    if (existing) {
+      // Update existing record
+      await supabase
+      .from("user_integrations")
+      .update({ connected: true, refresh_token })
+      .eq("user_id", userid)
+      .eq("provider", "google");
+    } else {
+      // Insert new record
+      await supabase.from("user_integrations").insert({
+      user_id: userid,
+      provider: "google",
+      connected: true,
+      refresh_token,
+      });
+    }
 
     // Redirect user to success page
     return res.send(
