@@ -26,13 +26,11 @@ export default function SpacesScreen() {
     fetchMySpaces()
   },[])
 
-  useEffect(() => {
-    const fetchOrganization = async () => {
-      // Fetch organization details here
+  const fetchOrganization = async () => {
       const orgData = await getOrganisationByUserId(user?.id!);
       setOrganization(orgData.data[0]);
-    };
-    
+  };
+  useEffect(() => {
     fetchOrganization();
   }, [user]);
 
@@ -45,7 +43,10 @@ export default function SpacesScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={fetchMySpaces}
+            onRefresh={() => {
+              fetchMySpaces()
+              fetchOrganization()
+            }}
             colors={[colors.text]}
             tintColor={colors.text}
           />

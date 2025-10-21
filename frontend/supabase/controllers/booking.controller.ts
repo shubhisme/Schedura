@@ -62,3 +62,20 @@ export const getBookingsOfUser = async (user_id: string) => {
         error
     };
 }
+
+export const acceptBooking = async (booking_id: string) => {
+    const { data, error } = await supabase
+        .from("bookings")
+        .update({ payment_status: "accepted" })
+        .eq("id", booking_id)
+        .select();
+
+    if (error) {
+        console.log("Error Accepting Booking: ", error);
+        throw error;
+    }
+    return {
+        data: data as any[] | null,
+        error
+    };
+}

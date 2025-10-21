@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Text, View, TouchableOpacity, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
-const privileges = [
+const priviledges = [
   { id: 1, name: 'Create Request', value: 1 },
   { id: 2, name: 'Accept/Deny Request', value: 2 },
 ];
@@ -19,16 +19,16 @@ const RolesModal = ({
   setRoles: React.Dispatch<React.SetStateAction<any[]>>;
 }) => {
   const [roleName, setRoleName] = useState('');
-  const [selectedPrivileges, setSelectedPrivileges] = useState<number[]>([]);
+  const [selectedPriviledges, setSelectedPriviledges] = useState<number[]>([]);
 
   const togglePrivilege = (value: number) => {
-    setSelectedPrivileges((prev) =>
+    setSelectedPriviledges((prev) =>
       prev.includes(value) ? prev.filter((p) => p !== value) : [...prev, value]
     );
   };
 
   const calculatePrivilegeValue = () => {
-    return selectedPrivileges.reduce((sum, val) => sum + val, 0);
+    return selectedPriviledges.reduce((sum, val) => sum + val, 0);
   };
 
   const handleSubmit = async () => {
@@ -37,14 +37,14 @@ const RolesModal = ({
     // Call your Supabase controller here
     try {
       // Example: await addRole(orgid, roleName, privilegeValue);
-      console.log('Submitting role:', { orgid, name: roleName, privileges: privilegeValue });
+      console.log('Submitting role:', { orgid, name: roleName, priviledges: privilegeValue });
       setRoles((prevRoles) => [
         ...prevRoles,
-        { name: roleName, privileges: privilegeValue },
+        { name: roleName, priviledges: privilegeValue },
       ]);
       // Reset form
       setRoleName('');
-      setSelectedPrivileges([]);
+      setSelectedPriviledges([]);
       setVisible(false);
     } catch (error) {
       console.error('Error adding role:', error);
@@ -53,7 +53,7 @@ const RolesModal = ({
 
   const handleCancel = () => {
     setRoleName('');
-    setSelectedPrivileges([]);
+    setSelectedPriviledges([]);
     setVisible(false);
   };
 
@@ -79,10 +79,10 @@ const RolesModal = ({
                   />
                 </View>
 
-                {/* Privileges Checkboxes */}
+                {/* Priviledges Checkboxes */}
                 <View className="mb-4">
-                  <Text className="text-sm font-medium mb-2">Privileges</Text>
-                  {privileges.map((privilege) => (
+                  <Text className="text-sm font-medium mb-2">Priviledges</Text>
+                  {priviledges.map((privilege) => (
                     <TouchableOpacity
                       key={privilege.id}
                       className="flex-row items-center mb-3"
@@ -90,12 +90,12 @@ const RolesModal = ({
                     >
                       <View
                         className={`w-5 h-5 border-2 rounded mr-3 items-center justify-center ${
-                          selectedPrivileges.includes(privilege.value)
+                          selectedPriviledges.includes(privilege.value)
                             ? 'bg-blue-500 border-blue-500'
                             : 'border-gray-300'
                         }`}
                       >
-                        {selectedPrivileges.includes(privilege.value) && (
+                        {selectedPriviledges.includes(privilege.value) && (
                           <Text className="text-white text-xs">✓</Text>
                         )}
                       </View>

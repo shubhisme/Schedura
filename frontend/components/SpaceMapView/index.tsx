@@ -1,6 +1,7 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Linking, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { WebView } from 'react-native-webview';
 import { useTheme } from '@/contexts/ThemeContext';
 
 interface SpaceMapViewProps {
@@ -12,12 +13,6 @@ interface SpaceMapViewProps {
   spaceAddress?: string;
 }
 
-declare global {
-  interface Window {
-    L: any;
-  }
-}
-
 const SpaceMapView: React.FC<SpaceMapViewProps> = ({
   visible,
   onClose,
@@ -27,157 +22,237 @@ const SpaceMapView: React.FC<SpaceMapViewProps> = ({
   spaceAddress
 }) => {
   const { colors, isDark } = useTheme();
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
 
-  useEffect(() => {
-    if (visible && Platform.OS === 'web') {
-      loadLeafletAndInitMap();
-    }
-    
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-      }
-    };
-  }, [visible, latitude, longitude]);
-
-  const loadLeafletAndInitMap = async () => {
-    try {
-      // Load Leaflet CSS
-      if (!document.querySelector('link[href*="leaflet.css"]')) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
-      }
-
-      // Load Leaflet JS
-      if (!window.L) {
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = initializeMap;
-        document.head.appendChild(script);
-      } else {
-        initializeMap();
-      }
-    } catch (error) {
-      console.error('Failed to load Leaflet:', error);
-    }
+  const openInMaps = () => {
+    const url = Platform.select({
+      ios: `maps:0,0?q=${latitude},${longitude}`,
+      android: `geo:0,0?q=${latitude},${longitude}`,
+      default: `https://www.google.com/maps?q=${latitude},${longitude}`,
+    });
+    Linking.openURL(url).catch(err => 
+      console.error('Error opening maps:', err)
+    );
   };
 
-  const initializeMap = () => {
-    if (!mapContainerRef.current || mapRef.current) return;
+  const generateMapHTML = () => {
+    const backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
+    const textColor = isDark ? '#ffffff' : '#333333';
+    const secondaryTextColor = isDark ? '#cccccc' : '#666666';
 
-    try {
-      const L = window.L;
-      
-      // Initialize map
-      const map = L.map(mapContainerRef.current, {
-        center: [latitude, longitude],
-        zoom: 15,
-        zoomControl: true,
-      });
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <style>
+          body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: ${backgroundColor};
+          }
+          #map {
+            width: 100%;
+            height: 100%;
+          }
+          .leaflet-container {
+            background: ${backgroundColor};
+          }
+          .leaflet-popup-content-wrapper {
+            background-color: ${backgroundColor};
+            color: ${textColor};
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+          }
+          .leaflet-popup-content {
+            margin: 12px;
+            text-align: center;
+          }
+          .leaflet-popup-tip {
+            background-color: ${backgroundColor};
+          }
+          .popup-title {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: ${textColor};
+          }
+          .popup-address {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: ${secondaryTextColor};
+          }
+          .popup-coords {
+            margin: 0;
+            font-size: 12px;
+            font-family: monospace;
+            color: ${secondaryTextColor};
+          }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          var map = L.map('map').setView([${latitude}, ${longitude}], 15);
 
-      // Add tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+          }).addTo(map);
 
-      // Add marker for the space location
-      const marker = L.marker([latitude, longitude])
-        .bindPopup(`
-          <div style="text-align: center;">
-            <h3 style="margin: 0; color: #333;">${spaceName}</h3>
-            ${spaceAddress ? `<p style="margin: 5px 0; color: #666;">${spaceAddress}</p>` : ''}
-            <p style="margin: 5px 0; font-family: monospace; color: #888;">${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
-          </div>
-        `)
-        .addTo(map);
-
-      // Open popup by default
-      marker.openPopup();
-
-      mapRef.current = map;
-
-      // Fix map size after container is ready
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 100);
-    } catch (error) {
-      console.error('Failed to initialize map:', error);
-    }
+          var marker = L.marker([${latitude}, ${longitude}]).addTo(map);
+          
+          var popupContent = 
+            '<div>' +
+              '<h3 class="popup-title">${spaceName.replace(/'/g, "\\'")}</h3>' +
+              ${spaceAddress ? `'<p class="popup-address">${spaceAddress.replace(/'/g, "\\'")}</p>' +` : ''} 
+              '<p class="popup-coords">${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>' +
+            '</div>';
+          
+          marker.bindPopup(popupContent).openPopup();
+        </script>
+      </body>
+      </html>
+    `;
   };
-
-  if (!visible) return null;
 
   return (
-    <View className="absolute top-0 left-0 right-0 bottom-0 z-50" style={{ backgroundColor: colors.background }}>
-      <View className="flex-row items-center justify-between px-4 py-3 border-b pt-6" style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}>
-        <TouchableOpacity onPress={onClose} className="p-2 w-10">
-          <Ionicons name="close" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text className="text-lg font-semibold" style={{ color: colors.text }}>Space Location</Text>
-        <TouchableOpacity 
-          onPress={() => {
-            const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
-            if (Platform.OS === 'web' && typeof window !== 'undefined') {
-              window.open(url, '_blank');
-            }
-          }}
-          className="p-2 w-10"
-        >
-          <Ionicons name="open-outline" size={20} color={colors.accent} />
-        </TouchableOpacity>
-      </View>
-
-      {Platform.OS === 'web' ? (
-        <div 
-          ref={mapContainerRef}
-          style={{ 
-            flex: 1, 
-            width: '100%', 
-            height: '100%',
-            position: 'relative',
-            backgroundColor: colors.backgroundSecondary
-          }}
-        />
-      ) : (
-        <View className="flex-1 justify-center items-center m-4 border rounded-xl" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
-          <Ionicons name="location" size={64} color={colors.accent} />
-          <Text className="text-xl font-semibold mt-4 text-center" style={{ color: colors.text }}>
-            {spaceName}
-          </Text>
-          <Text className="text-sm mt-2 text-center" style={{ color: colors.textSecondary }}>
-            {latitude.toFixed(6)}, {longitude.toFixed(6)}
-          </Text>
-          {spaceAddress && (
-            <Text className="text-sm mt-1 text-center px-5" style={{ color: colors.textSecondary }}>
-              {spaceAddress}
-            </Text>
-          )}
+    <Modal
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Header */}
+        <View style={[styles.header, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
+          <TouchableOpacity onPress={onClose} style={styles.headerButton}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Space Location</Text>
+          <TouchableOpacity onPress={openInMaps} style={styles.headerButton}>
+            <Ionicons name="open-outline" size={20} color={colors.accent} />
+          </TouchableOpacity>
         </View>
-      )}
 
-      <View className="p-4 border-t" style={{ backgroundColor: colors.card, borderTopColor: colors.border }}>
-        <TouchableOpacity 
-          className="flex-row items-center justify-center p-3 rounded-lg gap-2"
-          style={{ backgroundColor: colors.accent }}
-          onPress={() => {
-            // Open in external map app
-            const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
-            if (Platform.OS === 'web' && typeof window !== 'undefined') {
-              window.open(url, '_blank');
-            }
-          }}
-        >
-          <Ionicons name="map" size={20} color="white" />
-          <Text className="text-white text-base font-semibold">Open in Google Maps</Text>
-        </TouchableOpacity>
+        {/* Map */}
+        <View style={styles.mapContainer}>
+          <WebView
+            style={styles.webview}
+            originWhitelist={['*']}
+            source={{ html: generateMapHTML() }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+          />
+        </View>
+
+        {/* Info Card */}
+        <View style={[styles.infoCard, { backgroundColor: colors.card }]}>
+          <View style={styles.infoRow}>
+            <Ionicons name="location" size={20} color={colors.accent} />
+            <View style={styles.infoTextContainer}>
+              <Text style={[styles.spaceName, { color: colors.text }]}>
+                {spaceName}
+              </Text>
+              {spaceAddress && (
+                <Text style={[styles.address, { color: colors.textSecondary }]}>
+                  {spaceAddress}
+                </Text>
+              )}
+              <Text style={[styles.coordinates, { color: colors.textSecondary }]}>
+                {latitude.toFixed(6)}, {longitude.toFixed(6)}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Open in Maps Button */}
+        <View style={[styles.footer, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+          <TouchableOpacity 
+            style={[styles.mapButton, { backgroundColor: colors.accent }]}
+            onPress={openInMaps}
+          >
+            <Ionicons name="map" size={20} color="white" />
+            <Text style={styles.mapButtonText}>Open in Maps</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </Modal>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 48,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+  },
+  headerButton: {
+    padding: 8,
+    minWidth: 40,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  mapContainer: {
+    flex: 1,
+  },
+  webview: {
+    flex: 1,
+  },
+  infoCard: {
+    padding: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  infoTextContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  spaceName: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  address: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  coordinates: {
+    fontSize: 12,
+    fontFamily: Platform.select({ ios: 'Courier', android: 'monospace' }),
+    marginTop: 4,
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    gap: 8,
+  },
+  mapButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
 
 export default SpaceMapView;

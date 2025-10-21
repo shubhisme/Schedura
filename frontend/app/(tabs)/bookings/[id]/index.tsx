@@ -9,6 +9,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import dayjs from "dayjs";
 import { supabase } from "@/supabase/supabase";
 import OneUpi from 'one-react-native-upi'
+import { acceptBooking } from "@/supabase/controllers/booking.controller";
 
 interface Booking {
   id: string;
@@ -109,7 +110,9 @@ export default function BookingDetailsScreen() {
     }
   };
 
-    const onSuccess = (success:any) => {
+    const onSuccess = async (success:any) => {
+      if(!booking) return;
+      await acceptBooking(booking.id);
       navigate('/(info)/payment/successful');
     }
     const onFailure = (error:any) => {
@@ -301,6 +304,11 @@ export default function BookingDetailsScreen() {
               Created: {dayjs(booking.created_at).format('MMM DD, YYYY HH:mm')}
             </Text>
           </View>
+          <TouchableOpacity className="p-5" onPress={onSuccess}>
+            <Text className="text-xs" style={{ color: colors.textSecondary }}>
+              Bypass Payment (For Testing Purposes)
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 

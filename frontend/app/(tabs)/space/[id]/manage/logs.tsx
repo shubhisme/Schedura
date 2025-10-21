@@ -78,7 +78,7 @@ function LogCard({request, colors, isDark}: {request: any, userId: string, setAc
     >
       <View>
         <Text className="text-xl font-bold" style={{ color: colors.text }}>{request.users.name}</Text>
-        <View className="flex-row items-center space-x-2 mt-1">
+        <View className="flex-row items-center gap-x-2 mt-1">
           <Text className="font-medium" style={{ color: colors.textSecondary }}>{request.rfid}</Text>
           <View className="px-3 py-1 rounded-full" style={{ backgroundColor: badgeBg }}>
             <Text className="text-xs font-semibold" style={{ color: badgeTextColor }}>{request.event_type}</Text>

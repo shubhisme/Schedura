@@ -12,6 +12,7 @@ import { TailwindThemeProvider } from '@/contexts/TailwindThemeContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 //@ts-ignore
 import { useRouter } from 'expo-router';
+import { ToastProvider } from '@/components/Toast';
 
 
 //SplashScreen.preventAutoHideAsync();
@@ -19,13 +20,15 @@ import { useRouter } from 'expo-router';
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
-      <ThemeProvider>
-        <TailwindThemeProvider>
-          <SafeAreaProvider>
+        <ThemeProvider>
+          <ToastProvider>
+          <TailwindThemeProvider>
+            <SafeAreaProvider>
               <AuthGate />
-          </SafeAreaProvider>
-        </TailwindThemeProvider>
-      </ThemeProvider>
+            </SafeAreaProvider>
+          </TailwindThemeProvider>
+          </ToastProvider>
+        </ThemeProvider>
     </ClerkProvider>
   );
 }

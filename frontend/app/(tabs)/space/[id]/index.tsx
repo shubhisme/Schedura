@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Share, Dimensions } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Share, Dimensions, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import SpaceMapView from '@/components/SpaceMapView';
+import { supabase } from '@/supabase/supabase';
+import { useUser } from '@clerk/clerk-expo';
+import { useToast } from "@/components/Toast";
 
 const { width } = Dimensions.get('window');
 
 export default function HallDetails() {
   const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams();
-  const [loading, setLoading] = useState(false) 
+  const { user } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showMapView, setShowMapView] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewText, setReviewText] = useState('');
+  const [rating, setRating] = useState(5);
   const { back, push } = useRouter();
-
+  const { showToast } = useToast();
   
   const facilities = [
     { name: "WiFi", icon: "wifi", available: true },
@@ -45,8 +54,92 @@ export default function HallDetails() {
     }
   };
 
+  const fetchReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          users!userid (
+            name
+          )
+        `)
+        .eq('spaceid', id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching reviews:', error);
+      } else {
+        setReviews(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchReviews:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const submitReview = async () => {
+    if (!user) {
+      showToast({
+        type: 'error',
+        title: 'Sign In Required',
+        description: 'Please sign in to submit a review.',
+      });
+      return;
+    }
+    if (!reviewText.trim()) {
+      showToast({
+        type: 'error',
+        title: 'Review Required',
+        description: 'Please enter your review.',
+      });
+      return;
+    }
+    try {
+      setSubmittingReview(true);
+      const { error } = await supabase
+        .from('reviews')
+        .insert({
+          spaceid: id,
+          userid: user.id,
+          stars: rating,
+          review: reviewText.trim(),
+        });
+
+      if (error) {
+        console.error('Error submitting review:', error);
+        showToast({
+          type: 'error',
+          title: 'Error',
+          description: 'Failed to submit review. Please try again.',
+        });
+      } else {
+        showToast({
+          type: 'success',
+          title: 'Success',
+          description: 'Your review has been submitted!',
+        });
+        setReviewText('');
+        setRating(5);
+        fetchReviews();
+      }
+    } catch (error) {
+      console.error('Error in submitReview:', error);
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'An error occurred. Please try again.',
+      });
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   useEffect(() => {
     fetchSpace();
+    fetchReviews();
   }, [id]);
   
   const handleShare = async () => {
@@ -163,10 +256,18 @@ export default function HallDetails() {
 
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEF3C7', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginRight: 12 }}>
-                <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text style={{ color: '#92400E', fontWeight: '600', marginLeft: 4 }}>4.8</Text>
+              <Ionicons name="star" size={16} color="#F59E0B" />
+              <Text style={{ color: '#92400E', fontWeight: '600', marginLeft: 4 }}>
+                {reviews.length > 0
+                ? (
+                  reviews.reduce((sum, r) => sum + (r.stars || 0), 0) / reviews.length
+                  ).toFixed(1)
+                : '0.0'}
+              </Text>
               </View>
-              <Text style={{ color: colors.textSecondary }}>Based on 124 reviews</Text>
+              <Text style={{ color: colors.textSecondary }}>
+              Based on {reviews.length} review{reviews.length === 1 ? '' : 's'}
+              </Text>
             </View>
           </View>
 
@@ -254,45 +355,136 @@ export default function HallDetails() {
           </View>
 
 
-          <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Location</Text>
-            <TouchableOpacity 
-              onPress={() => setShowMapView(true)}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 12 }}
-            >
-              <Ionicons name="map" size={20} color={colors.text} />
-              <Text style={{ color: colors.text, fontWeight: '600', marginLeft: 8 }}>View on Map</Text>
-            </TouchableOpacity>
-          </View>
+          {space.latitude && space.longitude && (
+            <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: 16 }}>Location</Text>
+              <TouchableOpacity 
+                onPress={() => setShowMapView(true)}
+                style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: 16, paddingVertical: 12 }}
+              >
+                <Ionicons name="map" size={20} color={colors.text} />
+                <Text style={{ color: colors.text, fontWeight: '600', marginLeft: 8 }}>View on Map</Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
 
           <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.text }}>Reviews</Text>
-              <TouchableOpacity>
-                <Text style={{ color: colors.link, fontWeight: '600' }}>See All</Text>
-              </TouchableOpacity>
+              {reviews.length > 2 && (
+                <TouchableOpacity>
+                  <Text style={{ color: colors.link, fontWeight: '600' }}>See All ({reviews.length})</Text>
+                </TouchableOpacity>
+              )}
             </View>
             
-            <View style={{ gap: 16 }}>
-              {[1, 2].map((review) => (
-                <View key={review} style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 16, padding: 16 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <View style={{ width: 40, height: 40, backgroundColor: colors.border, borderRadius: 20, marginRight: 12 }}></View>
-                      <Text style={{ fontWeight: '600', color: colors.text }}>John Doe</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Ionicons name="star" size={16} color="#F59E0B" />
-                      <Text style={{ color: colors.textSecondary, marginLeft: 4 }}>5.0</Text>
-                    </View>
+            {/* Add Review Input */}
+            {user && (
+              <View style={{ backgroundColor: colors.card, borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: colors.border }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 }}>Write a Review</Text>
+                
+                {/* Star Rating */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                  <Text style={{ color: colors.textSecondary, marginRight: 12 }}>Rating:</Text>
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                        <Ionicons
+                          name={star <= rating ? 'star' : 'star-outline'}
+                          size={24}
+                          color={star <= rating ? '#F59E0B' : colors.textSecondary}
+                        />
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                  <Text style={{ color: colors.textSecondary }}>
-                    Amazing venue with excellent facilities. The staff was very helpful and the location is perfect for events.
-                  </Text>
                 </View>
-              ))}
-            </View>
+
+                {/* Review Text Input */}
+                <TextInput
+                  placeholder="Share your experience..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                  multiline
+                  numberOfLines={4}
+                  style={{
+                    padding: 12,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    backgroundColor: colors.backgroundSecondary,
+                    color: colors.text,
+                    minHeight: 80,
+                    textAlignVertical: 'top',
+                    marginBottom: 12,
+                  }}
+                />
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  onPress={submitReview}
+                  disabled={submittingReview}
+                  style={{
+                    backgroundColor: submittingReview ? colors.border : colors.accent,
+                    borderRadius: 12,
+                    paddingVertical: 12,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 8,
+                  }}
+                >
+                  {submittingReview && <ActivityIndicator size="small" color="#fff" />}
+                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>
+                    {submittingReview ? 'Submitting...' : 'Submit Review'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Reviews List */}
+            {reviewsLoading ? (
+              <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color={colors.accent} />
+                <Text style={{ color: colors.textSecondary, marginTop: 8 }}>Loading reviews...</Text>
+              </View>
+            ) : reviews.length === 0 ? (
+              <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+                <Text style={{ color: colors.textSecondary }}>No reviews yet. Be the first to review!</Text>
+              </View>
+            ) : (
+              <View style={{ gap: 16 }}>
+                {reviews.slice(0, 5).map((review) => (
+                  <View key={review.id} style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 16, padding: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ width: 40, height: 40, backgroundColor: colors.border, borderRadius: 20, marginRight: 12, justifyContent: 'center', alignItems: 'center' }}>
+                          <Text style={{ color: colors.text, fontWeight: '600', fontSize: 16 }}>
+                            {review.users?.name?.[0]?.toUpperCase() || 'U'}
+                          </Text>
+                        </View>
+                        <View>
+                          <Text style={{ fontWeight: '600', color: colors.text }}>
+                            {review.users?.name || 'Anonymous'}
+                          </Text>
+                          <Text style={{ fontSize: 12, color: colors.textSecondary }}>
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Ionicons name="star" size={16} color="#F59E0B" />
+                        <Text style={{ color: colors.textSecondary, marginLeft: 4 }}>{review.stars}.0</Text>
+                      </View>
+                    </View>
+                    <Text style={{ color: colors.textSecondary, lineHeight: 20 }}>
+                      {review.review}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
 
 
@@ -334,7 +526,6 @@ export default function HallDetails() {
           spaceAddress={space.location}
         />
       )}
-      
     </SafeAreaView>
   );
 }

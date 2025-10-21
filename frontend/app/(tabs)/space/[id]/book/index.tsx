@@ -114,7 +114,7 @@ export default function HallBooking() {
       setPrivilegeMessage("No role assigned. Contact your organization admin.");
       return;
     }
-    // Get role privileges
+    // Get role priviledges
     const role = await getRole(userRole.role);
   
     if (!role || typeof role.id !== "number") {
@@ -129,7 +129,7 @@ export default function HallBooking() {
     } else {
       setCanBook(false);
       setPrivilegeChecked(true);
-      setPrivilegeMessage("You don't have enough privileges to request booking.");
+      setPrivilegeMessage("You don't have enough priviledges to request booking.");
     }
   };
 
@@ -141,7 +141,7 @@ export default function HallBooking() {
     fetchBookingsForMonth(dayjs().month(), dayjs().year());
   }, [space]);
 
-  // use focus effect to re-check privileges when screen gains focus
+  // use focus effect to re-check priviledges when screen gains focus
   useFocusEffect(
     useCallback(() => {
       if (space && user) {

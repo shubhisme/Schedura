@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '../Toast';
 
 interface Location {
   latitude: number;
@@ -24,6 +25,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   initialLocation
 }) => {
   const { colors, isDark } = useTheme();
+  const { showToast } = useToast();
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     initialLocation || null
   );
@@ -43,7 +45,11 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     if (selectedLocation) {
       onLocationSelect(selectedLocation);
     } else {
-      Alert.alert('Please select a location', 'Tap on the map to choose a location');
+      showToast({
+        type: 'error',
+        title: 'No Location Selected',
+        description: 'Tap on the map to choose a location',
+      });
     }
   };
 

@@ -3,18 +3,18 @@ import { supabase } from "../supabase"
 import { uploadFile } from "./spaces.controller";
 
 // Remove direct joining - now users must send requests
-export const joinOrganisation = async (userId: string, organisationId: string, role: 'admin' | 'member' = 'member') => {
+export const joinOrganisation = async (userId: string, organisationId: string, role: number) => {
     const { error } = await supabase
-      .from("user_organisations")
-      .insert([{ user_id: userId, organisation_id: organisationId, role }]);
-  
+      .from("user_role")
+      .insert([{ userid: userId, orgid: organisationId, role }]);
+
     if (error) throw error;
     return { success: true };
   };
 
 export const checkUserMembership = async (userId: string, organisationId: string) => {
   const { data, error } = await supabase
-    .from("user_organisations")
+    .from("user_role")
     .select("role")
     .eq("user_id", userId)
     .eq("organisation_id", organisationId)
@@ -26,21 +26,21 @@ export const checkUserMembership = async (userId: string, organisationId: string
   
   export const getUserOrganisations = async (userId: string) => {
     const { data, error } = await supabase
-      .from("user_organisations")
-      .select("organisation_id, organisations(*)")
-      .eq("user_id", userId);
-  
+      .from("user_role")
+      .select("orgid, organisations(*)")
+      .eq("userid", userId);
+
     if (error) throw error;
     return data;
   };
   
   export const leaveOrganisation = async (userId: string, organisationId: string) => {
     const { error } = await supabase
-      .from("user_organisations")
+      .from("user_role")
       .delete()
-      .eq("user_id", userId)
-      .eq("organisation_id", organisationId);
-  
+      .eq("userid", userId)
+      .eq("orgid", organisationId);
+
     if (error) throw error;
     return { success: true };
   };
@@ -67,8 +67,30 @@ export const checkUserMembership = async (userId: string, organisationId: string
         return { data: null, error: updateError.message };
       }
 
-      await supabase.from("roles").insert([...roles.map(role => ({ ...role, orgid: data.id })), { name: 'Owner', priviledges: 7, orgid: data.id }]);
+      // Insert roles including Owner
+      const { error: roleInsertError } = await supabase
+        .from("roles")
+        .insert([...roles.map(role => ({ ...role, orgid: data.id })), { name: 'Owner', priviledges: 7, orgid: data.id }]);
+      if (roleInsertError) {
+        return { data: null, error: roleInsertError.message };
+      }
+
+      // Fetch the Owner role for this organisation
+      const { data: roleData, error: roleFetchError } = await supabase
+        .from("roles")
+        .select("*")
+        .eq("name", "Owner")
+        .eq("orgid", data.id)
+        .single();
+      if (roleFetchError) {
+        return { data: null, error: roleFetchError.message };
+      }
       
+      const { data: userRoleData, error: userRoleError} = await supabase.from("user_role").insert([{ userid:userId, role:roleData?.id, orgid: data.id }]);
+
+      if (userRoleError) {
+        return { data: null, error: userRoleError.message };
+      }
     }
     if (error) {
       return { data: null, error: error.message };

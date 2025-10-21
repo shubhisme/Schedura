@@ -21,10 +21,10 @@ export const createJoinRequest = async (
 
   // Check if user is already a member
   const { data: existingMember } = await supabase
-    .from("user_organisations")
+    .from("user_role")
     .select("*")
-    .eq("user_id", userId)
-    .eq("organisation_id", organisationId)
+    .eq("userid", userId)
+    .eq("orgid", organisationId)
     .single();
 
   if (existingMember) {

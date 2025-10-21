@@ -5,13 +5,13 @@ import { supabase } from "../supabase";
  * Add a new role to the roles table
  * @param orgid - Organization ID (reference to organisations table)
  * @param name - Role name
- * @param privileges - Privileges value (bitwise combination)
+ * @param priviledges - Priviledges value (bitwise combination)
  * @returns The created role or error
  */
 export const addRole = async (
   orgid: string,
   name: string,
-  privileges: number
+  priviledges: number
 ) => {
   try {
     const { data, error } = await supabase
@@ -20,7 +20,7 @@ export const addRole = async (
         {
           orgid,
           name,
-          priviledges: privileges, // Note: using 'priviledges' to match your schema spelling
+          priviledges: priviledges, // Note: using 'priviledges' to match your schema spelling
         },
       ])
       .select()
@@ -111,12 +111,12 @@ export const deleteRole = async (roleId: string) => {
 
 /**
  * Check if a role has a specific privilege
- * @param privileges - The privileges number from the role
+ * @param priviledges - The priviledges number from the role
  * @param privilegeValue - The privilege value to check (e.g., 1, 2, 4, 8, etc.)
  * @returns boolean indicating if the privilege exists
  */
-export const hasPrivilege = (privileges: number, privilegeValue: number): boolean => {
-  return (privileges & privilegeValue) === privilegeValue;
+export const hasPrivilege = (priviledges: number, privilegeValue: number): boolean => {
+  return (priviledges & privilegeValue) === privilegeValue;
 };
 
 /**
@@ -132,7 +132,7 @@ export const hasPrivilege = (privileges: number, privilegeValue: number): boolea
  *     console.log('Role created:', result.data);
  *     // Reset form and close modal
  *     setRoleName('');
- *     setSelectedPrivileges([]);
+ *     setSelectedPriviledges([]);
  *     setVisible(false);
  *   } else {
  *     console.error('Failed to create role:', result.error);

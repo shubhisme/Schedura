@@ -15,6 +15,8 @@ import { getOrganisationByUserId } from '@/supabase/controllers/organisation.con
 import MapLocationPicker from '@/components/MapLocationPicker';
 import { supabase } from '@/supabase/supabase';
 import { getUserUpiId } from '@/supabase/controllers/user.controller';
+import { useToast } from '@/components/Toast';
+import { useRouter } from 'expo-router';
 
 interface Location {
   latitude: number;
@@ -46,7 +48,8 @@ export default function AddSpacesScreen() {
     { name: "Catering", icon: "restaurant", id:5, selected:false },
     { name: "Sound System", icon: "volume-high", id:6, selected:false },
   ])
-  
+  const { showToast } = useToast();
+  const { navigate } = useRouter();
   const categories: Array<'Wedding' | 'Corporate' | 'Birthday' | 'Conference' | 'Social'> = ['Wedding', 'Corporate', 'Birthday', 'Conference', 'Social'];
   const rotateValue = new Animated.Value(0); 
 
@@ -103,7 +106,11 @@ export default function AddSpacesScreen() {
   const handleSubmit = async () => {
     // Require signed-in user
     if (!user) {
-      Alert.alert('Not signed in', 'Please sign in before creating a space.');
+      showToast({
+        type: 'error',
+        title: 'Not signed in',
+        description: 'Please sign in before creating a space.',
+      });
       return;
     }
 
@@ -111,22 +118,31 @@ export default function AddSpacesScreen() {
     try {
       const userUpiId = await getUserUpiId(user?.id)
       if (!userUpiId) {
-        Alert.alert(
-          'UPI ID Required',
-          'Please add your UPI ID in your profile before creating a space.'
-        );
+        showToast({
+          type: 'error',
+          title: 'UPI ID Required',
+          description: 'Please add your UPI ID in your profile before creating a space.',
+        });
         return;
       }
       // upi available, continue
     } catch (err) {
       console.error('Error fetching user upi:', err);
-      Alert.alert('Error', 'Could not verify UPI. Try again later.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Could not verify UPI. Try again later.',
+      });
       return;
     }
 
     setLoading(true);
     if (!name || !capacity || !location || !description || !pph) {
-      Alert.alert('Error', 'Please fill all fields');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Please fill all fields',
+      });
       setLoading(false);
       return;
     }
@@ -145,13 +161,21 @@ export default function AddSpacesScreen() {
       id: undefined,
       category,
       amenities: amenities.filter(facility=>facility.selected).map(facility=>facility.name),
-      organizationid: parseInt(orgid!) || undefined,
+      organizationid: orgid ? parseInt(orgid) : undefined,
     }, images);
     console.log(error)
     if (error) {
-      Alert.alert('Error', error.message);
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message,
+      });
     } else {
-      Alert.alert('Success', 'Space added successfully');
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Space added successfully',
+      });
       setName('');
       setCapacity('');
       setLocation('');
@@ -160,6 +184,7 @@ export default function AddSpacesScreen() {
       setPph('');
       setOwnerId('');
       setOrganizationId('');
+      navigate("/spaces");
     }
     setLoading(false);
   };
@@ -181,7 +206,7 @@ export default function AddSpacesScreen() {
         </View>
 
         <Text className="text-2xl font-bold mx-5 mt-6" style={{ color: colors.text }}>Basic Details</Text>
-        <View className="mb-6 p-6 space-y-6">
+        <View className="mb-6 p-6 gap-y-6">
           <View>
             <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Name</Text>
             <TextInput
@@ -207,7 +232,7 @@ export default function AddSpacesScreen() {
           </View>
           <View>
             <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Location</Text>
-            <View className="flex-row space-x-3">
+            <View className="flex-row gap-x-3">
               <TextInput
                 placeholder="Panaji, Goa"
                 placeholderTextColor={colors.textSecondary}
@@ -284,7 +309,7 @@ export default function AddSpacesScreen() {
             <View className="border-2 p-5 rounded-xl flex-row flex-wrap" style={{ borderColor: colors.border, backgroundColor: colors.card }}>
               {
                 amenities.map((facility, i)=>(
-                  <TouchableOpacity onPress={()=>handleAmenities(i)} key={facility.id} className="flex-row items-center space-x-2 mb-3 mr-4">
+                  <TouchableOpacity onPress={()=>handleAmenities(i)} key={facility.id} className="flex-row items-center gap-x-2 mb-3 mr-4">
                     <View className="p-2 rounded-lg" style={{ backgroundColor: facility.selected ? (isDark ? '#065f46' : '#dcfce7') : colors.backgroundSecondary }}>
                       <Ionicons name={facility.icon as any} size={15} color={facility.selected ? '#10B981' : colors.textSecondary}/>
                     </View>
@@ -294,7 +319,7 @@ export default function AddSpacesScreen() {
               }
             </View>
           </View>
-          <View className="flex-row items-center space-x-4">
+          <View className="flex-row items-center gap-x-4">
             {
               images.fileUri ?
               <View className="rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
@@ -323,7 +348,7 @@ export default function AddSpacesScreen() {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className="px-4 py-4 rounded-lg mt-4 flex-row items-center justify-center space-x-5"
+            className="px-4 py-4 rounded-lg mt-4 flex-row items-center justify-center gap-x-5"
             style={{ backgroundColor: colors.accent }}
           >
             <Text className="text-lg font-semibold" style={{ color: 'white' }}>

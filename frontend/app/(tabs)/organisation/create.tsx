@@ -15,6 +15,7 @@ import { createOrganisation } from '@/supabase/controllers/organisation.controll
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
+import { useToast } from '@/components/Toast';
 
 export default function CreateOrganisationScreen() {
   const { colors, isDark } = useTheme();
@@ -27,6 +28,7 @@ export default function CreateOrganisationScreen() {
   const [roles, setRoles] = useState<{name:string, priviledges:number}[]>([])
   const { user } = useUser();
   const { push } = useRouter();
+  const { showToast } = useToast();
   const rotateValue = new Animated.Value(0); 
 
   const rotateAnimation = rotateValue.interpolate({
@@ -92,33 +94,41 @@ export default function CreateOrganisationScreen() {
   const handleSubmit = async () => {
     setLoading(true);
     if (!name || !description) {
-      Alert.alert('Error', 'Please fill in all fields.');
+      
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Please fill in all fields.',
+      });
       setLoading(false);
       return;
     }
     try {
       const { data, error } = await createOrganisation(user?.id!, name, description, orgType, images, roles);
       if (error || !data) {
-        Alert.alert('Error', error || 'Failed to create organisation.');
+        showToast({
+          type: 'error',
+          title: 'Error',
+          description: error || 'Failed to create organisation.',
+        });
         setLoading(false);
         return;
       }
-      Alert.alert('Success', 'Organisation created successfully!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Clear the form
-            setName('');
-            setDescription('');
-            setImages({filePath:"", fileData:"", fileType:"", fileUri:""});
-            // You could also navigate back or to another screen
-          }
-        }
-      ]);
+      showToast({
+          type: 'success',
+          title: 'Organisation created successfully!',
+      });
+      setName('');
+      setDescription('');
+      setImages({filePath:"", fileData:"", fileType:"", fileUri:""});
       console.log('Organisation created:', data);
     }
     catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'An unexpected error occurred.',
+      });
     }
     setLoading(false);
     push('/spaces');
@@ -216,7 +226,7 @@ export default function CreateOrganisationScreen() {
             {roles.map((role, i) => (
               <View key={i} style={{ padding: 16, borderRadius: 12, backgroundColor: colors.card, marginBottom: 12, borderWidth: 1, borderColor: colors.border }}>
                 <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>{role.name}</Text>
-                <Text style={{ marginTop: 4, color: colors.textSecondary }}>Privileges: {role.privileges}</Text>
+                <Text style={{ marginTop: 4, color: colors.textSecondary }}>Priviledges: {role.priviledges}</Text>
               </View>
             ))}
           </View>

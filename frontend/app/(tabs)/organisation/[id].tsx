@@ -8,13 +8,14 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getOrganisationById, getUserOrganisations, checkUserMembership, leaveOrganisation } from '@/supabase/controllers/organisation.controller';
 import { getOrganisationJoinRequests, approveJoinRequest, rejectJoinRequest, createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/join-requests.controller';
 import { getOrganisationRoles } from '@/supabase/controllers/roles.controller';
+import { useToast } from '@/components/Toast';
 
 export default function OrganisationDetailsScreen() {
   const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams();
   const { back } = useRouter();
   const { user } = useUser();
-  
+  const { showToast } = useToast();
   const [organisation, setOrganisation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -23,6 +24,7 @@ export default function OrganisationDetailsScreen() {
   const [joinRequests, setJoinRequests] = useState<any[]>([]);
   const [userJoinRequest, setUserJoinRequest] = useState<any>(null);
   const [requestsLoading, setRequestsLoading] = useState(false);
+
 
   useEffect(() => {
     if (id && user?.id) {
@@ -37,7 +39,11 @@ export default function OrganisationDetailsScreen() {
       setLoading(true);
       const result = await getOrganisationById(id as string);
       if (result.error) {
-        Alert.alert('Error', result.error);
+        showToast({
+          type: 'error',
+          title: 'Error',
+          description: result.error,
+        });
         back();
         return;
       }
@@ -52,7 +58,11 @@ export default function OrganisationDetailsScreen() {
       }
     } catch (error) {
       console.error('Error loading organisation:', error);
-      Alert.alert('Error', 'Failed to load organisation details');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to load organisation details',
+      });
       back();
     } finally {
       setLoading(false);
@@ -76,7 +86,7 @@ export default function OrganisationDetailsScreen() {
     if (!user?.id) return;
     try {
       const userOrgs = await getUserOrganisations(user.id);
-      const isAlreadyMember = userOrgs.some((org: any) => org.organisation_id === id);
+      const isAlreadyMember = userOrgs.some((org: any) => org.orgid == id);
       setIsMember(isAlreadyMember);
     } catch (error) {
       console.error('Error checking membership:', error);
@@ -98,7 +108,11 @@ export default function OrganisationDetailsScreen() {
 
   const handleJoinLeave = async () => {
     if (!user?.id || !organisation) {
-      Alert.alert('Error', 'Please log in to continue.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Please log in to continue.',
+      });
       return;
     }
 
@@ -106,16 +120,28 @@ export default function OrganisationDetailsScreen() {
     try {
       if (isMember) {
         await leaveOrganisation(user.id, organisation.id);
-        Alert.alert('Success', `Left ${organisation.name} successfully!`);
+        showToast({
+          type: 'success',
+          title: 'Success',
+          description: `Left ${organisation.name} successfully!`,
+        });
         setIsMember(false);
       } else {
         // Send join request instead of direct joining
         await createJoinRequest(user.id, organisation.id, `I would like to join ${organisation.name}`);
-        Alert.alert('Success', `Join request sent to ${organisation.name}! You'll be notified when it's approved.`);
+        showToast({
+          type: 'success',
+          title: 'Success',
+          description: `Join request sent to ${organisation.name}! You'll be notified when it's approved.`,
+        });
         await checkUserJoinRequest(); // Refresh request status
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to update membership.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to update membership.',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -126,10 +152,18 @@ export default function OrganisationDetailsScreen() {
     
     try {
       await approveJoinRequest(requestId, user.id, requestedRole);
-      Alert.alert('Success', 'Join request approved successfully!');
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Join request approved successfully!',
+      });
       await loadJoinRequests(); // Refresh requests
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to approve request.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to approve request.',
+      });
     }
   };
 
@@ -138,10 +172,18 @@ export default function OrganisationDetailsScreen() {
     
     try {
       await rejectJoinRequest(requestId, user.id);
-      Alert.alert('Success', 'Join request rejected.');
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Join request rejected.',
+      });
       await loadJoinRequests(); // Refresh requests
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to reject request.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to reject request.',
+      });
     }
   };
 

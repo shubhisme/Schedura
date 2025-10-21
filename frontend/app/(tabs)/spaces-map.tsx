@@ -6,6 +6,7 @@ import { WebView } from 'react-native-webview';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSpaces } from '@/supabase/controllers/spaces.controller';
+import { useToast } from '@/components/Toast';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ export default function SpacesMapScreen() {
   const { back } = useRouter();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchSpaces();
@@ -36,7 +38,11 @@ export default function SpacesMapScreen() {
       const { data, error } = await getSpaces();
       if (error) {
         console.error("Error fetching spaces:", error);
-        Alert.alert('Error', 'Failed to load spaces');
+        showToast({
+          type: 'error',
+          title: 'Error',
+          description: 'Failed to load spaces',
+        });
       } else {
         const spacesWithCoords = (data || []).filter((space: any) => 
           space.latitude && space.longitude && 
@@ -47,7 +53,11 @@ export default function SpacesMapScreen() {
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
-      Alert.alert('Error', 'Failed to load spaces');
+      showToast({
+          type: 'error',
+          title: 'Error',
+          description: 'Failed to load spaces',
+      });
     } finally {
       setLoading(false);
     }
@@ -218,32 +228,25 @@ export default function SpacesMapScreen() {
   }
 
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }} className="relative">
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       
       {/* Header */}
       <View style={{ 
         flexDirection: 'row', 
         alignItems: 'center', 
-        justifyContent: 'space-between', 
-        paddingHorizontal: 16, 
-        paddingVertical: 12,
+        justifyContent: 'space-between',
         backgroundColor: colors.card,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
         zIndex: 10,
-      }}>
+      }}
+        className='absolute top-5 left-5 rounded-full'
+      >
         <TouchableOpacity onPress={back} style={{ padding: 8 }}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>
-          All Spaces on Map
-        </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={{ color: colors.textSecondary, fontSize: 14 }}>
-            {spaces.length} spaces
-          </Text>
-        </View>
+        
       </View>
 
       {spaces.length === 0 ? (

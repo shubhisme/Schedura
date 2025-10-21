@@ -56,7 +56,7 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            <View className="flex-row justify-center gap-10 space-x-8 mt-8">
+            <View className="flex-row justify-center gap-10 gap-x-8 mt-8">
               <View className="items-center">
                 <View className="w-12 h-12 bg-black/20 rounded-full items-center justify-center mb-2">
                   <Text className="text-black text-xl">📅</Text>

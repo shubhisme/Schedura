@@ -18,6 +18,7 @@ import type { UserProfile } from '@/types/database.type';
 //@ts-ignore
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from "@/components/Toast";
 
 interface Category {
   id: number;
@@ -49,7 +50,8 @@ const Home = () => {
   const [spaces, setSpaces] = useState<any>([]);
   const [filteredSpaces, setFilteredSpaces] = useState<any>([]);
   const [searchQuery, setSearchQuery] = useState('');
-
+  const { showToast } = useToast();
+  
   const { user: authUser } = useUser();
 
   const fetchProfile = async () => {
@@ -137,7 +139,7 @@ const Home = () => {
             <Text className="text-3xl font-bold" style={{ color: colors.accent }}>Explore</Text>
           </View>
           <View className="flex-row items-center gap-x-3">
-            <TouchableOpacity onPress={() => navigate('/organisation/join' as any)} className="p-2 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)' }}>
+            <TouchableOpacity onPress={() => showToast({type:"info", title:"Space Added Successfully", description:"You "})} className="p-2 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)' }}>
               <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity 

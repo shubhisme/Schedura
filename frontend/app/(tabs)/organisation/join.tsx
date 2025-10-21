@@ -16,6 +16,7 @@ import { createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/j
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
+import { useToast } from '@/components/Toast';
 
 
 export default function JoinOrganisationScreen() {
@@ -27,7 +28,7 @@ export default function JoinOrganisationScreen() {
   const [userJoinRequests, setUserJoinRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useUser();
-  
+  const { showToast } = useToast();
   const search = async (name:string) => {
     setName(name);
     if (name.trim() === '') {
@@ -36,7 +37,11 @@ export default function JoinOrganisationScreen() {
     }
     const data = await searchOrganisations(name);
     if(data.error){
-      Alert.alert('Error', data.error);
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: data.error,
+      });
       return;
     }
     setOrganisations(data.data || []);
@@ -44,18 +49,30 @@ export default function JoinOrganisationScreen() {
 
   const handleJoinOrganisation = async (organisationId: string, organisationName: string) => {
     if (!user?.id) {
-      Alert.alert('Error', 'Please log in to send a join request.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Please log in to send a join request.',
+      });
       return;
     }
 
     setLoading(true);
     try {
       await createJoinRequest(user.id, organisationId, `I would like to join ${organisationName}`);
-      Alert.alert('Success', `Join request sent to ${organisationName}! You'll be notified when it's approved.`);
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: `Join request sent to ${organisationName}! You'll be notified when it's approved.`,
+      });
       // Refresh user join requests
       await loadUserJoinRequests();
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to send join request.');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to send join request.',
+      });
     } finally {
       setLoading(false);
     }

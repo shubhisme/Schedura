@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '../Toast';
 
 interface Location {
   latitude: number;
@@ -27,7 +28,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const [selectedLocation, setSelectedLocation] = useState<Location>(
     initialLocation || { latitude: 15.2993, longitude: 74.124 }
   );
-
+  const { showToast } = useToast();
   const generateMapHTML = () => {
     const backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
     const textColor = isDark ? '#ffffff' : '#333333';
@@ -127,7 +128,11 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
     if (selectedLocation) {
       onLocationSelect(selectedLocation);
     } else {
-      Alert.alert('Please select a location', 'Click on the map to choose a location');
+      showToast({
+        type: 'error',
+        title: 'No Location Selected',
+        description: 'Click on the map to choose a location',
+      });
     }
   };
 
@@ -176,7 +181,7 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
             className="p-4 border-t"
             style={{ backgroundColor: colors.card, borderTopColor: colors.border }}
           >
-            <View className="flex-row items-center space-x-2">
+            <View className="flex-row items-center gap-x-2">
               <Ionicons name="location" size={20} color={colors.accent} />
               <Text className="text-base font-semibold" style={{ color: colors.text }}>
                 Selected Location

@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { updateUserUpiId } from '@/supabase/controllers/user.controller';
 import { useUser } from '@clerk/clerk-expo';
+import { useToast } from '@/components/Toast';
 
 const BillingPaymentsScreen = () => {
   const { colors, isDark } = useTheme();
@@ -15,18 +16,30 @@ const BillingPaymentsScreen = () => {
   const [billingCycle] = useState('Monthly');
   const [upiId, setUpiId] = useState('');
   const [savingUpi, setSavingUpi] = useState(false);
-
+  const { showToast } = useToast();
   const handleSaveUpi = async () => {
     if (!upiId.trim()) {
-      Alert.alert('Validation', 'Please enter a valid UPI ID');
+      showToast({
+        type: 'error',
+        title: 'Validation',
+        description: 'Please enter a valid UPI ID',
+      });
       return;
     }
     setSavingUpi(true);
     try {
       await updateUserUpiId({ upiId: upiId.trim(), id: user?.id! });
-      Alert.alert('Success', 'UPI ID updated successfully');
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: 'UPI ID updated successfully',
+      });
     } catch (err) {
-      Alert.alert('Error', 'Failed to update UPI ID');
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to update UPI ID',
+      });
     } finally {
       setSavingUpi(false);
     }

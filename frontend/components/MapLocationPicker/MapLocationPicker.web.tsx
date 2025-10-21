@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '../Toast';
 
 interface Location {
   latitude: number;
@@ -26,23 +27,35 @@ const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
   const [latitude, setLatitude] = useState(initialLocation?.latitude?.toString() || '15.2993');
   const [longitude, setLongitude] = useState(initialLocation?.longitude?.toString() || '74.124');
   const [address, setAddress] = useState(initialLocation?.address || '');
-
+  const { showToast } = useToast();
   const handleConfirmLocation = () => {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
     
     if (isNaN(lat) || isNaN(lng)) {
-      Alert.alert('Invalid coordinates', 'Please enter valid latitude and longitude values');
+      showToast({
+        type: 'error',
+        title: 'Invalid coordinates',
+        description: 'Please enter valid latitude and longitude values',
+      });
       return;
     }
     
     if (lat < -90 || lat > 90) {
-      Alert.alert('Invalid latitude', 'Latitude must be between -90 and 90');
+      showToast({
+        type: 'error',
+        title: 'Invalid latitude',
+        description: 'Latitude must be between -90 and 90',
+      });
       return;
     }
     
     if (lng < -180 || lng > 180) {
-      Alert.alert('Invalid longitude', 'Longitude must be between -180 and 180');
+      showToast({
+        type: 'error',
+        title: 'Invalid longitude',
+        description: 'Longitude must be between -180 and 180',
+      });
       return;
     }
 

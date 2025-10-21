@@ -10,6 +10,7 @@ import LanguageModal from '@/components/Modals/LanguageModal';
 import type { UserProfile } from '@/types/database.type';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useToast } from '@/components/Toast';
 
 
 const ProfileScreen = () => {
@@ -21,7 +22,7 @@ const ProfileScreen = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const router = useRouter();
   const { theme, colors, isDark, toggleTheme } = useTheme();
-
+  const { showToast } = useToast();
   const MenuSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
     <View className="mb-6">
       <Text style={{ color: colors.textSecondary }} className="text-sm font-bold mb-4 uppercase tracking-wide">
@@ -60,11 +61,12 @@ const ProfileScreen = () => {
 
   const handleNotificationsChange = (value: boolean) => {
     setNotificationsEnabled(value);
-    Alert.alert(
-      'Notifications', 
-      `Notifications ${value ? 'enabled' : 'disabled'}`,
-      [{ text: 'OK' }]
-    );
+    showToast({
+      type: 'info',
+      title: `Notifications ${value ? 'Enabled' : 'Disabled'}`,
+      description: `You have ${value ? 'enabled' : 'disabled'} notifications.`,
+      duration: 3000,
+    })
   };
 
   const handleDarkModeChange = (value: boolean) => {
@@ -91,7 +93,11 @@ const ProfileScreen = () => {
       ar: 'العربية',
       hi: 'हिन्दी'
     };
-    Alert.alert('Language Updated', `Language changed to ${languageNames[languageCode]}`);
+    showToast({
+      type: 'info',
+      title: `Language Changed`,
+      description: `You have changed the language to ${languageNames[languageCode]}.`,
+    });
   };
 
   const getLanguageName = (code: string) => {
