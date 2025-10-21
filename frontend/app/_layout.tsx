@@ -15,8 +15,6 @@ import { useRouter } from 'expo-router';
 import { ToastProvider } from '@/components/Toast';
 
 
-SplashScreen.preventAutoHideAsync();
-
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
