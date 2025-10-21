@@ -115,7 +115,7 @@ export default function BookingDetailsScreen() {
       if(!booking) return;
       await acceptBooking(booking.id);
       // check if connected to google calendar and add event
-      const res = await fetch(`https://schedura.onrender.com/integrations/status?user_id=${booking.spaces?.ownerid}`);
+      const res = await fetch(`https://schedura.onrender.com/integrations/status?userid=${booking.spaces?.ownerid}`);
       const connected = await res.json();
       if(connected){
         try {
@@ -127,7 +127,7 @@ export default function BookingDetailsScreen() {
               description: "Customer: " + booking.users?.name + ", Email: " + booking.users?.email,
               startTime: booking.start,
               endTime: booking.end,
-              user_id: booking.spaces?.ownerid,
+              userid: booking.spaces?.ownerid,
             }),
           });
         } catch (error) {
