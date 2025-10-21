@@ -113,6 +113,25 @@ export default function BookingDetailsScreen() {
     const onSuccess = async (success:any) => {
       if(!booking) return;
       await acceptBooking(booking.id);
+      // check if connected to google calendar and add event
+      const res = await fetch(`https://schedura.onrender.com/integrations/status`);
+      const connected = await res.json();
+      if(connected){
+        try {
+          await fetch("https://schedura.onrender.com/calendar/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: "Client Meeting",
+              description: "Discuss project milestones",
+              startTime: "2025-10-22T10:00:00+05:30",
+              endTime: "2025-10-22T11:00:00+05:30",
+            }),
+          });
+        } catch (error) {
+          console.error("Error adding event to Google Calendar:", error);
+        }
+      }
       navigate('/(info)/payment/successful');
     }
     const onFailure = (error:any) => {

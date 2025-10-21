@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, Switch, Linking } from "react-native";
 import { useToast } from "@/components/Toast";
 
-const BACKEND_URL = "http://192.168.0.130:5000";
+const BACKEND_URL = "https://schedura.onrender.com";
 
 export default function IntegrationsPage() {
   const [googleEnabled, setGoogleEnabled] = useState(false);
