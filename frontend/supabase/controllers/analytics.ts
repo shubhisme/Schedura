@@ -15,8 +15,8 @@ export async function getBookingOfSpace(spaceId: string){ // return all bookings
             return {data: null , error: error || new Error("No data Found!!")};
         }
 
-        // console.log("typeof data" , typeof data);
-        // console.log("data" , data); 
+        console.log("typeof data" , typeof data);
+        console.log("data" , data); 
 
         return {data: data as any[] , error: null};
 
