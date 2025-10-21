@@ -483,7 +483,7 @@ export default function OrganisationDetailsScreen() {
               </View>
               
               <View className="flex-row justify-between">
-                <Text className="text-base" style={{ color: colors.textSecondary }}>Membership Status:</Text>
+                <Text className="text-base" style={{ color: "black" }}>Membership Status:</Text>
                 <View className="px-2 py-1 rounded-md" style={{ backgroundColor: isMember ? colors.accent : colors.backgroundSecondary }}>
                   <Text className="text-sm font-semibold" style={{ color: isMember ? 'white' : colors.textSecondary }}>
                     {isMember ? 'Member' : 'Not a member'}

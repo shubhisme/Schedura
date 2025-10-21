@@ -124,9 +124,10 @@ export default function JoinOrganisationScreen() {
     <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
       <ScrollView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
-        <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.accent }}>
-          <Text className="text-3xl font-bold mt-6" style={{ color: colors.text }}>Join Organisation</Text>
-          <Text className="mt-2 text-xl" style={{ color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+
+        <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.primary }}>
+          <Text className="text-3xl font-bold mt-6" style={{ color: colors.accent }}>Join Organisation</Text>
+          <Text className="mt-2 text-xl" style={{ color: colors.secondary }}>Set up your space and let people {'\n'}reserve it with ease</Text>
           <Image source={CSpace} className="absolute -right-2 bottom-0" />
         </View>
 
