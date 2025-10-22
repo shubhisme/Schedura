@@ -145,21 +145,7 @@ export default function CreateOrganisationScreen() {
           <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
         </View>
 
-        <View className='flex-row gap-x-3' style={{ marginBottom: 24, padding: 24, gap: 24 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            {
-              images.fileUri ?
-              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
-                  <Image 
-                      style={{ height: 80, width: 80 }}
-                      source={{uri:images.fileUri}}
-                  />
-              </View>
-              :
-              <></>
-            }
-                
-          </View>
+        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
           <TouchableOpacity
                   onPress={async () => {
                       const url = await pickAndUploadFile("schedura-space");
@@ -212,7 +198,20 @@ export default function CreateOrganisationScreen() {
           </View>
           
           
-          
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            {
+              images.fileUri ?
+              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
+                  <Image 
+                      style={{ height: 80, width: 80 }}
+                      source={{uri:images.fileUri}}
+                  />
+              </View>
+              :
+              <></>
+            }
+                
+          </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Roles</Text>
             <TouchableOpacity

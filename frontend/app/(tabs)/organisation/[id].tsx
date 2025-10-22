@@ -1,267 +1,502 @@
-import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, Animated, Easing } from 'react-native';
-import SafeBoundingView from '@/components/SafeBoundingView';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { createSpace } from '@/supabase/controllers/spaces.controller';
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system/legacy";
-import { Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, Alert, Image } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@clerk/clerk-expo';
-import { decode } from 'base64-arraybuffer'
-import { AntDesign, Ionicons } from '@expo/vector-icons';
-//@ts-ignore
-import CSpace from "@/assets/images/illustrations/cspace.png"
-import RolesModal from '@/components/Modals/RolesModal';
-import { createOrganisation } from '@/supabase/controllers/organisation.controller';
-import { useFocusEffect } from '@react-navigation/native';
+import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useRouter } from 'expo-router';
+import { getOrganisationById, getUserOrganisations, checkUserMembership, leaveOrganisation } from '@/supabase/controllers/organisation.controller';
+import { getOrganisationJoinRequests, approveJoinRequest, rejectJoinRequest, createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/join-requests.controller';
+import { getOrganisationRoles } from '@/supabase/controllers/roles.controller';
 import { useToast } from '@/components/Toast';
 
-export default function CreateOrganisationScreen() {
+export default function OrganisationDetailsScreen() {
   const { colors, isDark } = useTheme();
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [orgType, setOrgType] = useState<'Educational' | 'CoWorking'>('Educational');
-  const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
-  const [loading, setLoading] = useState(false)
-  const [rolesModalVisible, setRolesModalVisible] = useState(false)
-  const [roles, setRoles] = useState<{name:string, priviledges:number}[]>([])
+  const { id } = useLocalSearchParams();
+  const { back } = useRouter();
   const { user } = useUser();
-  const { push } = useRouter();
   const { showToast } = useToast();
-  const rotateValue = new Animated.Value(0); 
+  const [organisation, setOrganisation] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [joinRequests, setJoinRequests] = useState<any[]>([]);
+  const [userJoinRequest, setUserJoinRequest] = useState<any>(null);
+  const [requestsLoading, setRequestsLoading] = useState(false);
 
-  const rotateAnimation = rotateValue.interpolate({
-      inputRange: [0, 1], 
-      outputRange: ['0deg', '360deg'], 
-  });
-  useFocusEffect(
-    useCallback(() => {
-      let animation: Animated.CompositeAnimation | null = null;
-      if (loading) {
-        animation = Animated.loop(
-          Animated.timing(rotateValue, {
-            toValue: 1,
-            duration: 2000,
-            easing: Easing.linear,
-            useNativeDriver: true,
-          })
-        );
-        animation.start();
-      }
-      return () => {
-        if (animation) {
-          rotateValue.setValue(0);
-          animation.stop();
-        }
-      };
-    }, [loading])
-  );
 
-  async function pickAndUploadFile(spaceId: string) {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["image/*"],
-        copyToCacheDirectory: true
-      });
-  
-      if (result.canceled) {
-        console.log("User cancelled file picker");
-        return null;
-      }
-      const file = result.assets[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${spaceId}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      const base64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      const fileData = decode(base64);
-  
-      setImages({
-        filePath,
-        fileData,
-        fileType: file.mimeType,
-        fileUri: file.uri,
-      });
-  
-      return filePath;
-    } catch (err) {
-      console.error("Error picking/uploading file:", err);
-      return null;
+  useEffect(() => {
+    if (id && user?.id) {
+      loadOrganisationDetails();
+      checkMembership();
+      checkUserJoinRequest();
     }
-  }
-  const handleSubmit = async () => {
-    setLoading(true);
-    if (!name || !description) {
-      
-      showToast({
-        type: 'error',
-        title: 'Error',
-        description: 'Please fill in all fields.',
-      });
-      setLoading(false);
-      return;
-    }
+  }, [id, user?.id]);
+
+  const loadOrganisationDetails = async () => {
     try {
-      const { data, error } = await createOrganisation(user?.id!, name, description, orgType, images, roles);
-      if (error || !data) {
+      setLoading(true);
+      const result = await getOrganisationById(id as string);
+      if (result.error) {
         showToast({
           type: 'error',
           title: 'Error',
-          description: error || 'Failed to create organisation.',
+          description: result.error,
         });
-        setLoading(false);
+        back();
         return;
       }
-      showToast({
-          type: 'success',
-          title: 'Organisation created successfully!',
-      });
-      setName('');
-      setDescription('');
-      setImages({filePath:"", fileData:"", fileType:"", fileUri:""});
-      console.log('Organisation created:', data);
-    }
-    catch (error) {
+      setOrganisation(result.data);
+      
+      // Check if user is owner and load join requests
+      if (user?.id && result.data?.ownerid === user.id) {
+        setIsOwner(true);
+        await loadJoinRequests();
+      } else {
+        setIsOwner(false);
+      }
+    } catch (error) {
+      console.error('Error loading organisation:', error);
       showToast({
         type: 'error',
         title: 'Error',
-        description: 'An unexpected error occurred.',
+        description: 'Failed to load organisation details',
       });
+      back();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    push('/spaces');
   };
 
- 
+  const loadJoinRequests = async () => {
+    if (!user?.id || !id) return;
+    try {
+      setRequestsLoading(true);
+      const requests = await getOrganisationJoinRequests(id as string, user.id);
+      setJoinRequests(requests);
+    } catch (error) {
+      console.error('Error loading join requests:', error);
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  const checkMembership = async () => {
+    if (!user?.id) return;
+    try {
+      const userOrgs = await getUserOrganisations(user.id);
+      const isAlreadyMember = userOrgs.some((org: any) => org.orgid == id);
+      setIsMember(isAlreadyMember);
+    } catch (error) {
+      console.error('Error checking membership:', error);
+    }
+  };
+
+  const checkUserJoinRequest = async () => {
+    if (!user?.id) return;
+    try {
+      const requests = await getUserJoinRequests(user.id);
+      const pendingRequest = requests.find((req: any) => 
+        req.organisation_id === id && req.status === 'pending'
+      );
+      setUserJoinRequest(pendingRequest || null);
+    } catch (error) {
+      console.error('Error checking join request:', error);
+    }
+  };
+
+  const handleJoinLeave = async () => {
+    if (!user?.id || !organisation) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Please log in to continue.',
+      });
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      if (isMember) {
+        await leaveOrganisation(user.id, organisation.id);
+        showToast({
+          type: 'success',
+          title: 'Success',
+          description: `Left ${organisation.name} successfully!`,
+        });
+        setIsMember(false);
+      } else {
+        // Send join request instead of direct joining
+        await createJoinRequest(user.id, organisation.id, `I would like to join ${organisation.name}`);
+        showToast({
+          type: 'success',
+          title: 'Join request sent!',
+          description: `You'll be notified when it's approved.`,
+        });
+        await checkUserJoinRequest(); // Refresh request status
+      }
+    } catch (error: any) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to update membership.',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleApproveRequest = async (requestId: string, requestedRole: number) => {
+    if (!user?.id) return;
+    
+    try {
+      await approveJoinRequest(requestId, user.id, requestedRole);
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Join request approved successfully!',
+      });
+      await loadJoinRequests(); // Refresh requests
+    } catch (error: any) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to approve request.',
+      });
+    }
+  };
+
+  const handleRejectRequest = async (requestId: string) => {
+    if (!user?.id) return;
+    
+    try {
+      await rejectJoinRequest(requestId, user.id);
+      showToast({
+        type: 'success',
+        title: 'Success',
+        description: 'Join request rejected.',
+      });
+      await loadJoinRequests(); // Refresh requests
+    } catch (error: any) {
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: error.message || 'Failed to reject request.',
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+        <View className="flex-1 justify-center items-center">
+          <Text style={{ color: colors.text }} className="text-lg">Loading...</Text>
+        </View>
+      </SafeBoundingView>
+    );
+  }
+
+  if (!organisation) {
+    return (
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+        <View className="flex-1 justify-center items-center">
+          <Text style={{ color: colors.text }} className="text-lg">Organisation not found</Text>
+        </View>
+      </SafeBoundingView>
+    );
+  }
+
   return (
-    <SafeBoundingView style={{ flex: 1, backgroundColor: colors.background }}>
+    <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-      <ScrollView style={{ backgroundColor: colors.backgroundSecondary }}>
-        <View style={{ padding: 24, backgroundColor: colors.primary, borderBottomLeftRadius: 24, borderBottomRightRadius: 24, paddingBottom: 48 }}>
-          <Text style={{ color: colors.text, fontSize: 36, fontWeight: 'bold', marginTop: 24 }}>Create Organisation</Text>
-          <Text style={{ marginTop: 8, fontSize: 20, color: colors.text }}>Set up your space and let people {'\n'}reserve it with ease</Text>
-          <Image source={CSpace} style={{ position: 'absolute', right: -8, bottom: 0 }} />
+      
+      {/* Header */}
+      <View
+        className="flex-row items-center justify-between px-4 py-3 border-b"
+        style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}
+      >
+        <TouchableOpacity onPress={back} className="p-2">
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text className="text-lg font-semibold" style={{ color: colors.text }}>
+          Organisation Details
+        </Text>
+        <View className="w-10" />
+      </View>
+
+      <ScrollView className="flex-1">
+        {/* Organisation Header */}
+        <View
+          className="p-6 items-center mb-4 rounded-b-3xl"
+          style={{ backgroundColor: colors.card }}
+        >
+          {organisation.logo ? (
+            <Image 
+              source={{ uri: organisation.logo }} 
+              className="w-[120px] h-[120px] rounded-full mb-4"
+              style={{ backgroundColor: colors.backgroundSecondary }}
+            />
+          ) : (
+            <View
+              className="w-[120px] h-[120px] rounded-full items-center justify-center mb-4"
+              style={{ backgroundColor: colors.backgroundSecondary }}
+            >
+              <Ionicons name="business" size={48} color={colors.textSecondary} />
+            </View>
+          )}
+          
+          <Text className="text-2xl font-bold text-center mb-2" style={{ color: colors.text }}>
+            {organisation.name}
+          </Text>
+          
+          <View
+            className="px-3 py-1.5 rounded-full mb-4"
+            style={{ backgroundColor: colors.backgroundSecondary }}
+          >
+            <Text style={{ color: colors.text, fontWeight: '600' }}>
+              {organisation.type}
+            </Text>
+          </View>
+
+          {/* Join/Leave/Request Button - Show for non-owners */}
+          {!isOwner && (
+            <TouchableOpacity
+              onPress={handleJoinLeave}
+              disabled={actionLoading || (userJoinRequest && userJoinRequest.status === 'pending')}
+              className={`px-8 py-3 rounded-xl flex-row items-center ${actionLoading ? 'opacity-70' : ''} ${isMember ? 'border' : ''}`}
+              style={{
+                backgroundColor: isMember 
+                  ? colors.backgroundSecondary 
+                  : userJoinRequest && userJoinRequest.status === 'pending'
+                    ? '#FFA500'
+                    : colors.accent,
+                borderColor: colors.border
+              }}
+            >
+              <Ionicons 
+                name={
+                  isMember 
+                    ? "exit-outline" 
+                    : userJoinRequest && userJoinRequest.status === 'pending'
+                      ? "hourglass-outline"
+                      : "add-circle-outline"
+                } 
+                size={20} 
+                color={
+                  isMember 
+                    ? colors.text 
+                    : userJoinRequest && userJoinRequest.status === 'pending'
+                      ? "white"
+                      : "white"
+                } 
+              />
+              <Text className="text-base font-semibold ml-2" style={{ color: isMember ? colors.text : 'white' }}>
+                {actionLoading 
+                  ? 'Processing...' 
+                  : isMember 
+                    ? 'Leave Organisation' 
+                    : userJoinRequest && userJoinRequest.status === 'pending'
+                      ? 'Request Pending'
+                      : 'Send Join Request'
+                }
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
-          <TouchableOpacity
-                  onPress={async () => {
-                      const url = await pickAndUploadFile("schedura-space");
-                      if (url) {
-                        console.log("Uploaded file URL:", url);
-                      }
-                  }}
-                  style={{ borderWidth: 2, borderStyle: 'dashed', padding: 16, borderRadius: 12, height: 80, width: 80, justifyContent: 'center', alignItems: 'center', borderColor: colors.border, backgroundColor: colors.card }}
-                >
-                  <Ionicons name="add" size={24} color={colors.text} />
-          </TouchableOpacity>    
-          <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Organisation Name</Text>
-            <TextInput
-              placeholder="Convention Center"
-              placeholderTextColor={colors.textSecondary}
-              value={name}
-              onChangeText={setName}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.card, color: colors.text }}
-            />
-          </View>
+        {/* Organisation Details */}
+        <View className="px-6 gap-y-6">
           
-          <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Description</Text>
-            <TextInput
-              placeholder="A very spacious and elegant hall with..."
-              placeholderTextColor={colors.textSecondary}
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={50}
-              style={{ padding: 16, borderRadius: 12, borderWidth: 2, borderColor: colors.border, height: 160, backgroundColor: colors.card, color: colors.text }}
-              textAlignVertical='top'
-            />
+          {/* Join Requests Section - Only for Owners */}
+          {isOwner && (
+            <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <View className="flex-row items-center justify-between mb-4">
+                <View className="flex-row items-center">
+                  <Ionicons name="people-outline" size={24} color={colors.accent} />
+                  <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
+                    Join Requests
+                  </Text>
+                </View>
+                {joinRequests.length > 0 && (
+                  <View className="rounded-full min-w-[24px] h-6 justify-center items-center" style={{ backgroundColor: colors.accent }}>
+                    <Text className="text-xs font-semibold" style={{ color: 'white' }}>
+                      {joinRequests.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              
+              {requestsLoading ? (
+                <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
+                  Loading requests...
+                </Text>
+              ) : joinRequests.length === 0 ? (
+                <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
+                  No pending join requests
+                </Text>
+              ) : (
+                <View className="gap-y-3">
+                  {joinRequests.map((request: any) => (
+                    <View key={request.id} className="p-4 rounded-lg border" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
+                      <View className="flex-row items-center mb-3">
+                        <View className="w-10 h-10 rounded-full justify-center items-center" style={{ backgroundColor: colors.accent }}>
+                          <Text className="text-white font-semibold text-base">
+                            {request.users?.name?.charAt(0).toUpperCase() || 'U'}
+                          </Text>
+                        </View>
+                        <View className="flex-1 ml-3">
+                          <Text className="font-semibold" style={{ color: colors.text }}>
+                            {request.users?.name || 'Unknown User'}
+                          </Text>
+                          <Text className="text-sm" style={{ color: colors.textSecondary }}>
+                            {request.users?.email}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      {request.message && (
+                        <Text className="text-sm italic mb-3" style={{ color: colors.textSecondary }}>
+                          "{request.message}"
+                        </Text>
+                      )}
+                      
+                      <View className="flex-col items-start justify-center">
+                        <Text className="text-xs" style={{ color: colors.textSecondary }}>
+                          Requested: {new Date(request.created_at).toLocaleDateString()}
+                        </Text>
+                        
+                        <View className="mt-2 flex-row gap-x-2">
+                          <TouchableOpacity
+                            onPress={() => handleRejectRequest(request.id)}
+                            className="px-3 py-1.5 rounded-md flex-row items-center"
+                            style={{ backgroundColor: '#FF6B6B' }}
+                          >
+                            <Ionicons name="close" size={16} color="white" />
+                            <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
+                              Reject
+                            </Text>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity
+                            onPress={() => {
+                              (async () => {
+                                try {
+                                  // Try to fetch roles for this organisation. Assumes a controller function `getOrganisationRoles`
+                                  // exists and returns either an array or an object with a `data` array.
+                                  const res = await getOrganisationRoles(id as string);
+                                  const roles = Array.isArray(res) ? res :  [];
+
+                                  if (!roles || roles.length === 0) {
+                                    // Fallback: no roles found — ask to approve as 'member'
+                                    Alert.alert(
+                                      'No roles found',
+                                      'No roles configured for this organisation. Approve as Member?',
+                                      [
+                                        { text: 'Cancel', style: 'cancel' },
+                                        { text: 'OK', onPress: () => handleApproveRequest(request.id, 'member') }
+                                      ]
+                                    );
+                                    return;
+                                  }
+
+                                  // Build buttons from roles. Use a sensible field for the role value (key/slug/name).
+                                  const buttons = roles.map((r: any) => {
+                                    const label = r.name ?? r.label ?? String(r.role ?? 'Role');
+                                    const value = r.id;
+                                    return {
+                                      text: label,
+                                      onPress: () => handleApproveRequest(request.id, value)
+                                    };
+                                  });
+
+                                  // Always include cancel as last option
+                                  buttons.push({ text: 'Cancel', style: 'cancel' });
+
+                                  Alert.alert('Assign Role', 'Choose a role for this member:', buttons);
+                                } catch (error) {
+                                  console.error('Error fetching roles:', error);
+                                  Alert.alert(
+                                    'Error',
+                                    'Failed to load roles. Approve as Member instead?',
+                                    [
+                                      { text: 'Cancel', style: 'cancel' },
+                                    ]
+                                  );
+                                }
+                              })()
+                            }}
+                            className="px-3 py-1.5 rounded-md flex-row items-center"
+                            style={{ backgroundColor: colors.accent }}
+                          >
+                            <Ionicons name="checkmark" size={16} color="white" />
+                            <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
+                              Approve
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Description */}
+          <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <View className="flex-row items-center mb-3">
+              <Ionicons name="document-text-outline" size={24} color={colors.accent} />
+              <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
+                About
+              </Text>
+            </View>
+            <Text className="text-base" style={{ color: colors.textSecondary, lineHeight: 24 }}>
+              {organisation.description || 'No description available.'}
+            </Text>
           </View>
-          
-          <View>
-            <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Organization Type</Text>
-            <View style={{ borderColor: colors.border, borderWidth: 2, padding: 20, borderRadius: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 12, backgroundColor: colors.card }}>
-              {(['Educational', 'CoWorking'] as const).map((type) => (
-                <TouchableOpacity 
-                  onPress={() => setOrgType(type)} 
-                  key={type} 
-                  style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: orgType === type ? colors.accent : colors.backgroundSecondary }}
-                >
-                  <Text style={{ fontWeight: '500', color: orgType === type ? 'white' : colors.textSecondary }}>{type}</Text>
-                </TouchableOpacity>
-              ))}
+
+          {/* Organisation Info */}
+          <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+            <View className="flex-row items-center mb-4">
+              <Ionicons name="information-circle-outline" size={24} color={colors.accent} />
+              <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
+                Information
+              </Text>
+            </View>
+            
+            <View className="gap-y-3">
+              <View className="flex-row justify-between">
+                <Text className="text-base" style={{ color: colors.textSecondary }}>Type:</Text>
+                <Text className="text-base font-medium" style={{ color: colors.text }}>
+                  {organisation.type}
+                </Text>
+              </View>
+              
+              <View className="flex-row justify-between">
+                <Text className="text-base" style={{ color: colors.textSecondary }}>Created:</Text>
+                <Text className="text-base font-medium" style={{ color: colors.text }}>
+                  {new Date(organisation.created_at).toLocaleDateString()}
+                </Text>
+              </View>
+              
+              <View className="flex-row justify-between">
+                <Text className="text-base" style={{ color: "black" }}>Membership Status:</Text>
+                <View className="px-2 py-1 rounded-md" style={{ backgroundColor: isMember ? colors.accent : colors.backgroundSecondary }}>
+                  <Text className="text-sm font-semibold" style={{ color: isMember ? 'white' : colors.textSecondary }}>
+                    {isMember ? 'Member' : 'Not a member'}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
-          
-          
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            {
-              images.fileUri ?
-              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
-                  <Image 
-                      style={{ height: 80, width: 80 }}
-                      source={{uri:images.fileUri}}
-                  />
-              </View>
-              :
-              <></>
-            }
-                
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-            <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Roles</Text>
-            <TouchableOpacity
-              onPress={() => setRolesModalVisible(true)}
-              style={{ backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12, flexDirection: 'row', alignItems: 'center' }}
-            >
-              <Ionicons name="add" size={20} color={isDark ? '#000' : '#E9F0E9'} />
-              <Text style={{ color: isDark ? '#000' : '#ffffff', fontWeight: '600', marginLeft: 4 }}>Add Role</Text>
-            </TouchableOpacity>
-          </View>
-          <View>
-            {roles.map((role, i) => (
-              <View key={i} style={{ padding: 16, borderRadius: 12, backgroundColor: colors.card, marginBottom: 12, borderWidth: 1, borderColor: colors.border }}>
-                <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text }}>{role.name}</Text>
-                <Text style={{ marginTop: 4, color: colors.textSecondary }}>Priviledges: {role.priviledges}</Text>
-              </View>
-            ))}
-          </View>
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={loading}
-            style={{ backgroundColor: colors.accent, padding: 16, borderRadius: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 }}
-          >
-            <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
-              Create Organisation
-            </Text>
-            {
-              loading &&
-              <Animated.View
-                style={{
-                  transform: [{ rotate: rotateAnimation }],
-                  borderTopWidth: 2,
-                  borderLeftWidth: 2,
-                  borderRightWidth: 2,
-                  borderBottomWidth: 2,
-                  borderRightColor: 'white',
-                  borderLeftColor: 'white',
-                  borderTopColor: 'white',
-                  borderBottomColor: 'transparent',
-                  height: 20,
-                  width: 20,
-                  borderRadius: 10
-                }}
-              >
-              </Animated.View>
-              }
-            </TouchableOpacity>
         </View>
+
+        {/* Bottom spacing */}
+        <View className="h-8" />
       </ScrollView>
-      <RolesModal visible={rolesModalVisible} setVisible={setRolesModalVisible} setRoles={setRoles} orgid={"123"} />
     </SafeBoundingView>
   );
 }
