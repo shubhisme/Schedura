@@ -8,7 +8,8 @@ import SafeBoundingView from "@/components/SafeBoundingView";
 import { useTheme } from "@/contexts/ThemeContext";
 import dayjs from "dayjs";
 import { supabase } from "@/supabase/supabase";
-import OneUpi from 'one-react-native-upi'
+import RazorpayCheckout from 'react-native-razorpay';
+import { useToast } from '@/components/Toast';
 import { acceptBooking } from "@/supabase/controllers/booking.controller";
 
 interface Booking {
@@ -41,6 +42,7 @@ interface Booking {
 }
 
 export default function BookingDetailsScreen() {
+  const { showToast } = useToast();
   const { id } = useLocalSearchParams();
   const { back, navigate } = useRouter();
   const { user } = useUser();
@@ -48,6 +50,7 @@ export default function BookingDetailsScreen() {
   
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
+  const [payLoading, setPayLoading] = useState(false);
 
   useEffect(() => {
     fetchBookingDetails();
@@ -96,18 +99,80 @@ export default function BookingDetailsScreen() {
     }
   };
 
-  const handleProceedToPayment = () => {
-    if(booking && booking.ownerInfo){
-        const config =  {
-            upiId: booking?.ownerInfo?.upiId,
-            name: booking?.users?.name,
-            note: 'Payment for booking ' + booking.id,
-            amount: ((booking.spaces?.pph || 0) * days).toString(),
-        }
-        OneUpi.initiate(
-              config,
-              onSuccess,
-              onFailure)
+  const handleProceedToPayment = async () => {
+    if (!booking || !booking.spaces?.ownerid) {
+      showToast({ type: 'error', title: 'Payment', description: 'Booking or owner missing.' });
+      return;
+    }
+
+    try {
+      setPayLoading(true);
+      const totalAmount = booking.total_amount || ((booking.spaces?.pph || 0) * days);
+      // Ask backend to create an order tied to the owner so backend can route funds/transfer
+      const createRes = await fetch('https://schedura.onrender.com/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          ownerId: booking.spaces.ownerid,
+          amount: Number(totalAmount),
+        }),
+      });
+      const orderData = await createRes.json();
+      if (!createRes.ok || !orderData?.order_id || !orderData?.key_id) {
+        throw new Error(orderData?.error || 'Failed to create order');
+      }
+
+      const options: any = {
+        key: orderData.key_id,
+        amount: Math.round(Number(orderData.amount) * 100), // paise
+        currency: 'INR',
+        name: booking.spaces?.name || 'Schedura',
+        description: `Booking ${booking.id}`,
+        order_id: orderData.order_id,
+        prefill: {
+          name: booking.users?.name || '',
+          email: booking.users?.email || '',
+        },
+        theme: { color: colors.accent || '#3399cc' },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (paymentResult: any) => {
+          // Send paymentResult to backend for verification & transfer
+          try {
+            const verifyRes = await fetch('https://schedura.onrender.com/payments/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                bookingId: booking.id,
+                order_id: paymentResult.razorpay_order_id,
+                payment_id: paymentResult.razorpay_payment_id,
+                signature: paymentResult.razorpay_signature,
+              }),
+            });
+            const verifyJson = await verifyRes.json();
+            if (!verifyRes.ok || !verifyJson.success) {
+              showToast({ type: 'error', title: 'Payment', description: 'Verification failed.' });
+              onFailure(verifyJson);
+              return;
+            }
+            onSuccess(paymentResult);
+          } catch (err) {
+            console.error('Verification error', err);
+            showToast({ type: 'error', title: 'Payment', description: 'Verification failed.' });
+            onFailure(err);
+          }
+        })
+        .catch((error: any) => {
+          showToast({ type: 'error', title: 'Payment', description: error?.message || 'Payment failed' });
+          onFailure(error);
+        });
+    } catch (err: any) {
+      console.error('Order creation error', err);
+      showToast({ type: 'error', title: 'Payment', description: err?.message || 'Failed to start payment' });
+    } finally {
+      setPayLoading(false);
     }
   };
 
@@ -339,10 +404,11 @@ export default function BookingDetailsScreen() {
           <TouchableOpacity
             onPress={handleProceedToPayment}
             className="rounded-xl py-4 flex-row items-center justify-center bg-primary"
+            disabled={payLoading}
           >
             <Ionicons name="card-outline" size={24} color="#000" />
             <Text className="text-base font-semibold ml-2" style={{ color: '#000' }}>
-              Proceed to Payment
+              {payLoading ? 'Processing...' : 'Proceed to Payment'}
             </Text>
           </TouchableOpacity>
         </View>
