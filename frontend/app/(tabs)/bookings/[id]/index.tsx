@@ -119,6 +119,7 @@ export default function BookingDetailsScreen() {
         }),
       });
       const orderData = await createRes.json();
+      console.log("Order Data: ", orderData);
       if (!createRes.ok || !orderData?.order_id || !orderData?.key_id) {
         throw new Error(orderData?.error || 'Failed to create order');
       }

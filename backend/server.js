@@ -209,7 +209,7 @@ app.post("/payments/create-order", async (req, res) => {
     const amountInPaise = Math.round(Number(amount) * 100);
     const receipt = `receipt_${bookingId}_${Date.now()}`;
 
-    const order = await createRazorpayOrder(amountInPaise, receipt);
+    const order = await createRazorpayOrder(amountInPaise, receipt.slice(0,40));
 
     // Store order metadata in payments table
     await supabase.from("payments").insert([{
