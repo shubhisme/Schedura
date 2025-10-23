@@ -91,7 +91,7 @@ export default function IntegrationsPage() {
           Connect your favorite tools to keep your workflows in sync.
         </Text>
       </View>
-      <ScrollView className="px-6 mt-6">
+      <ScrollView className="px-6 mt-6 " style={{ backgroundColor: colors.tertiary }}>
         {/* Google Calendar Card */}
         <View className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
           <View className="flex-row items-start justify-between">
@@ -100,7 +100,7 @@ export default function IntegrationsPage() {
                 <Ionicons name="logo-google" size={22} color="#16a34a" />
               </View>
               <View className="">
-                <Text className="text-lg font-semibold text-white">Google Calendar</Text>
+                <Text className="text-lg font-semibold " style={{color:colors.text}}>Google Calendar</Text>
                 <Text className="text-gray-500 dark:text-gray-300 break-words whitespace-break-spaces text-xs mt-0.5">
                   Add bookings/events to your Google Calendar
                 </Text>

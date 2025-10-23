@@ -139,7 +139,7 @@ const Home = () => {
             <Text className="text-3xl font-bold" style={{ color: colors.accent }}>Explore</Text>
           </View>
           <View className="flex-row items-center gap-x-3">
-            <TouchableOpacity onPress={() => navigate("/(tabs)/organisation/join")} className="p-2 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)' }}>
+            <TouchableOpacity onPress={() => navigate("/(tabs)/organisation/create")} className="p-2 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.7)' }}>
               <Ionicons name="notifications-outline" size={22} color={colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity 

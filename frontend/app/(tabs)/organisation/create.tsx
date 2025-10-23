@@ -146,6 +146,24 @@ export default function CreateOrganisationScreen() {
         </View>
 
         <View style={{ marginBottom: 24, padding: 24, gap: 24 }}>
+          <View className='flex flex-row items-center gap-x-4'>
+            {
+              images.fileUri ?
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            
+              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
+                  <Image 
+                      style={{ height: 80, width: 80 }}
+                      source={{uri:images.fileUri}}
+                  />
+              </View>
+              
+            
+                
+          </View>
+          :
+              <></> 
+              }
           <TouchableOpacity
                   onPress={async () => {
                       const url = await pickAndUploadFile("schedura-space");
@@ -156,7 +174,8 @@ export default function CreateOrganisationScreen() {
                   style={{ borderWidth: 2, borderStyle: 'dashed', padding: 16, borderRadius: 12, height: 80, width: 80, justifyContent: 'center', alignItems: 'center', borderColor: colors.border, backgroundColor: colors.card }}
                 >
                   <Ionicons name="add" size={24} color={colors.text} />
-          </TouchableOpacity>    
+          </TouchableOpacity>
+          </View>    
           <View>
             <Text style={{ marginBottom: 4, fontWeight: '600', fontSize: 20, color: colors.text }}>Organisation Name</Text>
             <TextInput
@@ -191,27 +210,14 @@ export default function CreateOrganisationScreen() {
                   key={type} 
                   style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, backgroundColor: orgType === type ? colors.accent : colors.backgroundSecondary }}
                 >
-                  <Text style={{ fontWeight: '500', color: orgType === type ? 'white' : colors.textSecondary }}>{type}</Text>
+                  <Text style={{ fontWeight: '500', color: orgType === type ? colors.primary : colors.text }}>{type}</Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
           
           
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-            {
-              images.fileUri ?
-              <View style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, width: 'auto' }}>
-                  <Image 
-                      style={{ height: 80, width: 80 }}
-                      source={{uri:images.fileUri}}
-                  />
-              </View>
-              :
-              <></>
-            }
-                
-          </View>
+          
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
             <Text style={{ color: colors.text, fontSize: 20, fontWeight: 'bold' }}>Roles</Text>
             <TouchableOpacity
@@ -235,7 +241,7 @@ export default function CreateOrganisationScreen() {
             disabled={loading}
             style={{ backgroundColor: colors.accent, padding: 16, borderRadius: 16, marginTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 20 }}
           >
-            <Text style={{ color: 'white', fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
+            <Text style={{ color: colors.primary, fontSize: 18, textAlign: 'center', fontWeight: '600' }}>
               Create Organisation
             </Text>
             {
@@ -247,9 +253,9 @@ export default function CreateOrganisationScreen() {
                   borderLeftWidth: 2,
                   borderRightWidth: 2,
                   borderBottomWidth: 2,
-                  borderRightColor: 'white',
-                  borderLeftColor: 'white',
-                  borderTopColor: 'white',
+                  borderRightColor: colors.primary,
+                  borderLeftColor: colors.primary,
+                  borderTopColor: colors.primary,
                   borderBottomColor: 'transparent',
                   height: 20,
                   width: 20,

@@ -127,7 +127,7 @@ export default function JoinOrganisationScreen() {
 
         <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.primary }}>
           <Text className="text-3xl font-bold mt-6" style={{ color: colors.accent }}>Join Organisation</Text>
-          <Text className="mt-2 text-xl" style={{ color: colors.secondary }}>Set up your space and let people {'\n'}reserve it with ease</Text>
+          <Text className="mt-2 text-xl" style={{ color: colors.accent }}>Set up your space and let people {'\n'}reserve it with ease</Text>
           <Image source={CSpace} className="absolute -right-2 bottom-0" />
         </View>
 

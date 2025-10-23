@@ -6,6 +6,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import Totalbookings from '@/components/Analytics/Totalbookings';
 import Daysofweek from '@/components/Analytics/Daysofweek';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface DataPointInfo {
   month: string;
@@ -17,6 +18,7 @@ interface DataPointInfo {
 
 export default function MangeSpaceScreen() {
   const { id } = useLocalSearchParams();
+  const { colors, isDark } = useTheme();
 
   const [labels, setLabels] = useState<string[]>([]);
   const [dataSet, setDataSet] = useState<number[]>([]);
@@ -113,8 +115,10 @@ export default function MangeSpaceScreen() {
 
       {dataSet.length > 0 && (
         <View className='bg-transparent px-4'>
-          <Text className='font-semibold text-center text-xl mt-4'>Month On Month Growth</Text>
-          <Text className='text-center text-sm mb-2 text-gray-800'>
+          <Text style={{ color: colors.text, fontWeight: '600', textAlign: 'center', fontSize: 20, marginTop: 12 }}>
+            Month On Month Growth
+          </Text>
+          <Text style={{ color: colors.textSecondary, textAlign: 'center', fontSize: 13, marginBottom: 8 }}>
             Shows the monthly growth of booked spaces. Tap any point for details.
           </Text>
 
@@ -130,6 +134,7 @@ export default function MangeSpaceScreen() {
             </View>
           )}
 
+          {/* Chart: use theme colors */}
           <LineChart
             data={{
               labels: labels,
@@ -139,17 +144,19 @@ export default function MangeSpaceScreen() {
             height={280}
             yAxisInterval={1}
             chartConfig={{
-              backgroundColor: "#f7f7f7",
+              backgroundColor: isDark ? "#0b1220" : "#f7f7f7",
+              backgroundGradientFrom: isDark ? "#0b1220" : "#ffffff",
+              backgroundGradientTo: isDark ? "#0b1220" : "#ffffff",
               backgroundGradientFromOpacity: 0,
               backgroundGradientToOpacity: 0,
               decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(60, 60, 60, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(60, 60, 60, ${opacity})`,
+              color: (opacity = 1) => `${colors.text.replace(/^#/, '') ? `${hexToRgba(colors.text, opacity)}` : `rgba(60,60,60,${opacity})`}`,
+              labelColor: (opacity = 1) => `${hexToRgba(colors.textSecondary, opacity)}`,
               propsForDots: {
                 r: "8",
                 strokeWidth: "2",
-                stroke: "#ffa726",
-                fill: "#fff"
+                stroke: isDark ? "#ffa726" : "#ffa726",
+                fill: isDark ? "#0b1220" : "#fff"
               }
             }}
             fromZero={true}
@@ -197,23 +204,37 @@ export default function MangeSpaceScreen() {
         <TouchableOpacity 
           activeOpacity={1}
           onPress={() => setShowModal(false)}
-          className='flex-1 justify-center items-center bg-black/50'
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.5)'
+          }}
         >
           <TouchableOpacity 
             activeOpacity={1}
             onPress={(e) => e.stopPropagation()}
-            className='bg-white rounded-2xl p-6 mx-6 w-80 shadow-lg'
+            style={{
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              marginHorizontal: 12,
+              width: 320,
+              shadowColor: '#000',
+              shadowOpacity: 0.1,
+              shadowRadius: 10,
+            }}
           >
             {selectedPoint && (
               <>
-                <View className='items-center mb-4'>
-                  <Text className='text-gray-500 text-sm'>
+                <View style={{ alignItems: 'center', marginBottom: 12 }}>
+                  <Text style={{ color: colors.textSecondary, fontSize: 13 }}>
                     {months_full[selectedPoint.month] || selectedPoint.month}
                   </Text>
-                  <Text className='text-4xl font-bold text-gray-600 mt-1'>
+                  <Text style={{ color: colors.text, fontSize: 36, fontWeight: '700', marginTop: 6 }}>
                     {selectedPoint.value}
                   </Text>
-                  <Text className='text-gray-600 text-sm'>bookings</Text>
+                  <Text style={{ color: colors.textSecondary, fontSize: 13 }}>bookings</Text>
                 </View>
 
                 <View className='border-t border-gray-200 pt-4 gap-y-3'>
@@ -263,9 +284,9 @@ export default function MangeSpaceScreen() {
 
                 <TouchableOpacity
                   onPress={() => setShowModal(false)}
-                  className='bg-gray-600 rounded-lg py-3 mt-6'
+                  style={{ backgroundColor: colors.accent, borderRadius: 10, paddingVertical: 12, marginTop: 16 }}
                 >
-                  <Text className='text-white text-center font-semibold'>Close</Text>
+                  <Text style={{ color: colors.background, textAlign: 'center', fontWeight: '600' }}>Close</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -276,4 +297,15 @@ export default function MangeSpaceScreen() {
       <Daysofweek/>
     </ScrollView>
   );
+}
+
+// helper: convert hex to rgba string
+function hexToRgba(hex: string, alpha = 1) {
+  if (!hex) return `rgba(60,60,60,${alpha})`;
+  const cleaned = hex.replace('#', '');
+  const bigint = parseInt(cleaned, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
 }

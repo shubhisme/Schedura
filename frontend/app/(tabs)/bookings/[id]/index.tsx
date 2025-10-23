@@ -262,7 +262,7 @@ export default function BookingDetailsScreen() {
   const days = calculateDays();
 
   return (
-    <SafeAreaView className="flex-1 h-full" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView className="flex-1 h-full" style={{ backgroundColor: colors.tertiary }}>
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
      
 

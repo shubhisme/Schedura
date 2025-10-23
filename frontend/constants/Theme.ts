@@ -51,7 +51,7 @@ export const Colors = {
     textTertiary: '#9CA3AF',
     
     // Background colors
-    background: '#111827',
+    background: '#151515',
     backgroundSecondary: '#151515',
     backgroundTertiary: '#374151',
     

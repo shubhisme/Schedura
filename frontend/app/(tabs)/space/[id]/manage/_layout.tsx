@@ -25,7 +25,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <View
         className="px-6 pt-6 pb-12 rounded-b-[24px]"
-        style={{ backgroundColor: colors.accent }}
+        style={{  backgroundColor: colors.primary }}
       >
         <Text className="text-4xl font-bold mt-6" style={{ color: colors.text }}>Dashboard</Text>
         <Text className="mt-2 text-xl" style={{ color: colors.text }}>
@@ -54,11 +54,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Feather
                     name={option.icon as any}
                     size={15}
-                    color={isActive ? "white" : colors.text}
+                    color={isActive ? isDark ? "black" : "white" : colors.text}
                   />
                   <Text
                     className="text-xs font-semibold mt-1"
-                    style={{ color: isActive ? "white" : colors.text }}
+                    style={{ color: isActive ? isDark ? "black" : "white" : colors.text }}
                   >
                     {option.name}
                   </Text>

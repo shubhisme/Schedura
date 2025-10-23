@@ -98,7 +98,7 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
           className="flex-1 px-4 py-2.5 rounded-xl border"
           style={{ backgroundColor: colors.accent, borderColor: colors.border }}
         >
-          <Text className="text-center font-semibold" style={{ color: 'white' }}>Accept</Text>
+          <Text className="text-center font-semibold" style={{ color: colors.card }}>Accept</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

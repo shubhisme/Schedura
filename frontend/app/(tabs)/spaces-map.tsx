@@ -83,9 +83,12 @@ export default function SpacesMapScreen() {
       description: space.description || ''
     }));
 
-    const backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
-    const textColor = isDark ? '#ffffff' : '#333333';
-    const secondaryTextColor = isDark ? '#cccccc' : '#666666';
+    const backgroundColor = isDark ? '#0b1220' : '#ffffff';
+    const textColor = isDark ? '#e6eef8' : '#111827';
+    const secondaryTextColor = isDark ? '#c9d6ea' : '#6b7280';
+    // Popup button colors (make them visible in both modes)
+    const buttonBg = isDark ? '#1f2937' : '#E9F0E9';
+    const buttonText = isDark ? '#e6eef8' : '#000000';
 
     return `
       <!DOCTYPE html>
@@ -139,8 +142,8 @@ export default function SpacesMapScreen() {
           }
           .popup-button {
             display: inline-block;
-            background: #E9F0E9;
-            color: black;
+            background: ${buttonBg};
+            color: ${buttonText};
             padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
@@ -312,7 +315,7 @@ export default function SpacesMapScreen() {
                   borderRadius: 8 
                 }}
               >
-                <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+                <Text style={{ color: colors.primary, fontSize: 12, fontWeight: '600' }}>
                   Refresh
                 </Text>
               </TouchableOpacity>

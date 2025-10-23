@@ -275,10 +275,10 @@ export default function HallBooking() {
             <View className="rounded-lg overflow-hidden">
               <Calendar
                   theme={{
-                    backgroundColor: colors.card,
+                    backgroundColor: colors.background,
                     calendarBackground: colors.card,
                     textSectionTitleColor: colors.textSecondary,
-                    selectedDayBackgroundColor: colors.accent,
+                    selectedDayBackgroundColor: colors.text,
                     selectedDayTextColor: '#ffffff',
                     todayTextColor: colors.link,
                     dayTextColor: colors.text,
@@ -323,8 +323,8 @@ export default function HallBooking() {
             <Text className="text-2xl font-bold" style={{ color: colors.text }}>₹{space.pph * Object.keys(markedDates).length}</Text>
             <Text style={{ color: colors.textSecondary }}>₹{space.pph} per day</Text>
           </View>
-          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} className="rounded-lg px-8 py-3" style={{ backgroundColor: colors.accent }}>
-            <Text className="text-base font-semibold" style={{ color: 'white' }}>Request Booking</Text>
+          <TouchableOpacity disabled={functionalLoading} onPress={sendBookingRequest} className="rounded-2xl px-8 py-3" style={{ backgroundColor: colors.accent }}>
+            <Text className="text-base font-semibold" style={{ color: colors.primary }}>Request Booking</Text>
           </TouchableOpacity>
         </View>
       </View>

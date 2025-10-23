@@ -74,6 +74,7 @@ const RolesModal = ({
                   <Text style={{color: colors.accent}} className="text-sm font-medium mb-2">Role Name</Text>
                   <TextInput
                     className="border border-gray-300 rounded-lg px-3 py-2"
+                    style={{color: colors.accent}}
                     placeholder="Enter role name"
                     value={roleName}
                     onChangeText={setRoleName}
@@ -120,7 +121,7 @@ const RolesModal = ({
                   disabled={!roleName.trim()}
                 >
                   <Text
-                    style={{color: roleName.trim() ? colors.primary : colors.textTertiary}}
+                    style={{color: colors.textTertiary}}
                     className={`font-medium`}
                   >
                     Submit
