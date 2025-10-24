@@ -18,7 +18,6 @@
         "foregroundImage": "./assets/images/logo.jpg",
         "backgroundColor": "#E9F0E9"
       },
-      "edgeToEdgeEnabled": false,
       "package": "com.shridkdev.schedura"
     },
     "web": {

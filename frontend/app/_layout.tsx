@@ -14,7 +14,6 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useRouter } from 'expo-router';
 import { ToastProvider } from '@/components/Toast';
 
-
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!} tokenCache={tokenCache}>
@@ -40,8 +39,11 @@ function AuthGate() {
     if (!user) return;
     const status = await updateUserInfo(user);
     if (status === 201 || status === 409) {
-      SplashScreen.hide();
+      SplashScreen.hideAsync();
       replace("/(tabs)/home");
+    }
+    else{
+      SplashScreen.hideAsync();
     }
   };
 

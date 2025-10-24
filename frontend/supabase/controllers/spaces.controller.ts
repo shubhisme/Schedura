@@ -1,7 +1,7 @@
 import type { Space } from "@/types/database.type";
 import { supabase } from "../supabase"
 
-export async function createSpace(spaceData:Space, file: {filePath:string, fileData:string, fileType:string}) {
+export async function createSpace(spaceData:Space, files: {filePath:string, fileData:string, fileType:string}[]) {
   const { data, error } = await supabase
     .from("spaces")
     .insert([
@@ -31,19 +31,26 @@ export async function createSpace(spaceData:Space, file: {filePath:string, fileD
     console.error("Error inserting amenities:", amenitiesError);
     return { data: null, error: amenitiesError };
   }
+  const uploadResults = await Promise.all(
+    files.map(async (file) => {
+      const uploadedFileLink = await uploadFile({...file, table: "spaces"});
 
-  const uploadedFileLink = await uploadFile({...file, table: "spaces"});
+      await supabase
+        .from("spaces-images")
+        .insert([
+          {
+            spaceid:spaceId,
+            link: uploadedFileLink
+          }
+        ])
+        .select();
+    })
+  )
   
-  await supabase
-    .from("spaces-images")
-    .insert([
-      {
-        spaceid:spaceId,
-        link: uploadedFileLink
-      }
-    ])
-    .select();
-    
+  if(uploadResults.some(result => result === null)) {
+    console.error("Error uploading one or more images");
+    return { data: null, error: new Error("Error uploading one or more images") };
+  } 
   return {data, error};
 }
 

@@ -178,7 +178,7 @@ export default function BookingDetailsScreen() {
 
     const onSuccess = async (success:any) => {
       if(!booking) return;
-      await acceptBooking(booking.id);
+      await acceptBooking(booking.id, );
       // check if connected to google calendar and add event
       const res = await fetch(`https://schedura.onrender.com/integrations/status?userid=${booking.spaces?.ownerid}`);
       const connected = await res.json();

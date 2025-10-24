@@ -40,7 +40,7 @@ export default function RequestsSpacesScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={getMyRequests}
-          colors={[colors.text]}
+          colors={["black"]}
           tintColor={colors.text}
         />
       }

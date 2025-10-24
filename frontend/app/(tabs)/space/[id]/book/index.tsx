@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, TextInput } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, TextInput, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
@@ -15,10 +15,118 @@ import { getUserRole, isUserInOrganization } from "@/supabase/controllers/user_r
 import { getRole } from "@/supabase/controllers/roles.controller";
 import { useFocusEffect } from "@react-navigation/native";
 
+// Skeleton Loader Component
+const SkeletonLoader: React.FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
+  const animatedValue = new Animated.Value(0);
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          backgroundColor: '#E0E0E0',
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+};
+
+// Header Skeleton
+const HeaderSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View className="p-6 pb-4">
+    <View className="flex-row justify-between items-start mb-4">
+      <View className="flex-1">
+        <SkeletonLoader width="80%" height={36} style={{ marginBottom: 8 }} />
+      </View>
+      <SkeletonLoader width={80} height={32} style={{ borderRadius: 8 }} />
+    </View>
+
+    <View className="flex-row items-center mb-4">
+      <SkeletonLoader width={70} height={24} style={{ borderRadius: 20, marginRight: 12 }} />
+      <SkeletonLoader width={140} height={16} />
+    </View>
+  </View>
+);
+
+// Calendar Skeleton
+const CalendarSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View className="rounded-lg overflow-hidden mx-6 mb-6" style={{ backgroundColor: colors.card, padding: 16 }}>
+    {/* Calendar Header */}
+    <View className="flex-row justify-between items-center mb-4">
+      <SkeletonLoader width={30} height={30} style={{ borderRadius: 15 }} />
+      <SkeletonLoader width={120} height={24} />
+      <SkeletonLoader width={30} height={30} style={{ borderRadius: 15 }} />
+    </View>
+
+    {/* Day Headers */}
+    <View className="flex-row justify-between mb-3">
+      {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+        <SkeletonLoader key={i} width={40} height={20} />
+      ))}
+    </View>
+
+    {/* Calendar Grid */}
+    {[1, 2, 3, 4, 5].map((row) => (
+      <View key={row} className="flex-row justify-between mb-2">
+        {[1, 2, 3, 4, 5, 6, 7].map((col) => (
+          <SkeletonLoader key={col} width={40} height={40} style={{ borderRadius: 20 }} />
+        ))}
+      </View>
+    ))}
+  </View>
+);
+
+// Reason Input Skeleton
+const ReasonInputSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View className="px-6 mb-6">
+    <SkeletonLoader width={80} height={20} style={{ marginBottom: 8 }} />
+    <SkeletonLoader width="100%" height={160} style={{ borderRadius: 12 }} />
+  </View>
+);
+
+// Bottom Bar Skeleton
+const BottomBarSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View className="border-t p-4 px-6" style={{ backgroundColor: colors.card, borderTopColor: colors.border }}>
+    <View className="flex-row items-center justify-between">
+      <View>
+        <SkeletonLoader width={100} height={28} style={{ marginBottom: 4 }} />
+        <SkeletonLoader width={80} height={16} />
+      </View>
+      <SkeletonLoader width={150} height={48} style={{ borderRadius: 16 }} />
+    </View>
+  </View>
+);
+
 export default function HallBooking() {
   const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams();
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true);
   const [calendarLoading, setCalendarLoading] = useState(false) 
   const [functionalLoading, setFunctionalLoading] = useState(false) 
   const [markedDates, setMarkedDates] = useState({});
@@ -57,6 +165,7 @@ export default function HallBooking() {
       setLoading(false);
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
+      setLoading(false);
     }
   };
 
@@ -202,12 +311,41 @@ export default function HallBooking() {
     }
   };
 
-  if (loading || !space || !privilegeChecked) {
+  // Loading skeleton
+  if (loading || !privilegeChecked) {
+    return (
+      <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        <ScrollView className="flex-1 relative" showsVerticalScrollIndicator={false}>
+          <View
+            className="flex-row justify-between items-center px-6 z-10 h-14"
+            style={{ backgroundColor: colors.backgroundSecondary }}
+          >
+            <View className="rounded-full p-3" style={{ backgroundColor: 'rgba(0,0,0,0.3)', width: 41, height: 41 }} />
+          </View>
+
+          <View
+            className="rounded-t-2xl -mt-6 relative"
+            style={{ backgroundColor: colors.backgroundSecondary }}
+          >
+            <HeaderSkeleton colors={colors} />
+            <CalendarSkeleton colors={colors} />
+            <ReasonInputSkeleton colors={colors} />
+          </View>
+        </ScrollView>
+
+        <BottomBarSkeleton colors={colors} />
+      </SafeBoundingView>
+    );
+  }
+
+  if (!space) {
     return (
       <SafeAreaView className="flex-1">
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
         <View className="flex-1 items-center justify-center" style={{ backgroundColor: colors.background }}>
-          <Text style={{ color: colors.textSecondary }}>Loading...</Text>
+          <Text style={{ color: colors.textSecondary }}>Space not found</Text>
         </View>
       </SafeAreaView>
     );

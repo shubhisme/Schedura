@@ -6,6 +6,8 @@ import { Feather } from '@expo/vector-icons';
 //@ts-ignore
 import { Link, usePathname, useLocalSearchParams, Stack } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/supabase/supabase';
 
 let navOptions = [
   { name: "Overview", suffix: "/manage", icon: "bar-chart" },
@@ -18,6 +20,49 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { colors, isDark } = useTheme();
   const pathname = usePathname();
   const { id } = useLocalSearchParams(); // 👈 get space id
+  const [showLogs, setShowLogs] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkIfCoworking();
+  }, [id]);
+
+  const checkIfCoworking = async () => {
+    try {
+      setLoading(true);
+      // Get space with organisation info
+      const { data: space, error: spaceErr } = await supabase
+        .from('spaces')
+        .select('organizationid')
+        .eq('id', id as string)
+        .single();
+
+      if (spaceErr || !space?.organizationid) {
+        setShowLogs(false);
+        return;
+      }
+
+      // Get organisation type
+      const { data: org, error: orgErr } = await supabase
+        .from('organisations')
+        .select('type')
+        .eq('id', space.organizationid)
+        .single();
+
+      if (!orgErr && org?.type === 'CoWorking') {
+        setShowLogs(true);
+      } else {
+        setShowLogs(false);
+      }
+    } catch (err) {
+      console.error('Error checking coworking status:', err);
+      setShowLogs(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredNavOptions = showLogs ? navOptions : navOptions.filter(opt => opt.name !== 'Logs');
 
   return (
     <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
@@ -39,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           className="flex-row items-center px-4 py-3 rounded-[16px] shadow-lg"
           style={{ backgroundColor: colors.card }}
         >
-          {navOptions.map((option, index) => {
+          {filteredNavOptions.map((option, index) => {
             const href = `/space/${id}${option.suffix}` as any;
             const isActive = pathname === href;
 

@@ -37,7 +37,7 @@ export default function AddSpacesScreen() {
   const [ownerid, setOwnerId] = useState('');
   const [organizationid, setOrganizationId] = useState('');
   const [category, setCategory] = useState<'Wedding' | 'Corporate' | 'Birthday' | 'Conference' | 'Social'>('Social');
-  const [images, setImages] = useState<any>({filePath:"", fileData:"", fileType:"", fileUri:""})
+  const [images, setImages] = useState<any[]>([]);
   const { user } = useUser();
   const [loading, setLoading] = useState(false)
   const [amenities, setAmenities] = useState([
@@ -70,39 +70,64 @@ export default function AddSpacesScreen() {
     }
   }, [loading]);
 
-  async function pickAndUploadFile(spaceId: string) {
+  async function pickAndUploadFiles() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ["image/*"],
-        copyToCacheDirectory: true
+        copyToCacheDirectory: true,
+        multiple: true
       });
   
       if (result.canceled) {
         console.log("User cancelled file picker");
         return null;
       }
-      const file = result.assets[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${spaceId}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      const base64 = await FileSystem.readAsStringAsync(file.uri, {
-        encoding: FileSystem.EncodingType.Base64,
+      
+      const newImages = await Promise.all(
+        result.assets.map(async (file) => {
+          const fileExt = file.name.split(".").pop();
+          const fileName = `space-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+          const filePath = `${fileName}`;
+          const base64 = await FileSystem.readAsStringAsync(file.uri, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          const fileData = decode(base64);
+          
+          return {
+            filePath,
+            fileData,
+            fileType: file.mimeType,
+            fileUri: file.uri,
+          };
+        })
+      );
+      
+      setImages((prev) => [...prev, ...newImages]);
+      showToast({
+        type: 'success',
+        title: 'Images Added',
+        description: `${newImages.length} image(s) added successfully`,
       });
-      const fileData = decode(base64);
-  
-      setImages({
-        filePath,
-        fileData,
-        fileType: file.mimeType,
-        fileUri: file.uri,
-      });
-  
-      return filePath;
     } catch (err) {
       console.error("Error picking/uploading file:", err);
+      showToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to pick images',
+      });
       return null;
     }
   }
+  
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    showToast({
+      type: 'info',
+      title: 'Image Removed',
+      description: 'Image removed from upload list',
+    });
+  };
+
   const handleSubmit = async () => {
     // Require signed-in user
     if (!user) {
@@ -137,11 +162,11 @@ export default function AddSpacesScreen() {
     }
 
     setLoading(true);
-    if (!name || !capacity || !location || !description || !pph) {
+    if (!name || !capacity || !location || !description || !pph || images.length === 0) {
       showToast({
         type: 'error',
         title: 'Error',
-        description: 'Please fill all fields',
+        description: 'Please fill all fields and upload at least one image',
       });
       setLoading(false);
       return;
@@ -184,6 +209,7 @@ export default function AddSpacesScreen() {
       setPph('');
       setOwnerId('');
       setOrganizationId('');
+      setImages([]);
       navigate("/spaces");
     }
     setLoading(false);
@@ -277,7 +303,7 @@ export default function AddSpacesScreen() {
             />
           </View>
           <View>
-            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Price per Day {"($)"}</Text>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Price per Day {"(Rs)"}</Text>
             <TextInput
               placeholder="20000"
               placeholderTextColor={colors.textSecondary}
@@ -319,30 +345,37 @@ export default function AddSpacesScreen() {
               }
             </View>
           </View>
-          <View className="flex-row items-center gap-x-4">
-            {
-              images.fileUri ?
-              <View className="rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
-                  <Image 
-                      className="h-20 w-20"
-                      source={{uri:images.fileUri}}
-                  />
-              </View>
-              :
-              <></>
-            }
-            <TouchableOpacity
-                  onPress={async () => {
-                      const url = await pickAndUploadFile("schedura-space");
-                      if (url) {
-                        console.log("Uploaded file URL:", url);
-                      }
-                  }}
-                  className="border-2 border-dashed p-4 rounded-xl h-20 w-20 items-center justify-center"
-                  style={{ borderColor: colors.border, backgroundColor: colors.card }}
-                >
-                  <Ionicons name="add" size={24} color={colors.text} />
-            </TouchableOpacity>      
+          <View>
+            <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>
+              Images ({images.length})
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row overflow-visible">
+              {images.map((img, index) => (
+                <View key={index} className="relative mr-2 overflow-visible">
+                  <View className="rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
+                    <Image 
+                      className="h-24 w-24"
+                      source={{uri: img.fileUri}}
+                    />
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => removeImage(index)}
+                    className="absolute -top-2 -right-2 rounded-full p-1 z-10"
+                    style={{ backgroundColor: colors.error }}
+                  >
+                    <Ionicons name="close" size={16} color="white" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <TouchableOpacity
+                onPress={pickAndUploadFiles}
+                className="border-2 border-dashed rounded-xl h-24 w-24 items-center justify-center"
+                style={{ borderColor: colors.border, backgroundColor: colors.card }}
+              >
+                <Ionicons name="add" size={28} color={colors.text} />
+                <Text className="text-xs mt-1" style={{ color: colors.textSecondary }}>Add Images</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
 
           <TouchableOpacity

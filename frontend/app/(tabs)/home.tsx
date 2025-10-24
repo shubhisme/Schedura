@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   StatusBar,
   RefreshControl,
+  Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaces } from "@/supabase/controllers/spaces.controller";
@@ -41,10 +42,90 @@ const categories: Category[] = [
   { id: 5, name: "Social", icon: "chatbubbles-outline" },
 ];
 
+// Skeleton Component
+const SkeletonLoader: FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
+  const animatedValue = new Animated.Value(0);
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          backgroundColor: '#E0E0E0',
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+};
+
+// Featured Venue Skeleton
+const FeaturedVenueSkeleton: FC<{ isDark: boolean }> = ({ isDark }) => (
+  <View className="w-72 h-72 rounded-3xl overflow-hidden mr-4" style={{ backgroundColor: isDark ? '#2A2A2A' : '#F0F0F0' }}>
+    <SkeletonLoader width="100%" height="100%" style={{ borderRadius: 24 }} />
+    <View className="absolute bottom-0 left-0 right-0 p-4">
+      <SkeletonLoader width="70%" height={24} style={{ marginBottom: 8 }} />
+      <View className="flex-row gap-x-3">
+        <SkeletonLoader width={100} height={16} />
+        <SkeletonLoader width={80} height={16} />
+      </View>
+    </View>
+  </View>
+);
+
+// Recommended Venue Skeleton
+const RecommendedVenueSkeleton: FC<{ isDark: boolean }> = ({ isDark }) => (
+  <View className="w-64 h-64 rounded-2xl overflow-hidden mr-4" style={{ backgroundColor: isDark ? '#2A2A2A' : '#F0F0F0' }}>
+    <SkeletonLoader width="100%" height="100%" style={{ borderRadius: 16 }} />
+    <View className="absolute bottom-0 left-0 right-0 p-3">
+      <SkeletonLoader width="60%" height={20} />
+    </View>
+  </View>
+);
+
+// Promotion Skeleton
+const PromotionSkeleton: FC<{ isDark: boolean }> = ({ isDark }) => (
+  <View className="w-80 h-48 rounded-2xl overflow-hidden mr-4" style={{ backgroundColor: isDark ? '#2A2A2A' : '#F0F0F0' }}>
+    <SkeletonLoader width="100%" height="100%" style={{ borderRadius: 16 }} />
+    <View className="absolute top-0 left-0 right-0 p-4">
+      <SkeletonLoader width="50%" height={20} style={{ marginBottom: 8 }} />
+      <SkeletonLoader width="70%" height={16} />
+    </View>
+    <View className="absolute bottom-0 left-0 right-0 p-4">
+      <SkeletonLoader width={120} height={16} />
+    </View>
+  </View>
+);
+
 const Home = () => {
   const { colors, isDark } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { navigate } = useRouter();
   const [activeCategory, setActiveCategory] = useState(0);
   const [spaces, setSpaces] = useState<any>([]);
@@ -55,10 +136,8 @@ const Home = () => {
   const { user: authUser } = useUser();
 
   const fetchProfile = async () => {
-    setLoading(true);
     const data = await getUserInfo(authUser?.id!);
     setProfile({ ...data, avatar_url: authUser?.imageUrl });
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -207,12 +286,56 @@ const Home = () => {
         refreshControl={<RefreshControl
           refreshing={loading}
           onRefresh={fetchSpaces}
-          colors={[colors.text]}
+          colors={["black"]}
           tintColor={colors.text}
         />} 
         showsVerticalScrollIndicator={false} 
         className="flex-1 h-full"
         style={{ backgroundColor: colors.tertiary }}>
+
+        {/* Loading Skeletons */}
+        {loading && (
+          <>
+            {/* Featured Venues Skeleton */}
+            <View className="mt-8">
+              <View className="flex-row justify-between items-center px-6 mb-4">
+                <SkeletonLoader width={150} height={24} />
+                <SkeletonLoader width={70} height={20} />
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
+                {[1, 2, 3].map((i) => (
+                  <FeaturedVenueSkeleton key={i} isDark={isDark} />
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Recommended Skeleton */}
+            <View className="mt-10">
+              <View className="flex-row justify-between items-center px-6 mb-4">
+                <SkeletonLoader width={180} height={24} />
+                <SkeletonLoader width={70} height={20} />
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
+                {[1, 2, 3].map((i) => (
+                  <RecommendedVenueSkeleton key={i} isDark={isDark} />
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Promotions Skeleton */}
+            <View className="mt-10 mb-6">
+              <View className="flex-row justify-between items-center px-6 mb-4">
+                <SkeletonLoader width={160} height={24} />
+                <SkeletonLoader width={70} height={20} />
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4">
+                {[1, 2, 3].map((i) => (
+                  <PromotionSkeleton key={i} isDark={isDark} />
+                ))}
+              </ScrollView>
+            </View>
+          </>
+        )}
 
         {/* No Results Message */}
         {filteredSpaces.length === 0 && !loading && (
@@ -235,7 +358,7 @@ const Home = () => {
         )}
 
         {/* Featured Venues */}
-        {filteredSpaces.length > 0 && (
+        {filteredSpaces.length > 0 && !loading && (
           <View className="mt-8">
             <View className="flex-row justify-between items-center px-6 mb-4">
               <Text className="text-xl font-bold" style={{ color: colors.text }}>Featured Venues</Text>
@@ -261,7 +384,7 @@ const Home = () => {
                   <View className="flex-row items-center gap-x-3">
                     <View className="flex-row items-center gap-x-1">
                       <Ionicons name="location" size={16} color="white" />
-                      <Text className="text-gray-200 text-sm">{hall.location}</Text>
+                      <Text className="text-gray-200 text-sm">{hall.location.slice(hall.location.length-10,hall.location.length)}</Text>
                     </View>
                     <View className="flex-row items-center gap-x-1">
                       <Ionicons name="people" size={16} color="white" />
@@ -276,7 +399,7 @@ const Home = () => {
         )}
 
         {/* Recommended */}
-        {filteredSpaces.length > 0 && (
+        {filteredSpaces.length > 0 && !loading && (
         <View className="mt-10">
           <View className="flex-row justify-between items-center px-6 mb-4">
             <Text className="text-xl font-bold" style={{ color: colors.text }}>Recommended for You</Text>
@@ -307,7 +430,7 @@ const Home = () => {
         )}
 
         {/* Special Promotions */}
-        {filteredSpaces.length > 0 && (
+        {filteredSpaces.length > 0 && !loading && (
         <View className="mt-10 mb-6">
           <View className="flex-row justify-between items-center px-6 mb-4">
             <Text className="text-xl font-bold" style={{ color: colors.text }}>Special Promotions</Text>

@@ -110,7 +110,7 @@ export default function MangeSpaceScreen() {
   };
 
   return (
-    <ScrollView className='w-full'>
+    <ScrollView className='w-full' style={{ backgroundColor: colors.tertiary }}>
       <Totalbookings/>
 
       {dataSet.length > 0 && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StatusBar, Alert, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, Alert, Image, Animated } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@clerk/clerk-expo';
@@ -9,6 +9,122 @@ import { getOrganisationById, getUserOrganisations, checkUserMembership, leaveOr
 import { getOrganisationJoinRequests, approveJoinRequest, rejectJoinRequest, createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/join-requests.controller';
 import { getOrganisationRoles } from '@/supabase/controllers/roles.controller';
 import { useToast } from '@/components/Toast';
+
+// Skeleton Loader Component
+const SkeletonLoader: React.FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
+  const animatedValue = new Animated.Value(0);
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          backgroundColor: '#E0E0E0',
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+};
+
+// Organisation Header Skeleton
+const OrganisationHeaderSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View
+    className="p-6 items-center mb-4 rounded-b-3xl"
+    style={{ backgroundColor: colors.card }}
+  >
+    <SkeletonLoader width={120} height={120} style={{ borderRadius: 60, marginBottom: 16 }} />
+    <SkeletonLoader width={200} height={28} style={{ marginBottom: 8 }} />
+    <SkeletonLoader width={100} height={28} style={{ borderRadius: 20, marginBottom: 16 }} />
+    <SkeletonLoader width={180} height={48} style={{ borderRadius: 12 }} />
+  </View>
+);
+
+// Join Requests Section Skeleton
+const JoinRequestsSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+    <View className="flex-row items-center justify-between mb-4">
+      <View className="flex-row items-center">
+        <SkeletonLoader width={24} height={24} style={{ borderRadius: 12, marginRight: 12 }} />
+        <SkeletonLoader width={120} height={20} />
+      </View>
+    </View>
+    
+    {[1, 2].map((i) => (
+      <View key={i} className="p-4 rounded-lg border mb-3" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
+        <View className="flex-row items-center mb-3">
+          <SkeletonLoader width={40} height={40} style={{ borderRadius: 20, marginRight: 12 }} />
+          <View className="flex-1">
+            <SkeletonLoader width="70%" height={16} style={{ marginBottom: 4 }} />
+            <SkeletonLoader width="90%" height={14} />
+          </View>
+        </View>
+        <SkeletonLoader width="100%" height={14} style={{ marginBottom: 12 }} />
+        <View className="flex-row gap-x-2">
+          <SkeletonLoader width={70} height={32} style={{ borderRadius: 6 }} />
+          <SkeletonLoader width={80} height={32} style={{ borderRadius: 6 }} />
+        </View>
+      </View>
+    ))}
+  </View>
+);
+
+// Info Section Skeleton
+const InfoSectionSkeleton: React.FC<{ colors: any; title?: string; lines?: number }> = ({ colors, lines = 3 }) => (
+  <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+    <View className="flex-row items-center mb-3">
+      <SkeletonLoader width={24} height={24} style={{ borderRadius: 12, marginRight: 12 }} />
+      <SkeletonLoader width={100} height={20} />
+    </View>
+    {Array.from({ length: lines }).map((_, i) => (
+      <SkeletonLoader key={i} width={i === lines - 1 ? "80%" : "100%"} height={16} style={{ marginBottom: 8 }} />
+    ))}
+  </View>
+);
+
+// Info Grid Skeleton
+const InfoGridSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+    <View className="flex-row items-center mb-4">
+      <SkeletonLoader width={24} height={24} style={{ borderRadius: 12, marginRight: 12 }} />
+      <SkeletonLoader width={120} height={20} />
+    </View>
+    
+    <View className="gap-y-3">
+      {[1, 2, 3].map((i) => (
+        <View key={i} className="flex-row justify-between">
+          <SkeletonLoader width={80} height={16} />
+          <SkeletonLoader width={100} height={16} />
+        </View>
+      ))}
+    </View>
+  </View>
+);
 
 export default function OrganisationDetailsScreen() {
   const { colors, isDark } = useTheme();
@@ -191,9 +307,30 @@ export default function OrganisationDetailsScreen() {
     return (
       <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-        <View className="flex-1 justify-center items-center">
-          <Text style={{ color: colors.text }} className="text-lg">Loading...</Text>
+        
+        {/* Header */}
+        <View
+          className="flex-row items-center justify-between px-4 py-3 border-b"
+          style={{ backgroundColor: colors.card, borderBottomColor: colors.border }}
+        >
+          <TouchableOpacity onPress={back} className="p-2">
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <SkeletonLoader width={150} height={20} />
+          <View className="w-10" />
         </View>
+
+        <ScrollView className="flex-1">
+          <OrganisationHeaderSkeleton colors={colors} />
+          
+          <View className="px-6 gap-y-6">
+            <JoinRequestsSkeleton colors={colors} />
+            <InfoSectionSkeleton colors={colors} lines={3} />
+            <InfoGridSkeleton colors={colors} />
+          </View>
+
+          <View className="h-8" />
+        </ScrollView>
       </SafeBoundingView>
     );
   }
@@ -203,6 +340,7 @@ export default function OrganisationDetailsScreen() {
       <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
         <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
         <View className="flex-1 justify-center items-center">
+          <Ionicons name="business-outline" size={64} color={colors.textSecondary} style={{ marginBottom: 16 }} />
           <Text style={{ color: colors.text }} className="text-lg">Organisation not found</Text>
         </View>
       </SafeBoundingView>
@@ -322,7 +460,7 @@ export default function OrganisationDetailsScreen() {
                 </View>
                 {joinRequests.length > 0 && (
                   <View className="rounded-full min-w-[24px] h-6 justify-center items-center" style={{ backgroundColor: colors.accent }}>
-                    <Text className="text-xs font-semibold" style={{ color: 'white' }}>
+                    <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
                       {joinRequests.length}
                     </Text>
                   </View>
@@ -343,7 +481,7 @@ export default function OrganisationDetailsScreen() {
                     <View key={request.id} className="p-4 rounded-lg border" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
                       <View className="flex-row items-center mb-3">
                         <View className="w-10 h-10 rounded-full justify-center items-center" style={{ backgroundColor: colors.accent }}>
-                          <Text className="text-white font-semibold text-base">
+                          <Text style={{color:colors.primary}} className="font-semibold text-base">
                             {request.users?.name?.charAt(0).toUpperCase() || 'U'}
                           </Text>
                         </View>
@@ -384,13 +522,10 @@ export default function OrganisationDetailsScreen() {
                             onPress={() => {
                               (async () => {
                                 try {
-                                  // Try to fetch roles for this organisation. Assumes a controller function `getOrganisationRoles`
-                                  // exists and returns either an array or an object with a `data` array.
                                   const res = await getOrganisationRoles(id as string);
                                   const roles = Array.isArray(res) ? res :  [];
 
                                   if (!roles || roles.length === 0) {
-                                    // Fallback: no roles found — ask to approve as 'member'
                                     Alert.alert(
                                       'No roles found',
                                       'No roles configured for this organisation. Approve as Member?',
@@ -402,7 +537,6 @@ export default function OrganisationDetailsScreen() {
                                     return;
                                   }
 
-                                  // Build buttons from roles. Use a sensible field for the role value (key/slug/name).
                                   const buttons = roles.map((r: any) => {
                                     const label = r.name ?? r.label ?? String(r.role ?? 'Role');
                                     const value = r.id;
@@ -412,7 +546,6 @@ export default function OrganisationDetailsScreen() {
                                     };
                                   });
 
-                                  // Always include cancel as last option
                                   buttons.push({ text: 'Cancel', style: 'cancel' });
 
                                   Alert.alert('Assign Role', 'Choose a role for this member:', buttons);
@@ -431,8 +564,8 @@ export default function OrganisationDetailsScreen() {
                             className="px-3 py-1.5 rounded-md flex-row items-center"
                             style={{ backgroundColor: colors.accent }}
                           >
-                            <Ionicons name="checkmark" size={16} color="white" />
-                            <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
+                            <Ionicons name="checkmark" size={16} color={colors.primary} />
+                            <Text className="text-xs font-semibold ml-1" style={{ color: colors.primary }}>
                               Approve
                             </Text>
                           </TouchableOpacity>
@@ -483,9 +616,9 @@ export default function OrganisationDetailsScreen() {
               </View>
               
               <View className="flex-row justify-between">
-                <Text className="text-base" style={{ color: "black" }}>Membership Status:</Text>
+                <Text className="text-base" style={{ color: colors.text }}>Membership Status:</Text>
                 <View className="px-2 py-1 rounded-md" style={{ backgroundColor: isMember ? colors.accent : colors.backgroundSecondary }}>
-                  <Text className="text-sm font-semibold" style={{ color: isMember ? 'white' : colors.textSecondary }}>
+                  <Text className="text-sm font-semibold" style={{ color: isMember ? colors.primary : colors.textSecondary }}>
                     {isMember ? 'Member' : 'Not a member'}
                   </Text>
                 </View>

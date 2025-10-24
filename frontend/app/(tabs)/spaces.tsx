@@ -47,7 +47,7 @@ export default function SpacesScreen() {
               fetchMySpaces()
               fetchOrganization()
             }}
-            colors={[colors.text]}
+            colors={["black"]}
             tintColor={colors.text}
           />
         }

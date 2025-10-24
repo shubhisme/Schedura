@@ -1,3 +1,4 @@
+import { useTheme } from '@/contexts/ThemeContext';
 import { getRequestpending, getTotalBookings } from '@/supabase/controllers/analytics';
 import { useLocalSearchParams } from 'expo-router'
 import React, { useEffect, useState } from 'react'
@@ -9,7 +10,7 @@ function Totalbookings() {
     const [total_pend , setTotal_pend] = useState<number>(0)
 
     const {id} = useLocalSearchParams();
-
+    const  { colors, isDark } = useTheme();
     useEffect(()=>{
         if(!id){console.log("NO sapce id exists."); return;}
 
@@ -39,20 +40,20 @@ function Totalbookings() {
 
   return (
     <View className='flex flex-col justify-center gap-y-3 w-[100%] p-4'>
-        <View className='border rounded-xl w-[100%] px-3 py-2 mb-2'>
-            <Text className='text-2xl text-center font-semibold'>Total Bookings</Text>
+        <View className='border rounded-xl w-[100%] px-3 py-2 mb-2' style={{ borderColor: colors.border }}>
+            <Text className='text-2xl text-center font-semibold' style={{ color: colors.text }}>Total Bookings</Text>
 
-            <Text className='text-xs font-light text-center'>Total bookings for this space.</Text>
+            <Text className='text-xs font-light text-center' style={{ color: colors.text }}>Total bookings for this space.</Text>
 
-            <Text className={`text-3xl font-bold text-center`}>
+            <Text className={`text-3xl font-bold text-center`} style={{ color: colors.text }}>
             {total_value}
             </Text>
         </View>
 
-        <View className='border rounded-xl w-[100%] px-3 py-2'>
-            <Text className='text-2xl text-center font-semibold'>Pending Bookings</Text>
+        <View className='border rounded-xl w-[100%] px-3 py-2' style={{ borderColor: colors.border }}>
+            <Text className='text-2xl text-center font-semibold' style={{ color: colors.text }}>Pending Bookings</Text>
 
-            <Text className='text-xs font-light text-center'>Pending Bookings for this space.</Text>
+            <Text className='text-xs font-light text-center' style={{ color: colors.text }}>Pending Bookings for this space.</Text>
 
             <Text
             className="text-3xl font-bold text-center"

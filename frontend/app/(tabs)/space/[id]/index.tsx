@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Share, Dimensions, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, Image, ScrollView, TouchableOpacity, SafeAreaView, StatusBar, Share, Dimensions, TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform, Animated } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getSpaceById } from "@/supabase/controllers/spaces.controller";
 //@ts-ignore
@@ -12,11 +12,152 @@ import { useToast } from "@/components/Toast";
 
 const { width } = Dimensions.get('window');
 
+// Skeleton Loader Component
+const SkeletonLoader: React.FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
+  const animatedValue = new Animated.Value(0);
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          backgroundColor: '#E0E0E0',
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+};
+
+// Image Gallery Skeleton
+const ImageGallerySkeleton: React.FC<{ isDark: boolean }> = ({ isDark }) => (
+  <View style={{ position: 'relative' }}>
+    <SkeletonLoader width={width} height={300} style={{ borderRadius: 0 }} />
+    <View style={{ position: 'absolute', top: 48, left: 24, right: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12, width: 48, height: 48 }} />
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12, width: 48, height: 48 }} />
+        <View style={{ backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 24, padding: 12, width: 48, height: 48 }} />
+      </View>
+    </View>
+  </View>
+);
+
+// Header Info Skeleton
+const HeaderInfoSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View style={{ padding: 24, paddingBottom: 16 }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+      <View style={{ flex: 1 }}>
+        <SkeletonLoader width="80%" height={36} style={{ marginBottom: 12 }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <View style={{ width: 32, height: 32, backgroundColor: colors.backgroundSecondary, borderRadius: 16, marginRight: 12 }} />
+          <SkeletonLoader width="60%" height={20} />
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ width: 32, height: 32, backgroundColor: colors.backgroundSecondary, borderRadius: 16, marginRight: 12 }} />
+          <SkeletonLoader width="50%" height={20} />
+        </View>
+      </View>
+      <SkeletonLoader width={80} height={32} style={{ borderRadius: 16 }} />
+    </View>
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+      <SkeletonLoader width={70} height={24} style={{ borderRadius: 20, marginRight: 12 }} />
+      <SkeletonLoader width={120} height={16} />
+    </View>
+  </View>
+);
+
+// Action Buttons Skeleton
+const ActionButtonsSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+    <View style={{ flexDirection: 'row', gap: 8 }}>
+      <SkeletonLoader width="50%" height={48} style={{ borderRadius: 16 }} />
+      <SkeletonLoader width="50%" height={48} style={{ borderRadius: 16 }} />
+    </View>
+  </View>
+);
+
+// Section Skeleton
+const SectionSkeleton: React.FC<{ colors: any; title?: string; lines?: number }> = ({ colors, title, lines = 3 }) => (
+  <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+    <SkeletonLoader width={title ? 200 : 150} height={24} style={{ marginBottom: 16 }} />
+    {Array.from({ length: lines }).map((_, i) => (
+      <SkeletonLoader key={i} width={i === lines - 1 ? "70%" : "100%"} height={16} style={{ marginBottom: 8 }} />
+    ))}
+  </View>
+);
+
+// Facilities Skeleton
+const FacilitiesSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+    <SkeletonLoader width={200} height={24} style={{ marginBottom: 16 }} />
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 24, marginBottom: 16 }}>
+          <SkeletonLoader width={40} height={40} style={{ borderRadius: 12, marginRight: 12 }} />
+          <SkeletonLoader width={80} height={16} />
+        </View>
+      ))}
+    </View>
+  </View>
+);
+
+// Reviews Skeleton
+const ReviewsSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View style={{ paddingHorizontal: 24, paddingVertical: 16, borderTopWidth: 1, borderTopColor: colors.border }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+      <SkeletonLoader width={120} height={24} />
+      <SkeletonLoader width={80} height={20} />
+    </View>
+    {[1, 2, 3].map((i) => (
+      <View key={i} style={{ backgroundColor: colors.backgroundSecondary, borderRadius: 16, padding: 16, marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <SkeletonLoader width={40} height={40} style={{ borderRadius: 20, marginRight: 12 }} />
+            <View>
+              <SkeletonLoader width={100} height={16} style={{ marginBottom: 4 }} />
+              <SkeletonLoader width={80} height={12} />
+            </View>
+          </View>
+          <SkeletonLoader width={50} height={20} style={{ borderRadius: 10 }} />
+        </View>
+        <SkeletonLoader width="100%" height={14} style={{ marginBottom: 6 }} />
+        <SkeletonLoader width="85%" height={14} />
+      </View>
+    ))}
+  </View>
+);
+
 export default function HallDetails() {
   const { colors, isDark } = useTheme();
   const { id } = useLocalSearchParams();
   const { user } = useUser();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -51,6 +192,7 @@ export default function HallDetails() {
       setLoading(false);
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
+      setLoading(false);
     }
   };
 
@@ -151,16 +293,51 @@ export default function HallDetails() {
       console.log('Error sharing:', error);
     }
   };
-  if (loading || !space) {
+
+  if (loading) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: colors.textSecondary }}>Loading...</Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+        
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <ImageGallerySkeleton isDark={isDark} />
+          
+          <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -24, position: 'relative', zIndex: 10 }}>
+            <HeaderInfoSkeleton colors={colors} />
+            <ActionButtonsSkeleton colors={colors} />
+            <SectionSkeleton colors={colors} lines={4} />
+            <FacilitiesSkeleton colors={colors} />
+            <SectionSkeleton colors={colors} lines={2} />
+            <SectionSkeleton colors={colors} lines={1} />
+            <ReviewsSkeleton colors={colors} />
+            <SectionSkeleton colors={colors} lines={1} />
+          </View>
+        </ScrollView>
+
+        <View style={{ backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 24, paddingVertical: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View>
+              <SkeletonLoader width={100} height={28} style={{ marginBottom: 4 }} />
+              <SkeletonLoader width={60} height={16} />
+            </View>
+            <SkeletonLoader width={120} height={48} style={{ borderRadius: 16 }} />
+          </View>
         </View>
       </SafeAreaView>
     );
   }
+
+  if (!space) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.card} />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: colors.textSecondary }}>Space not found</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
@@ -340,17 +517,6 @@ export default function HallDetails() {
                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: colors.text }}>₹{space.pph}</Text>
                 <Text style={{ color: colors.textSecondary }}>per day</Text>
               </View>
-              {/*<Text style={{ color: colors.textSecondary, marginBottom: 16 }}>Base price includes venue rental for 8 hours</Text>
-              <View style={{ gap: 8 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ color: colors.textSecondary }}>Security deposit</Text>
-                  <Text style={{ color: colors.text, fontWeight: '600' }}>₹{space.pph}</Text>
-                </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={{ color: colors.textSecondary }}>Cleaning fee</Text>
-                  <Text style={{ color: colors.text, fontWeight: '600' }}>₹{space.pph}</Text>
-                </View>
-              </View>*/}
             </View>
           </View>
 

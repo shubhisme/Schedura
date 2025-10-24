@@ -38,7 +38,7 @@ export default function BookingSpacesScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={getMyBookings}
-          colors={[colors.text]}
+          colors={["black"]}
           tintColor={colors.text}
         />
       }

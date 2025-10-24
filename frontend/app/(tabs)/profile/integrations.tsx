@@ -83,7 +83,7 @@ export default function IntegrationsPage() {
   };
 
   return (
-    <View className="flex-1 pb-5 bg-tertiary">
+    <View className="flex-1 pb-5 " style={{ backgroundColor: colors.tertiary }}>
       {/* Header */}
       <View className="p-6 pb-12 rounded-b-[24px]" style={{ backgroundColor: colors.primary }}>
         <Text className="text-4xl font-bold mt-6" style={{ color: colors.accent }}>Integrations</Text>
@@ -91,9 +91,9 @@ export default function IntegrationsPage() {
           Connect your favorite tools to keep your workflows in sync.
         </Text>
       </View>
-      <ScrollView className="px-6 mt-6 " style={{ backgroundColor: colors.tertiary }}>
+      <ScrollView className="px-6  pt-6" style={{ backgroundColor: colors.tertiary }}>
         {/* Google Calendar Card */}
-        <View className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
+        <View style={{ backgroundColor: colors.tertiary, borderColor: colors.border }} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-200 dark:border-slate-700">
           <View className="flex-row items-start justify-between">
             <View className="flex-row items-start">
               <View className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
