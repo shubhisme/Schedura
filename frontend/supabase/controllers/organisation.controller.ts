@@ -124,7 +124,7 @@ export const checkUserMembership = async (userId: string, organisationId: string
   }
 
   // get Organisation by user id
-  export const getOrganisationByUserId = async (userId: string): Promise<{ data: Organisation[] | null; error: string | null }> => {
+  export const getOrganisationByUserId = async (userId: string): Promise<{ data: Organisation | null; error: string | null }> => {
     // First, get organisation IDs where user is a member
     const { data: userRoles, error: userRoleError } = await supabase
       .from("user_role")

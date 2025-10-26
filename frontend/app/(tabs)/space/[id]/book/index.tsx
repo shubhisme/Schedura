@@ -232,7 +232,7 @@ export default function HallBooking() {
       setPrivilegeMessage("Role not found. Contact your organization admin.");
       return;
     }
-    if (role.priviledges >= 2) {
+    if (role.priviledges >= 1) {
       setCanBook(true);
       setPrivilegeChecked(true);
     } else {

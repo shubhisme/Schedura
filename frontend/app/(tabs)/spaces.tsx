@@ -8,6 +8,7 @@ import { getMySpaces } from '@/supabase/controllers/spaces.controller';
 import { useUser } from '@clerk/clerk-expo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getOrganisationByUserId } from '@/supabase/controllers/organisation.controller';
+import { supabase } from '@/supabase/supabase';
 
 export default function SpacesScreen() {
   const { colors, isDark } = useTheme();
@@ -15,7 +16,8 @@ export default function SpacesScreen() {
   const [spaces, setSpaces] = useState<any>();
   const { user } = useUser();
   const [refreshing, setRefreshing] = useState(false);
-  const [organization, setOrganization] = useState<any>(null); // Add state for organization
+  const [organization, setOrganization] = useState<any>(null);
+  const [orgSpaces, setOrgSpaces] = useState<any[]>([]);
 
   const fetchMySpaces = async () => {
     const { data } = await getMySpaces(user?.id!);
@@ -29,10 +31,36 @@ export default function SpacesScreen() {
   const fetchOrganization = async () => {
       const orgData = await getOrganisationByUserId(user?.id!);
       setOrganization(orgData.data);
+      
+      // Fetch organization spaces if org exists
+      if (orgData.data) {
+        await fetchOrganizationSpaces(orgData.data.id);
+      }
   };
+
+  const fetchOrganizationSpaces = async (orgId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('spaces')
+        .select(`
+          *,
+          spaces-images (link)
+        `)
+        .eq('organizationid', orgId)
+        //.neq('ownerid', user?.id!); // Exclude user's own spaces
+      
+      if (!error && data) {
+        setOrgSpaces(data);
+      }
+    } catch (err) {
+      console.error('Error fetching org spaces:', err);
+    }
+  };
+  
   useEffect(() => {
+    fetchMySpaces();
     fetchOrganization();
-  }, [user]);
+  }, []);
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.backgroundSecondary }}>
@@ -44,8 +72,8 @@ export default function SpacesScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => {
-              fetchMySpaces()
-              fetchOrganization()
+              fetchMySpaces();
+              fetchOrganization();
             }}
             colors={["black"]}
             tintColor={colors.text}
@@ -69,6 +97,7 @@ export default function SpacesScreen() {
           </View>
         </View>
 
+        {/* Personal Spaces Section */}
         <View className="px-6 py-8">
           <View className="flex-row items-center justify-between mb-6">
             <Text className="text-xl font-bold" style={{ color: colors.text }}>Your Venues</Text>
@@ -159,6 +188,84 @@ export default function SpacesScreen() {
             </View>
           )}
         </View>
+
+        {/* Organization Spaces Section */}
+        {organization && orgSpaces.length > 0 && (
+          <View className="px-6 pb-8">
+            <View className="flex-row items-center justify-between mb-6">
+              <View>
+                <Text className="text-xl font-bold" style={{ color: colors.text }}>Organization Spaces</Text>
+                <Text className="text-sm" style={{ color: colors.textSecondary }}>{organization.name}</Text>
+              </View>
+              <TouchableOpacity onPress={() => navigate('/spaces-map')}>
+                <Ionicons name="map-outline" size={24} color={colors.accent} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <View className="flex-row gap-x-4 pr-6">
+                {orgSpaces.map((space: any) => (
+                  <TouchableOpacity
+                    key={space.id}
+                    onPress={() => navigate(`/space/${space.id}`)}
+                    className="rounded-2xl overflow-hidden border w-72"
+                    style={{ backgroundColor: colors.card, borderColor: colors.border }}
+                  >
+                    <View className="relative">
+                      <Image
+                        source={{
+                          uri: space['spaces-images']?.[0]?.link || 'https://via.placeholder.com/300x200.png?text=No+Image+Available'
+                        }}
+                        className="h-48 w-full"
+                        style={{ resizeMode: 'cover' }}
+                      />
+                      <View className="absolute inset-0" style={{ backgroundColor: 'rgba(0,0,0,0.15)' }} />
+                      <View className="absolute top-3 left-3 rounded-full px-3 py-1" style={{ backgroundColor: colors.info }}>
+                        <Text className="text-xs font-semibold" style={{ color: '#ffffff' }}>Organization</Text>
+                      </View>
+                    </View>
+                    <View className="p-5">
+                      <Text className="text-xl font-bold mb-2" style={{ color: colors.text }}>{space.name}</Text>
+                      <View className="gap-y-2">
+                        <View className="flex-row items-center">
+                          <View className="rounded-full p-1 mr-3" style={{ backgroundColor: colors.backgroundSecondary }}>
+                            <Ionicons name="location" size={14} color={colors.textSecondary} />
+                          </View>
+                          <Text className="flex-1" style={{ color: colors.textSecondary }}>{space.location}</Text>
+                        </View>
+                        <View className="flex-row items-center">
+                          <View className="rounded-full p-1 mr-3" style={{ backgroundColor: colors.backgroundSecondary }}>
+                            <Ionicons name="people" size={14} color={colors.textSecondary} />
+                          </View>
+                          <Text style={{ color: colors.textSecondary }}>Up to {space.capacity} guests</Text>
+                        </View>
+                      </View>
+                      <View className="flex-row mt-4 gap-x-2">
+                        {
+                          organization.roles[0].priviledges >= 2 &&
+                          <TouchableOpacity
+                            onPress={() => navigate(`/space/${space.id}/manage`)}
+                            className="rounded-xl px-2 py-2 mt-4 flex-1"
+                            style={{ backgroundColor: colors.accent }}
+                          >
+                            <Text className="text-center font-semibold" style={{ color: isDark ? '#000' : '#ffffff' }}>Manage</Text>
+                          </TouchableOpacity>
+                        }
+                        <TouchableOpacity
+                          onPress={() => navigate(`/space/${space.id}`)}
+                          className="rounded-xl px-2 py-2 mt-4 flex-1"
+                          style={{ backgroundColor: colors.tertiary }}
+                        >
+                          <Text className="text-center font-semibold" style={{ color: isDark ? '#ffffff' : '#000' }}>View</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          </View>
+        )}
 
         <View className="px-6 pb-8">
           <View className="flex-row items-center justify-between mb-6">

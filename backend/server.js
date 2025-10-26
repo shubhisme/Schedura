@@ -68,16 +68,32 @@ app.get("/integrations/google/callback", async (req, res) => {
 
     const { refresh_token } = tokenRes.data;
 
-    // Upsert integration record
-    await supabase.from("user_integrations").upsert([
-      {
+    // Check if integration record exists
+    const { data: existingRecord } = await supabase
+      .from("user_integrations")
+      .select("*")
+      .eq("user_id", userid)
+      .eq("provider", "google")
+      .single();
+
+    if (existingRecord) {
+      // Update existing record
+      await supabase.from("user_integrations").update({
+        connected: true,
+        refresh_token,
+        updated_at: new Date().toISOString()
+      }).eq("user_id", userid).eq("provider", "google");
+    } else {
+      // Insert new record
+      await supabase.from("user_integrations").insert([{
         user_id: userid,
         provider: "google",
         connected: true,
         refresh_token,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }
-    ], { onConflict: ['user_id', 'provider'] });
+      }]);
+    }
 
     return res.send(
       "<h2>✅ Google Calendar connected successfully! You can close this window now.</h2>"

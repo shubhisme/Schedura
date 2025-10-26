@@ -219,6 +219,7 @@ export const getMySpaces = async (userId:string) => {
     .from('spaces')
     .select('*, spaces-images(link)')
     .eq('ownerid', userId)
+    .is('organizationid', null);
     return { data, error };
 }
 

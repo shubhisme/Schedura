@@ -173,7 +173,8 @@ export default function AddSpacesScreen() {
     }
     // get the id of the organisation the user belongs to
     const organisation = await getOrganisationByUserId(user?.id!);
-    const orgid = organisation.data ?  organisation?.data[0].id : null;
+
+    const orgid = organisation.data ?  organisation?.data.id : null;
     const { data, error } = await createSpace({
       name,
       capacity: parseInt(capacity),
