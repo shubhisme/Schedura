@@ -62,3 +62,23 @@ export async function getRequestpending(spaceId: string){
         return {data: 0 , error: error as Error};
     }
 }
+
+
+export async function getBookingbyUserId(userId: string){
+    if(!userId){
+        throw new Error("User ID is required");
+    }
+
+    try{
+        const {data , error} = await supabase.from("bookings").select("*").eq("userid" , userId);
+
+        if(error || !data){
+            return {data: null , error: error || new Error("no data found")};
+        }
+
+        return {data: data as any[] , error: null};
+    }
+    catch(error){
+        return {data: null , error: error as Error};
+    }
+}

@@ -3,7 +3,7 @@ import SafeBoundingView from '@/components/SafeBoundingView';
 import { useEffect, useRef, useState } from 'react';
 import { createSpace } from '@/supabase/controllers/spaces.controller';
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system/legacy";
+import * as FileSystem from "expo-file-system";
 import { Image } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import { decode } from 'base64-arraybuffer'
