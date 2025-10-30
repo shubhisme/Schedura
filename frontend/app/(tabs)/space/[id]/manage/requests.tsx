@@ -1,4 +1,4 @@
-import { acceptRequest, getRequestsForSpace } from '@/supabase/controllers/request.controller';
+import { acceptRequest, getRequestsForSpace, rejectRequest } from '@/supabase/controllers/request.controller';
 import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, Animated, Easing, RefreshControl } from 'react-native';
 //@ts-ignore
 import { useLocalSearchParams } from 'expo-router';
@@ -74,6 +74,15 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
     setActionLoader(false);
   }
 
+  const handleReject = async() => {
+    if(actionLoader) return;
+    console.log("Rejecting request: ", request.id);
+    setActionLoader(true);
+    await rejectRequest(request.id, userId);
+    await getRequests();
+    setActionLoader(false);
+  }
+
   return (
     <View
       className="p-6 rounded-2xl mb-4 border"
@@ -102,6 +111,7 @@ function RequestCard({request, userId, setActionLoader, actionLoader, getRequest
         </TouchableOpacity>
 
         <TouchableOpacity
+          onPress={handleReject}
           className="flex-1 px-4 py-2.5 rounded-xl"
           style={{ backgroundColor: colors.error }}
         >

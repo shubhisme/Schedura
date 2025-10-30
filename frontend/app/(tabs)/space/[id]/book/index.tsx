@@ -14,6 +14,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getUserRole, isUserInOrganization } from "@/supabase/controllers/user_role.controller";
 import { getRole } from "@/supabase/controllers/roles.controller";
 import { useFocusEffect } from "@react-navigation/native";
+import { supabase } from '@/supabase/supabase';
 
 // Skeleton Loader Component
 const SkeletonLoader: React.FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
@@ -139,6 +140,8 @@ export default function HallBooking() {
   const [canBook, setCanBook] = useState<boolean>(false);
   const [privilegeChecked, setPrivilegeChecked] = useState<boolean>(false);
   const [privilegeMessage, setPrivilegeMessage] = useState<string>("");
+  const [avgRating, setAvgRating] = useState<string>('0.0');
+  const [reviewCount, setReviewCount] = useState<number>(0);
 
   // 🔹 Disable all past dates
   const getDisabledPastDates = () => {
@@ -161,6 +164,20 @@ export default function HallBooking() {
         console.error("Error fetching spaces:", error);
       } else {
         setSpace(data);
+        // Fetch reviews for rating
+        if (data) {
+          const { data: reviews } = await supabase
+            .from('reviews')
+            .select('stars')
+            .eq('spaceid', data.id);
+          
+          const count = reviews?.length || 0;
+          setReviewCount(count);
+          if (count > 0) {
+            const avg = reviews.reduce((sum, r) => sum + r.stars, 0) / count;
+            setAvgRating(avg.toFixed(1));
+          }
+        }
       }
       setLoading(false);
     } catch (error) {
@@ -405,9 +422,11 @@ export default function HallBooking() {
             <View className="flex-row items-center mb-4">
               <View className="flex-row items-center rounded-full px-3 py-1 mr-3" style={{ backgroundColor: '#FEF3C7' }}>
                 <Ionicons name="star" size={16} color="#F59E0B" />
-                <Text className="font-semibold ml-1" style={{ color: '#92400E' }}>4.8</Text>
+                <Text className="font-semibold ml-1" style={{ color: '#92400E' }}>{avgRating}</Text>
               </View>
-              <Text style={{ color: colors.textSecondary }}>Based on 124 reviews</Text>
+              <Text style={{ color: colors.textSecondary }}>
+                {reviewCount > 0 ? `Based on ${reviewCount} review${reviewCount !== 1 ? 's' : ''}` : 'No reviews yet'}
+              </Text>
             </View>
 
             <View className="rounded-lg overflow-hidden">

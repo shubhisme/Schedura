@@ -105,5 +105,31 @@ export const acceptRequest = async(requestid: string, userid:string) => {
         console.log("Error deleting request: ", deleteError);
         throw deleteError;
     }
+
+    const { error: overlapDeleteError } = await supabase
+        .from("requests")
+        .delete()
+        .eq("spaceid", requestData.spaceid)
+        .lt("start", requestData.end)   // request.start < booked.end
+        .gt("end", requestData.start);  // request.end > booked.start
+
+    if(overlapDeleteError) {
+        console.log("Error deleting overlapping requests: ", overlapDeleteError);
+        throw overlapDeleteError;
+    }
+    
+};
+
+export const rejectRequest = async(requestid: string, userid:string) => {
+    
+    const { error: deleteError } = await supabase
+        .from("requests")
+        .delete()
+        .eq("id", requestid);
+
+    if(deleteError) {
+        console.log("Error deleting request: ", deleteError);
+        throw deleteError;
+    }
     
 };

@@ -246,12 +246,71 @@ export default function EditSpaceScreen() {
     setLoading(false);
   };
 
+  const handleDelete = async () => {
+    // Require signed-in user
+    if (!user) {
+      showToast({
+        type: 'error',
+        title: 'Not signed in',
+        description: 'Please sign in before deleting a space.',
+      });
+      return;
+    }
+
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this space? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setLoading(true);
+            try {
+              const { error } = await supabase
+                .from('spaces')
+                .delete()
+                .eq('id', id as string);
+
+              if (error) {
+                showToast({
+                  type: 'error',
+                  title: 'Error',
+                  description: error.message,
+                });
+              } else {
+                showToast({
+                  type: 'success',
+                  title: 'Deleted',
+                  description: 'Space deleted successfully', 
+                })
+              }
+            }
+            catch (e: any) {
+              showToast({
+                type: 'error',
+                title: 'Error',
+                description: e?.message || 'Failed to delete space',
+              });
+            }
+          }
+        }
+      ]
+    );
+  };
+
   // yet to make the submission functional
   const handleAmenities = (id:number) =>{
     let amenitiesCopy = [...amenities];
     amenitiesCopy[id].selected = !amenitiesCopy[id].selected;
     setAmenities(amenitiesCopy) 
   }
+
+
   if (initialLoading) {
     return (
       <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -386,7 +445,8 @@ export default function EditSpaceScreen() {
               }
             </View>
           </View>
-          <View className="flex-row items-center gap-x-4">
+          
+          {/* <View className="flex-row items-center gap-x-4">
             {
               images.fileUri ?
               <View className="rounded-lg overflow-hidden border" style={{ borderColor: colors.border }}>
@@ -410,12 +470,20 @@ export default function EditSpaceScreen() {
                 >
                   <Ionicons name="add" size={24} color={colors.text} />
             </TouchableOpacity>      
-          </View>
-
+          </View> */}
+          <TouchableOpacity
+            onPress={handleDelete}
+            disabled={loading}
+            className="px-4 py-4 rounded-2xl mt-4 flex-row items-center justify-center gap-x-5 bg-red-500"
+          >
+            <Text className="text-lg font-semibold text-white">
+              Delete Space
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={loading}
-            className="px-4 py-4 rounded-2xl mt-4 flex-row items-center justify-center gap-x-5"
+            className="px-4 py-4 rounded-2xl  flex-row items-center justify-center gap-x-5"
             style={{ backgroundColor: colors.accent }}
           >
             <Text className="text-lg font-semibold" style={{ color: colors.primary }}>

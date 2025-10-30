@@ -1,6 +1,6 @@
-import { Image, Text, View, Dimensions, SafeAreaView } from 'react-native';
+import { Image, Text, View, Dimensions } from 'react-native';
 //@ts-ignore
-import { Link, useRouter } from 'expo-router';
+import { Link, SplashScreen, useRouter } from 'expo-router';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { updateUserInfo } from '@/supabase/controllers/user.controller';
 import Button from '@/components/Button';
@@ -10,14 +10,16 @@ import SafeBoundingView from '@/components/SafeBoundingView';
 import { useEffect } from 'react';
 
 const { width } = Dimensions.get('window');
-
+SplashScreen.preventAutoHideAsync();
 export default function HomeScreen() {
   const { isSignedIn } = useAuth()
   const { user } = useUser()
   const { replace } = useRouter();
+  
 
   const handleRedirect = async () => {
     const status = await updateUserInfo(user)
+    await SplashScreen.hideAsync();
     if(status == 201 || status == 409) {
       return replace('/(tabs)/home')
     }
@@ -26,8 +28,11 @@ export default function HomeScreen() {
   useEffect(() => {
     if (isSignedIn) {
       handleRedirect();
+    } else {
+      SplashScreen.hideAsync();
     }
   }, [isSignedIn]);
+
 
   return (
     <>

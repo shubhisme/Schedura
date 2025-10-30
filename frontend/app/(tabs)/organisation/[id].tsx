@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StatusBar, Alert, Image, Animated } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, Alert, Image, Animated, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@clerk/clerk-expo';
@@ -9,6 +9,7 @@ import { getOrganisationById, getUserOrganisations, checkUserMembership, leaveOr
 import { getOrganisationJoinRequests, approveJoinRequest, rejectJoinRequest, createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/join-requests.controller';
 import { getOrganisationRoles } from '@/supabase/controllers/roles.controller';
 import { useToast } from '@/components/Toast';
+import { supabase } from '@/supabase/supabase';
 
 // Skeleton Loader Component
 const SkeletonLoader: React.FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
@@ -140,8 +141,9 @@ export default function OrganisationDetailsScreen() {
   const [joinRequests, setJoinRequests] = useState<any[]>([]);
   const [userJoinRequest, setUserJoinRequest] = useState<any>(null);
   const [requestsLoading, setRequestsLoading] = useState(false);
-
-
+  const [members, setMembers] = useState<any[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   useEffect(() => {
     if (id && user?.id) {
       loadOrganisationDetails();
@@ -169,6 +171,7 @@ export default function OrganisationDetailsScreen() {
       if (user?.id && result.data?.ownerid === user.id) {
         setIsOwner(true);
         await loadJoinRequests();
+        await loadMembers();
       } else {
         setIsOwner(false);
       }
@@ -195,6 +198,29 @@ export default function OrganisationDetailsScreen() {
       console.error('Error loading join requests:', error);
     } finally {
       setRequestsLoading(false);
+    }
+  };
+
+  const loadMembers = async () => {
+    if (!id) return;
+    try {
+      setMembersLoading(true);
+      const { data, error } = await supabase
+        .from('user_role')
+        .select(`
+          *,
+          users!inner (id, name, email),
+          roles!inner (id, name, priviledges)
+        `)
+        .eq('orgid', id);
+
+      if (!error && data) {
+        setMembers(data);
+      }
+    } catch (error) {
+      console.error('Error loading members:', error);
+    } finally {
+      setMembersLoading(false);
     }
   };
 
@@ -303,6 +329,88 @@ export default function OrganisationDetailsScreen() {
     }
   };
 
+  const handleReassignRole = async (memberId: string, memberUserId: string) => {
+    
+    try {
+      const res = await getOrganisationRoles(id as string);
+      const roles = Array.isArray(res) ? res : [];
+
+      if (!roles || roles.length === 0) {
+        showToast({
+          type: 'error',
+          title: 'No Roles',
+          description: 'No roles configured for this organisation.',
+        });
+        return;
+      }
+
+      const buttons = roles.map((r: any) => ({
+        text: r.name || 'Role',
+        onPress: async () => {
+          try {
+            await supabase
+              .from('user_role')
+              .update({ role: r.id })
+              .eq('userid', memberUserId);
+
+            showToast({
+              type: 'success',
+              title: 'Role Updated',
+              description: 'Member role updated successfully.',
+            });
+            await loadMembers();
+          } catch (err) {
+            showToast({
+              type: 'error',
+              title: 'Error',
+              description: 'Failed to update role.',
+            });
+          }
+        },
+      }));
+
+      buttons.push({ text: 'Cancel', style: 'cancel' });
+      Alert.alert('Reassign Role', 'Choose a new role for this member:', buttons);
+    } catch (error) {
+      console.error('Error reassigning role:', error);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
+    Alert.alert(
+      'Remove Member',
+      `Are you sure you want to remove ${memberName} from this organisation?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await supabase
+                .from('user_role')
+                .delete()
+                .eq('userid', memberId);
+
+              showToast({
+                type: 'success',
+                title: 'Member Removed',
+                description: `${memberName} has been removed from the organisation.`,
+              });
+              await loadMembers();
+            } catch (err) {
+              showToast({
+                type: 'error',
+                title: 'Error',
+                description: 'Failed to remove member.',
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <SafeBoundingView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -365,7 +473,20 @@ export default function OrganisationDetailsScreen() {
         <View className="w-10" />
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              loadJoinRequests()
+              loadMembers();
+            }}
+            colors={["black"]}
+            tintColor={colors.text}
+          />
+        }
+      >
         {/* Organisation Header */}
         <View
           className="p-6 items-center mb-4 rounded-b-3xl"
@@ -445,7 +566,6 @@ export default function OrganisationDetailsScreen() {
           )}
         </View>
 
-        {/* Organisation Details */}
         <View className="px-6 gap-y-6">
           
           {/* Join Requests Section - Only for Owners */}
@@ -570,6 +690,88 @@ export default function OrganisationDetailsScreen() {
                             </Text>
                           </TouchableOpacity>
                         </View>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Current Members Section - Only for Owners */}
+          {isOwner && (
+            <View className="p-5 rounded-lg border" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+              <View className="flex-row items-center justify-between mb-4">
+                <View className="flex-row items-center">
+                  <Ionicons name="people" size={24} color={colors.accent} />
+                  <Text className="text-lg font-semibold ml-3" style={{ color: colors.text }}>
+                    Current Members
+                  </Text>
+                </View>
+                {members.length > 0 && (
+                  <View className="rounded-full min-w-[24px] h-6 justify-center items-center" style={{ backgroundColor: colors.accent }}>
+                    <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
+                      {members.length}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              
+              {membersLoading ? (
+                <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
+                  Loading members...
+                </Text>
+              ) : members.length === 0 ? (
+                <Text className="text-base text-center" style={{ color: colors.textSecondary }}>
+                  No members yet
+                </Text>
+              ) : (
+                <View className="gap-y-3">
+                  {members.map((member: any) => (
+                    <View key={member.userid} className="p-4 rounded-lg border" style={{ backgroundColor: colors.backgroundSecondary, borderColor: colors.border }}>
+                      <View className="flex-row items-center justify-between mb-2">          
+                        <View className="flex-row items-center flex-1">
+                          <View className="w-10 h-10 rounded-full justify-center items-center" style={{ backgroundColor: colors.accent }}>
+                            <Text style={{ color: colors.primary }} className="font-semibold text-base">
+                              {member.users?.name?.charAt(0).toUpperCase() || 'U'}
+                            </Text>
+                          </View>
+                          <View className="flex-1 ml-3">
+                            <Text className="font-semibold" style={{ color: colors.text }}>
+                              {member.users?.name || 'Unknown User'}
+                            </Text>
+                            
+                          </View>
+                        </View>
+                        <View className="px-2 py-1 rounded-md" style={{ backgroundColor: colors.accent }}>
+                          <Text className="text-xs font-semibold" style={{ color: colors.primary }}>
+                            {member.roles?.name || 'Member'}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      <View className="flex-row gap-x-2 mt-2">
+                        <TouchableOpacity
+                          onPress={() => handleReassignRole(member.id, member.users?.id)}
+                          className="px-3 py-1.5 rounded-md flex-row items-center flex-1"
+                          style={{ backgroundColor: colors.info }}
+                        >
+                          <Ionicons name="swap-horizontal" size={16} color="white" />
+                          <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
+                            Change Role
+                          </Text>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
+                          onPress={() => handleRemoveMember(member.id, member.users?.name)}
+                          className="px-3 py-1.5 rounded-md flex-row items-center"
+                          style={{ backgroundColor: colors.error }}
+                        >
+                          <Ionicons name="trash" size={16} color="white" />
+                          <Text className="text-xs font-semibold ml-1" style={{ color: 'white' }}>
+                            Remove
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   ))}

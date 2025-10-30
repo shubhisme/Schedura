@@ -384,7 +384,7 @@ const Home = () => {
                   <View className="flex-row items-center gap-x-3">
                     <View className="flex-row items-center gap-x-1">
                       <Ionicons name="location" size={16} color="white" />
-                      <Text className="text-gray-200 text-sm">{hall.location.slice(hall.location.length-10,hall.location.length)}</Text>
+                      <Text className="text-gray-200 text-sm">{hall.location ? hall.location.trim().split(/\s+/).slice(-2).join(' ') : ''}</Text>
                     </View>
                     <View className="flex-row items-center gap-x-1">
                       <Ionicons name="people" size={16} color="white" />

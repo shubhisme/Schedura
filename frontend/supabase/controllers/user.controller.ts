@@ -69,3 +69,35 @@ export const getUserUpiId = async(userId:any) => {
         }
     }
 }
+
+
+export const updateUserPushToken = async (userId:string, pushToken:string) => {
+    if (userId) {
+        try {
+            const data = await supabase.from("users").update({
+                pushToken
+            }).eq('id', userId)
+            return data.status
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
+}
+export const getUserPushToken = async(userId:any) => {
+    if(userId){
+        try{
+            const { data, error: userErr } = await supabase
+            .from('users')
+            .select('pushToken')
+            .eq('id', userId)
+            .single();
+            if(data){
+                return data.pushToken
+            }
+        }
+        catch(error){
+            console.log(error);
+        }
+    }
+}

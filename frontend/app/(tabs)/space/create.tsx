@@ -1,4 +1,4 @@
-import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, Animated, Easing } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar, Animated, Easing, Modal } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useEffect, useRef, useState } from 'react';
 import { createSpace } from '@/supabase/controllers/spaces.controller';
@@ -40,6 +40,9 @@ export default function AddSpacesScreen() {
   const [images, setImages] = useState<any[]>([]);
   const { user } = useUser();
   const [loading, setLoading] = useState(false)
+  const [userOrganisations, setUserOrganisations] = useState<any[]>([]);
+  const [selectedOrgId, setSelectedOrgId] = useState<number | null>(null);
+  const [showOrgPicker, setShowOrgPicker] = useState(false);
   const [amenities, setAmenities] = useState([
     { name: "WiFi", icon: "wifi", id:1, selected:false },
     { name: "Parking", icon: "car", id:2, selected:false },
@@ -69,6 +72,26 @@ export default function AddSpacesScreen() {
       ).start()
     }
   }, [loading]);
+
+  // Fetch user's organizations where they are owner
+  useEffect(() => {
+    const fetchUserOrgs = async () => {
+      if (!user?.id) return;
+      try {
+        const { data: orgs } = await supabase
+          .from('organisations')
+          .select('id, name, type')
+          .eq('ownerid', user.id);
+        
+        if (orgs && orgs.length > 0) {
+          setUserOrganisations(orgs);
+        }
+      } catch (err) {
+        console.error('Error fetching organizations:', err);
+      }
+    };
+    fetchUserOrgs();
+  }, [user?.id]);
 
   async function pickAndUploadFiles() {
     try {
@@ -171,10 +194,6 @@ export default function AddSpacesScreen() {
       setLoading(false);
       return;
     }
-    // get the id of the organisation the user belongs to
-    const organisation = await getOrganisationByUserId(user?.id!);
-
-    const orgid = organisation.data ?  organisation?.data.id : null;
     const { data, error } = await createSpace({
       name,
       capacity: parseInt(capacity),
@@ -187,7 +206,7 @@ export default function AddSpacesScreen() {
       id: undefined,
       category,
       amenities: amenities.filter(facility=>facility.selected).map(facility=>facility.name),
-      organizationid: orgid ? parseInt(orgid) : undefined,
+      organizationid: selectedOrgId || undefined,
     }, images);
     console.log(error)
     if (error) {
@@ -234,6 +253,30 @@ export default function AddSpacesScreen() {
 
         <Text className="text-2xl font-bold mx-5 mt-6" style={{ color: colors.text }}>Basic Details</Text>
         <View className="mb-6 p-6 gap-y-6">
+          {/* Organization Selection - Only show if user owns organizations */}
+          {userOrganisations.length > 0 && (
+            <View>
+              <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>
+                Space Owner
+              </Text>
+              <TouchableOpacity
+                onPress={() => setShowOrgPicker(true)}
+                className="p-4 rounded-xl border-2 flex-row items-center justify-between"
+                style={{ borderColor: colors.border, backgroundColor: colors.card }}
+              >
+                <Text style={{ color: selectedOrgId ? colors.text : colors.textSecondary }}>
+                  {selectedOrgId 
+                    ? userOrganisations.find(o => o.id === selectedOrgId)?.name || 'Select Organization'
+                    : 'Personal Space (Not under organization)'}
+                </Text>
+                <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+              <Text className="mt-1 text-xs" style={{ color: colors.textSecondary }}>
+                Choose whether this space belongs to you personally or to an organization you own
+              </Text>
+            </View>
+          )}
+          
           <View>
             <Text className="mb-1.5 font-semibold text-lg" style={{ color: colors.text }}>Name</Text>
             <TextInput
@@ -411,6 +454,108 @@ export default function AddSpacesScreen() {
             </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      {/* Organization Picker Modal */}
+      <Modal
+        visible={showOrgPicker}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowOrgPicker(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowOrgPicker(false)}
+          className="flex-1 justify-end"
+          style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+            className="rounded-t-3xl px-6 py-6"
+            style={{ backgroundColor: colors.card, maxHeight: '60%' }}
+          >
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-xl font-bold" style={{ color: colors.text }}>
+                Select Owner
+              </Text>
+              <TouchableOpacity onPress={() => setShowOrgPicker(false)}>
+                <Ionicons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView>
+              {/* Personal Option */}
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedOrgId(null);
+                  setShowOrgPicker(false);
+                }}
+                className="py-3 px-4 rounded-lg mb-2 border"
+                style={{
+                  borderColor: colors.border,
+                  backgroundColor: selectedOrgId === null ? colors.accent : colors.backgroundSecondary,
+                }}
+              >
+                <View className="flex-row items-center">
+                  <Ionicons 
+                    name="person" 
+                    size={20} 
+                    color={selectedOrgId === null ? colors.primary : colors.textSecondary} 
+                  />
+                  <Text 
+                    className="font-semibold ml-3" 
+                    style={{ color: selectedOrgId === null ? colors.primary : colors.text }}
+                  >
+                    Personal Space
+                  </Text>
+                </View>
+                <Text 
+                  className="text-xs ml-8 mt-1" 
+                  style={{ color: selectedOrgId === null ? colors.primary : colors.textSecondary }}
+                >
+                  This space will be owned by you only
+                </Text>
+              </TouchableOpacity>
+
+              {/* Organization Options */}
+              {userOrganisations.map((org) => (
+                <TouchableOpacity
+                  key={org.id}
+                  onPress={() => {
+                    setSelectedOrgId(org.id);
+                    setShowOrgPicker(false);
+                  }}
+                  className="py-3 px-4 rounded-lg mb-2 border"
+                  style={{
+                    borderColor: colors.border,
+                    backgroundColor: selectedOrgId === org.id ? colors.accent : colors.backgroundSecondary,
+                  }}
+                >
+                  <View className="flex-row items-center">
+                    <Ionicons 
+                      name="business" 
+                      size={20} 
+                      color={selectedOrgId === org.id ? colors.primary : colors.textSecondary} 
+                    />
+                    <Text 
+                      className="font-semibold ml-3" 
+                      style={{ color: selectedOrgId === org.id ? colors.primary : colors.text }}
+                    >
+                      {org.name}
+                    </Text>
+                  </View>
+                  <Text 
+                    className="text-xs ml-8 mt-1" 
+                    style={{ color: selectedOrgId === org.id ? colors.primary : colors.textSecondary }}
+                  >
+                    {org.type} organization
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
       
       <MapLocationPicker
         visible={showMapPicker}

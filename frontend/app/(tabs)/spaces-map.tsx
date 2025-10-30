@@ -7,6 +7,7 @@ import SafeBoundingView from '@/components/SafeBoundingView';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSpaces } from '@/supabase/controllers/spaces.controller';
 import { useToast } from '@/components/Toast';
+import { supabase } from '@/supabase/supabase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -49,7 +50,25 @@ export default function SpacesMapScreen() {
           !isNaN(parseFloat(space.latitude.toString())) && 
           !isNaN(parseFloat(space.longitude.toString()))
         );
-        setSpaces(spacesWithCoords);
+        
+        // Fetch reviews for each space to get ratings
+        const spacesWithRatings = await Promise.all(
+          spacesWithCoords.map(async (space: any) => {
+            const { data: reviews } = await supabase
+              .from('reviews')
+              .select('stars')
+              .eq('spaceid', space.id);
+            
+            const reviewCount = reviews?.length || 0;
+            const avgRating = reviewCount > 0
+              ? (reviews.reduce((sum, r) => sum + r.stars, 0) / reviewCount).toFixed(1)
+              : '0.0';
+            
+            return { ...space, avgRating, reviewCount };
+          })
+        );
+        
+        setSpaces(spacesWithRatings);
       }
     } catch (error) {
       console.error("Error in fetchSpaces:", error);
@@ -80,7 +99,9 @@ export default function SpacesMapScreen() {
       location: space.location,
       capacity: space.capacity,
       pph: space.pph,
-      description: space.description || ''
+      description: space.description || '',
+      avgRating: space.avgRating || '0.0',
+      reviewCount: space.reviewCount || 0
     }));
 
     const backgroundColor = isDark ? '#0b1220' : '#ffffff';
@@ -191,6 +212,7 @@ export default function SpacesMapScreen() {
               '<div>' +
                 '<h3 class="popup-title">' + markerData.name + '</h3>' +
                 '<p class="popup-detail"><strong>📍</strong> ' + markerData.location + '</p>' +
+                '<p class="popup-detail"><strong>⭐</strong> ' + markerData.avgRating + ' (' + markerData.reviewCount + ' reviews)</p>' +
                 '<p class="popup-detail"><strong>👥</strong> Capacity: ' + markerData.capacity + '</p>' +
                 '<p class="popup-detail"><strong>💰</strong> ₹' + markerData.pph + '/hour</p>' +
                 (markerData.description ? 
