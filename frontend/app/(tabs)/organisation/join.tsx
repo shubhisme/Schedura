@@ -1,17 +1,13 @@
 import { ScrollView, Text, TouchableOpacity, View, TextInput, Alert, StatusBar } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { useCallback, useState } from 'react';
-import { createSpace } from '@/supabase/controllers/spaces.controller';
-import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
+
 import { Image } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
-import { decode } from 'base64-arraybuffer'
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 //@ts-ignore
 import CSpace from "@/assets/images/illustrations/cspace.png"
-import RolesModal from '@/components/Modals/RolesModal';
-import { createOrganisation, searchOrganisations, getUserOrganisations, checkUserMembership } from '@/supabase/controllers/organisation.controller';
+import { searchOrganisations, getUserOrganisations } from '@/supabase/controllers/organisation.controller';
 import { createJoinRequest, getUserJoinRequests } from '@/supabase/controllers/join-requests.controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@/contexts/ThemeContext';

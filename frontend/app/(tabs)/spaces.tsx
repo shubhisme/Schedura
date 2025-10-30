@@ -96,7 +96,18 @@ export default function SpacesScreen() {
             </View>
           </View>
         </View>
-
+        {spaces && spaces.length > 0 && (
+        <View className="px-6 pt-6 pb-2 flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={() => navigate('/(tabs)/space/analytics')}
+              className="px-4 py-4 w-full rounded-xl flex-row justify-center items-center"
+              style={{ backgroundColor: colors.tertiary }}
+            >
+              <Ionicons name="pie-chart-sharp" size={20} color={isDark ? '#fff' : '#000'} />
+              <Text className="font-semibold ml-3" style={{ color: isDark ? '#fff' : '#000' }}>View Analytics</Text>
+            </TouchableOpacity>
+        </View>
+        )}
         {/* Personal Spaces Section */}
         <View className="px-6 py-8">
           <View className="flex-row items-center justify-between mb-6">
@@ -110,16 +121,7 @@ export default function SpacesScreen() {
               <Text className="font-semibold ml-1" style={{ color: isDark ? '#000' : '#ffffff' }}>Add Space</Text>
             </TouchableOpacity>
 
-            {spaces && spaces.length > 0 && (
-            <TouchableOpacity
-              onPress={() => navigate('/(tabs)/space/manage')}
-              className="px-4 py-2 rounded-xl flex-row items-center"
-              style={{ backgroundColor: colors.accent }}
-            >
-              <Ionicons name="grid" size={20} color={isDark ? '#000' : '#E9F0E9'} />
-              <Text className="font-semibold ml-1" style={{ color: isDark ? '#000' : '#ffffff' }}>Manage</Text>
-            </TouchableOpacity>
-            )}
+            
           </View>
 
           {spaces && spaces.length > 0 ? (

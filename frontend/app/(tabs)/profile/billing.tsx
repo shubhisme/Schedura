@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StatusBar, Alert, TextInput } from 'react-native';
 import SafeBoundingView from '@/components/SafeBoundingView';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
-import { updateUserUpiId } from '@/supabase/controllers/user.controller';
+import { updateUserUpiId, getUserUpiId } from '@/supabase/controllers/user.controller';
 import { useUser } from '@clerk/clerk-expo';
 import { useToast } from '@/components/Toast';
 
@@ -16,7 +16,28 @@ const BillingPaymentsScreen = () => {
   const [billingCycle] = useState('Monthly');
   const [upiId, setUpiId] = useState('');
   const [savingUpi, setSavingUpi] = useState(false);
+  const [loadingUpi, setLoadingUpi] = useState(true);
   const { showToast } = useToast();
+
+  // Fetch existing UPI ID on mount
+  useEffect(() => {
+    const fetchUpiId = async () => {
+      if (!user?.id) return;
+      try {
+        setLoadingUpi(true);
+        const existingUpiId = await getUserUpiId(user.id);
+        if (existingUpiId) {
+          setUpiId(existingUpiId);
+        }
+      } catch (err) {
+        console.error('Error fetching UPI ID:', err);
+      } finally {
+        setLoadingUpi(false);
+      }
+    };
+    fetchUpiId();
+  }, [user?.id]);
+
   const handleSaveUpi = async () => {
     if (!upiId.trim()) {
       showToast({
@@ -51,44 +72,13 @@ const BillingPaymentsScreen = () => {
       price: '$0',
       period: 'forever',
       features: [
-        'Up to 3 space listings',
+        'Free space listings',
         'Basic booking management',
         'Email support',
         'Standard analytics'
       ],
       current: true
     },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: '$29',
-      period: 'per month',
-      features: [
-        'Unlimited space listings',
-        'Advanced booking management',
-        'Priority support',
-        'Advanced analytics',
-        'Custom branding',
-        'API access'
-      ],
-      current: false,
-      popular: true
-    },
-    {
-      id: 'enterprise',
-      name: 'Enterprise',
-      price: '$99',
-      period: 'per month',
-      features: [
-        'Everything in Pro',
-        'Dedicated account manager',
-        '24/7 phone support',
-        'Custom integrations',
-        'White-label solution',
-        'SLA guarantee'
-      ],
-      current: false
-    }
   ];
 
   const paymentMethods = [
@@ -222,19 +212,27 @@ const BillingPaymentsScreen = () => {
         {/* Current Plan Overview */}
         <View className="px-6 py-4 ">
           <Text className="text-sm text-gray-700 mb-2">UPI ID</Text>
-          <TextInput
-            value={upiId}
-            onChangeText={setUpiId}
-            placeholder="example@upi"
-            autoCapitalize="none"
-            keyboardType="default"
-            className="bg-gray-50 rounded-xl px-4 py-3 mb-3 border border-gray-200"
-            editable={!savingUpi}
-          />
+          {loadingUpi ? (
+            <View className="bg-gray-50 rounded-xl px-4 py-3 mb-3 border border-gray-200 items-center justify-center" style={{ height: 48 }}>
+              <Text style={{ color: colors.textSecondary }}>Loading...</Text>
+            </View>
+          ) : (
+            <TextInput
+              value={upiId}
+              onChangeText={setUpiId}
+              placeholder="example@upi"
+              autoCapitalize="none"
+              keyboardType="default"
+              className="bg-gray-50 rounded-xl px-4 py-3 mb-3 border border-gray-200"
+              editable={!savingUpi}
+              style={{ color: colors.text }}
+              placeholderTextColor={colors.textSecondary}
+            />
+          )}
           <TouchableOpacity
             onPress={handleSaveUpi}
-            disabled={savingUpi}
-            className={`py-3 rounded-xl items-center ${savingUpi ? 'bg-gray-300' : 'bg-primary'}`}
+            disabled={savingUpi || loadingUpi}
+            className={`py-3 rounded-xl items-center ${savingUpi || loadingUpi ? 'bg-gray-300' : 'bg-primary'}`}
           >
             <Text className="text-black font-semibold">{savingUpi ? 'Saving...' : 'Save UPI'}</Text>
           </TouchableOpacity>
@@ -246,15 +244,14 @@ const BillingPaymentsScreen = () => {
           <Text className="mt-1" style={{ color: 'rgba(255,255,255,0.8)' }}>{billingCycle} billing</Text>
         </View>
 
-        {/* Plans */}
+        
         <View className="px-6 py-6">
           <Text className="text-xl font-bold mb-4" style={{ color: colors.text }}>Available Plans</Text>
           {plans.map(plan => (
             <PlanCard key={plan.id} plan={plan} />
           ))}
         </View>
-
-        {/* Payment Methods */}
+      {/*
         <View
           className="px-6 py-6 border-t"
           style={{ backgroundColor: colors.card, borderTopColor: colors.border }}
@@ -291,7 +288,6 @@ const BillingPaymentsScreen = () => {
           ))}
         </View>
 
-        {/* Transaction History */}
         <View className="px-6 py-6">
           <Text className="text-xl font-bold mb-4" style={{ color: colors.text }}>Transaction History</Text>
 
@@ -324,7 +320,7 @@ const BillingPaymentsScreen = () => {
             </View>
           ))}
         </View>
-
+        */}
         <View className="h-8" />
       </ScrollView>
     </SafeBoundingView>

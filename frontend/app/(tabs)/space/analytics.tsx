@@ -1,6 +1,7 @@
 import { Image, ScrollView, Text, View, StatusBar, Dimensions } from 'react-native';
+import { Animated } from 'react-native';
 import {getBookingOfSpace, getRequestpending, getTotalBookings} from '@/supabase/controllers/analytics';
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getMySpaces } from '@/supabase/controllers/spaces.controller';
 import { useUser } from '@clerk/clerk-expo';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -21,12 +22,98 @@ interface dataPie{
     legendFontColor: string;
 }
 
+// Skeleton Loader Component
+const SkeletonLoader: React.FC<{ width: number | string; height: number; style?: any }> = ({ width, height, style }) => {
+  const animatedValue = new Animated.Value(0);
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <Animated.View
+      style={[
+        {
+          width,
+          height,
+          backgroundColor: '#E0E0E0',
+          borderRadius: 8,
+          opacity,
+        },
+        style,
+      ]}
+    />
+  );
+};
+
+// Analytics Skeleton
+const AnalyticsSkeleton: React.FC<{ colors: any }> = ({ colors }) => (
+  <View>
+    {/* Stats Cards Skeleton */}
+    <View className='flex flex-col justify-center gap-y-3 w-[100%] p-4'>
+      <View className='border rounded-xl w-[100%] px-3 py-6' style={{ borderColor: colors.border }}>
+        <SkeletonLoader width="60%" height={24} style={{ alignSelf: 'center', marginBottom: 8 }} />
+        <SkeletonLoader width="80%" height={14} style={{ alignSelf: 'center', marginBottom: 12 }} />
+        <SkeletonLoader width={60} height={36} style={{ alignSelf: 'center', borderRadius: 8 }} />
+      </View>
+
+      <View className='border rounded-xl w-[100%] px-3 py-6' style={{ borderColor: colors.border }}>
+        <SkeletonLoader width="60%" height={24} style={{ alignSelf: 'center', marginBottom: 8 }} />
+        <SkeletonLoader width="80%" height={14} style={{ alignSelf: 'center', marginBottom: 12 }} />
+        <SkeletonLoader width={60} height={36} style={{ alignSelf: 'center', borderRadius: 8 }} />
+      </View>
+    </View>
+
+    {/* Pie Chart Skeleton */}
+    <View className='mx-5 my-6'>
+      <SkeletonLoader width="60%" height={24} style={{ alignSelf: 'center', marginBottom: 8 }} />
+      <SkeletonLoader width="70%" height={16} style={{ alignSelf: 'center', marginBottom: 16 }} />
+      <View className='items-center'>
+        <SkeletonLoader width={200} height={200} style={{ borderRadius: 100 }} />
+      </View>
+    </View>
+
+    {/* Line Graph Skeleton */}
+    <View className='mx-5 my-6'>
+      <SkeletonLoader width="50%" height={24} style={{ alignSelf: 'center', marginBottom: 8 }} />
+      <SkeletonLoader width="80%" height={16} style={{ alignSelf: 'center', marginBottom: 16 }} />
+      <SkeletonLoader width="100%" height={280} style={{ borderRadius: 8 }} />
+    </View>
+
+    {/* Bar Chart Skeleton */}
+    <View className='mx-5 my-6'>
+      <SkeletonLoader width="50%" height={24} style={{ alignSelf: 'center', marginBottom: 8 }} />
+      <SkeletonLoader width="80%" height={16} style={{ alignSelf: 'center', marginBottom: 16 }} />
+      <SkeletonLoader width="100%" height={220} style={{ borderRadius: 8 }} />
+    </View>
+  </View>
+);
+
 function Manage() {
     const [spaces, setSpaces] = useState<any[]>([]);
     const [totalBookings, setTotalBookings] = useState<number>(0);
     const { colors, isDark } = useTheme();
     const [dayscount, setDayscount] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
     const [pendingData , setPendingData] = useState<number>(0);
+    const [loading, setLoading] = useState(true);
     
     const [dataSet, setDataSet] = useState<number[]>([]);
     const [labels, setLabels] = useState<string[]>([]);
@@ -77,6 +164,7 @@ function Manage() {
 
 const fetchSpaceData = useCallback(async () => {
     if(!user) return;
+    setLoading(true);
     const { data: spacesData } = await getMySpaces(user?.id!);
     setSpaces(spacesData || []);
     // console.log("Fetched spaces: ", spacesData);
@@ -168,6 +256,7 @@ const fetchSpaceData = useCallback(async () => {
         setLabels([]);
         setDataSet([]);
     }
+    setLoading(false);
 
 }, [user]);
 
@@ -187,6 +276,10 @@ const fetchSpaceData = useCallback(async () => {
 
         <Text className="text-2xl font-bold mx-5 my-6 text-center" style={{ color: colors.accent }}>View Analytics Of All Spaces</Text>
 
+        {loading ? (
+          <AnalyticsSkeleton colors={colors} />
+        ) : (
+          <>
         <View className='flex flex-col justify-center gap-y-3 w-[100%] p-4'>
             <View className='border rounded-xl w-[100%] px-3 py-2 mb-2' style={{ borderColor: colors.border }}>
                 <Text className='text-2xl text-center font-semibold' style={{ color: colors.text }}>Total Bookings</Text>
@@ -215,9 +308,10 @@ const fetchSpaceData = useCallback(async () => {
 
         {spaces.length > 0 && totalBookings > 0 ? (
             <ScrollView>
-                <View className='mx-5 my-6'>
+
                     <Text className='text-2xl font-bold text-center' style={{ color: colors.accent }}>Percentage Breakdown</Text>
                     <Text className='text-center' style={{ color: colors.textSecondary }}>View all spaces contribution</Text>
+                <ScrollView horizontal={true} className='mx-5 my-6'>
                         <PieChart
                         data={pieData}
                         width={screenWidth}
@@ -225,12 +319,12 @@ const fetchSpaceData = useCallback(async () => {
                         chartConfig={chartConfig}
                         accessor={"bookings"}
                         backgroundColor={"transparent"}
-                        paddingLeft={"-10"}
+                        paddingLeft={"10"}
                         center={[0, 0]}
                         avoidFalseZero={true}
                         // absolute
                     />
-                </View>
+                </ScrollView>
 
 
                 <MonthGraph data={dataSet} labels={labels} />
@@ -244,6 +338,8 @@ const fetchSpaceData = useCallback(async () => {
                     You have not created any spaces yet. Create a space to view analytics.
                 </Text>
             </View>
+        )}
+          </>
         )}
 
       </ScrollView>
