@@ -109,6 +109,17 @@ export default function SpacesScreen() {
               <Ionicons name="add" size={20} color={isDark ? '#000' : '#E9F0E9'} />
               <Text className="font-semibold ml-1" style={{ color: isDark ? '#000' : '#ffffff' }}>Add Space</Text>
             </TouchableOpacity>
+
+            {spaces && spaces.length > 0 && (
+            <TouchableOpacity
+              onPress={() => navigate('/(tabs)/space/manage')}
+              className="px-4 py-2 rounded-xl flex-row items-center"
+              style={{ backgroundColor: colors.accent }}
+            >
+              <Ionicons name="grid" size={20} color={isDark ? '#000' : '#E9F0E9'} />
+              <Text className="font-semibold ml-1" style={{ color: isDark ? '#000' : '#ffffff' }}>Manage</Text>
+            </TouchableOpacity>
+            )}
           </View>
 
           {spaces && spaces.length > 0 ? (

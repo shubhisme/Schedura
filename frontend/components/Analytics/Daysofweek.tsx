@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Text, View, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { useToast } from '@/components/Toast';
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 interface DayStats {
@@ -22,6 +23,7 @@ function Daysofweek() {
   const { showToast } = useToast();
   const [geminiInsight, setGeminiInsight] = useState<string | null>(null);
   const [geminiLoading, setGeminiLoading] = useState(false);
+  const { colors, isDark } = useTheme();
   
   const Xdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
   const fullDayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -55,7 +57,7 @@ function Daysofweek() {
   const chartConfig = {
     backgroundGradientFromOpacity: 0,
     backgroundGradientToOpacity: 0,
-    color: (opacity = 1) => `rgba(60, 60, 60, ${opacity})`,
+    color: (opacity = 1) => `${colors.text.replace(/^#/, '') ? `${hexToRgba(colors.text, opacity)}` : `rgba(100,100,100,${opacity})`}`,
     strokeWidth: 2,
     barPercentage: 0.65,
     decimalPlaces: 0,
@@ -238,10 +240,10 @@ function Daysofweek() {
   
   return (
     <View className='mt-6 px-4'>
-      <Text className='font-semibold text-center text-xl mb-1'>
+      <Text className='font-semibold text-center text-2xl mb-1' style={{ color: colors.text }}>
         Bookings By Day Of Week
       </Text>
-      <Text className='text-center text-sm mb-4 text-gray-600'>
+      <Text className='text-center text-sm mb-4' style={{ color: colors.textSecondary }}>
         Tap day labels below the chart or cards below to see details
       </Text>
       
@@ -291,7 +293,7 @@ function Daysofweek() {
       
       {/* Selected Day Details */}
       {selectedDay !== null && (
-        <View className='bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 mt-2'>
+        <View className={`bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 mt-2`}>
           <View className='flex-row justify-between items-center mb-2'>
             <Text className='text-lg font-bold text-blue-900'>
               {getDayStats(selectedDay).day}
@@ -324,12 +326,12 @@ function Daysofweek() {
       
       {/* Key Insights */}
       <View className='bg-gray-500/20 rounded-xl p-4 mb-4'>
-        <Text className='font-semibold text-gray-900 mb-3 text-xl'>📊 Key Insights</Text>
+        <Text className='font-semibold text-gray-900 mb-3 text-xl' style={{ color: colors.text }}>📊 Key Insights</Text>
         
         <View className='gap-y-2'>
           {mostPopular && (
             <View className='flex-row justify-between items-center py-2 border-b border-gray-200'>
-              <Text className='text-gray-700 text-sm'>Most Popular Day</Text>
+              <Text className='text-gray-700 text-sm' style={{ color: colors.text }}>Most Popular Day</Text>
               <View className='flex-row items-center'>
                 <Text className='font-bold text-yellow-500'>{mostPopular}</Text>
               </View>
@@ -338,13 +340,13 @@ function Daysofweek() {
           
           {leastPopular && (
             <View className='flex-row justify-between items-center py-2 border-b border-gray-200'>
-              <Text className='text-gray-700 text-sm'>Least Popular Day</Text>
+              <Text className='text-gray-700 text-sm' style={{ color: colors.text }}>Least Popular Day</Text>
               <Text className='font-semibold text-orange-600'>{leastPopular}</Text>
             </View>
           )}
           
           <View className='flex-row justify-between items-center py-2'>
-            <Text className='text-gray-700 text-sm'>Average per Day</Text>
+            <Text className='text-gray-700 text-sm' style={{color: colors.text}}>Average per Day</Text>
             <Text className='font-semibold text-blue-600'>
               {(totalBookings / 7).toFixed(1)}
             </Text>
@@ -353,8 +355,8 @@ function Daysofweek() {
       </View>
       
       {/* Weekday vs Weekend Split */}
-      <View className='bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 mb-4'>
-        <Text className='font-semibold text-gray-900 mb-3 text-xl'>
+      <View className='bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl py-4 mb-4'>
+        <Text className='font-semibold text-gray-900 mb-3 text-xl' style={{color: colors.text}}>
           Weekday vs Weekend Split
         </Text>
         
@@ -373,7 +375,7 @@ function Daysofweek() {
             <View className='bg-purple-100 rounded-lg p-3 items-center'>
               <Text className='text-xs text-purple-700 font-semibold mb-1'>Weekends</Text>
               <Text className='text-2xl font-bold text-purple-600'>{split.weekend}</Text>
-              <Text className='text-xs text-purple-700 mt-1'>
+              <Text className='text-xs text-purple-700 mt-1' >
                 {split.weekendPercent.toFixed(0)}%
               </Text>
             </View>
@@ -395,7 +397,7 @@ function Daysofweek() {
       
       {/* Individual Day Cards - Quick Overview */}
       <View className='mb-4'>
-        <Text className='font-semibold text-gray-900 mb-3 text-lg'>Quick Overview</Text>
+        <Text className='font-semibold text-gray-900 mb-3 text-lg' style={{ color: colors.text }}>Quick Overview</Text>
         <View className='flex-row flex-wrap justify-between'>
           {Xdays.map((day, index) => {
             const stats = getDayStats(index);
@@ -453,6 +455,16 @@ function Daysofweek() {
       </View>
     </View>
   );
+}
+
+function hexToRgba(hex: string, alpha = 1) {
+  if (!hex) return `rgba(60,60,60,${alpha})`;
+  const cleaned = hex.replace('#', '');
+  const bigint = parseInt(cleaned, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 export default Daysofweek;
