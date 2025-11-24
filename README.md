@@ -105,10 +105,3 @@ Please follow the existing frontend lint rules and formatting conventions. There
 
 See `LICENSE.md` at the repository root for license terms.
 
-## Next steps (optional)
-
-I can also make these small, helpful updates if you want:
-
-- Add `"type": "module"` and a `start` script to `backend/package.json` so the ESM imports work without extra flags.
-- Add basic Supabase migration SQL files under a `migrations/` directory.
-- Add badges (build, license) and a `CONTRIBUTING.md` with development checklist.
